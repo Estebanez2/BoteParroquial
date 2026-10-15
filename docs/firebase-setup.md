@@ -137,6 +137,14 @@ anteriores registran sus despliegues históricos, no las reglas vigentes complet
 
 No crear otra base simplemente porque estos datos todavía no estén documentados.
 
+Phase 6 (2026-10-15): cuatro pruebas económicas pasan en emulador y el despliegue
+confirma compilación y publicación. Ruleset vigente:
+3a47ea62-c02e-47d8-ab82-deb95b2313ad. Añade occurredAt == occurredAt.date() para
+exigir día civil UTC sin horas; mantiene los permisos y transiciones de Phase 4.
+Sin nuevos índices, colecciones ni activaciones de servicios. El margen request.time+24 h
+permanece: no implica validación exacta de «hoy» por zona IANA en servidor.
+Ver docs/PHASE6_VALIDATION.md. Los rulesets anteriores son historial.
+
 No asumir que la configuración de la base garantiza autorización correcta.
 
 CLI

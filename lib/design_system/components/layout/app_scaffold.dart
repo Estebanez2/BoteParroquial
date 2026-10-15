@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_gradients.dart';
 
 class AppScaffold extends StatelessWidget {
   const AppScaffold({
@@ -29,8 +30,11 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       appBar: appBar,
       bottomNavigationBar: bottomNavigation,
-      body: SafeArea(
-        child: scroll ? SingleChildScrollView(child: content) : content,
+      body: DecoratedBox(
+        decoration: BoxDecoration(gradient: AppGradients.canvas(context)),
+        child: SafeArea(
+          child: scroll ? SingleChildScrollView(child: content) : content,
+        ),
       ),
     );
   }

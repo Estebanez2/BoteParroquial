@@ -3,7 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 
-enum AppAvatarSize { small, medium, large }
+enum AppAvatarSize { small, medium, large, editor }
 
 class AppAvatar extends StatelessWidget {
   const AppAvatar({
@@ -26,6 +26,7 @@ class AppAvatar extends StatelessWidget {
       AppAvatarSize.small => AppSpacing.avatarSmall,
       AppAvatarSize.medium => AppSpacing.avatarMedium,
       AppAvatarSize.large => AppSpacing.avatarLarge,
+      AppAvatarSize.editor => AppSpacing.avatarEditor,
     };
     final words = name
         .trim()
@@ -34,10 +35,7 @@ class AppAvatar extends StatelessWidget {
         .toList();
     final initials = words.isEmpty
         ? '?'
-        : [
-            words.first,
-            if (words.length > 1) words.last,
-          ].map((word) => word.characters.first).join().toUpperCase();
+        : words.map((word) => word.characters.first).join().toUpperCase();
     return Semantics(
       label: showIndicator ? '$name, $indicatorLabel' : name,
       excludeSemantics: true,
@@ -54,14 +52,23 @@ class AppAvatar extends StatelessWidget {
               onForegroundImageError: image == null
                   ? null
                   : (error, stackTrace) {},
-              child: Text(
-                initials,
-                style: size == AppAvatarSize.large
-                    ? AppTypography.of(context).headingSmall
-                    : AppTypography.of(
-                        context,
-                      ).labelMedium.copyWith(color: c.primary),
-              ),
+              child: words.isEmpty
+                  ? Icon(Icons.person_outline_rounded, size: diameter / 2)
+                  : Padding(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      child: FittedBox(
+                        child: Text(
+                          initials,
+                          style:
+                              size == AppAvatarSize.large ||
+                                  size == AppAvatarSize.editor
+                              ? AppTypography.of(context).headingSmall
+                              : AppTypography.of(
+                                  context,
+                                ).labelMedium.copyWith(color: c.primary),
+                        ),
+                      ),
+                    ),
             ),
             if (showIndicator)
               Positioned(

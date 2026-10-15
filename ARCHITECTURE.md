@@ -230,7 +230,8 @@ son ejemplos de presentación y no implementan Groups, Persons, Movements o Dash
 
 Ver DESIGN_SYSTEM.md para APIs, reglas de uso y evaluación de dependencias.
 En Phase 2 se conecta AppTheme a la app por petición del usuario; home y grupos
-usan App*. Login mantiene su composición anterior con el tema común.
+usan App*. Login mantuvo su composición anterior en aquella fase; el rediseño
+posterior v0.2 lo migra también a App*.
 
 Groups & Membership
 
@@ -285,3 +286,55 @@ No se escribe ningún saldo ni agregado. Con más volumen se sustituirá esta fu
 por consultas/resúmenes acotados manteniendo el contrato del Dashboard; la prohibición
 de leer todo el historial de la especificación completa sigue siendo el objetivo
 de escalabilidad, no algo ya resuelto por esta fase.
+
+Robustez del MVP (Phase 6)
+
+MovementController → MovementSubmissionRepository → PendingMovementService /
+FilePendingMovementService y MovementRepository → MovementService → Firebase.
+PendingMovement es dominio puro. La persistencia técnica de JSON/archivos y
+path_provider queda en Service; la intención se escribe y cierra antes de enviar.
+Archivo temporal y rename, operaciones serializadas y limpieza condicionada al ID
+evitan sobrescribir o borrar otro pendiente. El repository bloquea un envío distinto
+mientras exista uno pendiente y comprueba el resultado contra lecturas de servidor.
+La recuperación requiere confirmación antes de repetir; ninguna apertura reenvía dinero.
+
+GroupSyncNotice → groupServerConfirmedProvider → GroupSyncRepository →
+FirestoreGroupSyncService. Metadata de grupo, membresía propia, personas, miembros
+y movimientos distingue datos confirmados y caché. Los listeners de las mismas
+consultas son compartidos por el SDK; la membresía propia añade una lectura de
+documento. El aviso es conservador: todas las fuentes deben estar confirmadas.
+No sustituye a Rules ni afirma disponibilidad de Internet. Una lectura previa
+confirmada no reserva permisos o saldo para la siguiente escritura.
+
+MovementController → GroupCalendarRepository → GroupClockService /
+TimeZoneGroupClockService adapta timezone/IANA y devuelve un día civil. Widgets
+usan today() del controller para selector e inicio; validación y envío usan la
+misma referencia del grupo. El modelo no importa timezone ni fija Europe/Madrid.
+La hora de dispositivo puede estar mal: este cambio no sincroniza su reloj.
+
+El descarte local requiere confirmación y una lectura de servidor; nunca escribe
+movimientos. No equivale a cancelar una solicitud que siguiera en curso.
+
+Home muestra la lista de grupos independientemente de actualizar el perfil; esto
+permite consultar caché con sesión existente sin completar esa escritura online.
+
+Rediseño visual v0.2 (2026-10-15)
+
+AppGradients centraliza fondos, superficies, paneles y botones. AppHeroPanel,
+AppCover, AppNavigationTile, AppAdaptiveRow, AppChoiceBar, AppExpandableRow,
+AppAvatarMenu y AppActionMenu amplían la API común. Widgets de features componen
+estas piezas; no contienen consultas Firebase ni cálculos de saldo.
+GroupIdentityHeader comparte la identidad de grupo en las pantallas existentes.
+PersonEditor abre una pantalla completa con transición que respeta movimiento
+reducido. Login migra a App* sin cambiar AuthRepository ni el acceso Google.
+
+El historial consume movementDaysProvider → MovementHistoryRepository.groupByDay,
+una proyección pura por fecha efectiva que conserva todos los estados y el groupId.
+Detalles, correcciones y anulaciones siguen accesibles al desplegar cada fila;
+los enlaces de actividad abren el movimiento concreto ya desplegado.
+Las tarjetas de inicio reutilizan dashboardProvider para el saldo de cada grupo:
+el MVP lee los flujos completos también allí; no son agregados ni ceros ficticios.
+
+Las fotos se aplazan explícitamente. AppAvatar/AppCover pueden recibir ImageProvider,
+pero no se implementan almacenamiento, subida ni permisos de imagen en esta tarea.
+No se sustituyen el aislamiento por grupo ni Rules por opciones visuales.

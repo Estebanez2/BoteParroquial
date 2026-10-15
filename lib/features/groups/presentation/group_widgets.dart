@@ -26,22 +26,10 @@ class GroupOpening extends StatelessWidget {
     final colors = AppColors.of(context);
     final type = AppTypography.of(context);
     return AppReveal(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        decoration: BoxDecoration(
-          color: colors.hero,
-          borderRadius: AppRadius.hero,
-        ),
+      child: AppHeroPanel(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              Icons.hub_outlined,
-              color: colors.onHero,
-              size: AppSpacing.avatarLarge,
-            ),
-            const SizedBox(height: AppSpacing.xl),
             Text(
               eyebrow,
               style: type.labelSmall.copyWith(color: colors.onHero),

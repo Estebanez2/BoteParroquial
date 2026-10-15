@@ -41,6 +41,7 @@ class AppBadge extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: color.withValues(alpha: .10),
+          border: Border.all(color: color.withValues(alpha: .2)),
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Wrap(

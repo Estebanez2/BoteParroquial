@@ -370,10 +370,82 @@ sin afirmar pruebas físicas ni instalarlo. Solicita indicar las partes pendient
 del MVP; registrarlas en el apartado Phase 6 de ROADMAP y en la validación de Phase 5.
 Siguen pendientes segunda cuenta, sincronización en dos móviles y hardening.
 
+Decisiones de Phase 6
+
+D046 — Consulta de caché y confirmación económica (2026-10-15)
+
+El usuario elige consultar los datos guardados con aviso de posible desactualización,
+en lugar de bloquear también las lecturas. Las operaciones económicas requieren
+confirmación de servidor. No inferir frescura financiera de tener Wi-Fi: usar metadata
+de Firestore. La primera consulta sin caché puede estar incompleta; avisarlo.
+
+D047 — Recuperación persistente de envíos (2026-10-15)
+
+El usuario elige conservar el envío pendiente para recuperar su resultado al volver.
+Antes de escribir se conserva el ID y la intención en almacenamiento privado de la
+app, separados por UID/grupo; no hay tokens ni credenciales. Al abrir el grupo se
+consulta el servidor y solo un resultado coincidente confirma el envío. Si falta,
+reintentar los mismos datos/ID exige confirmación; no reenviar automáticamente ni
+sobrescribir el pendiente al iniciar otro envío. No se altera el esquema financiero.
+
+D048 — Confirmación del Dashboard en móvil (2026-10-15)
+
+El usuario comunica que reconecta el móvil y ha comprobado que funciona. Sustituye
+el pendiente de comprobación genérica de Dashboard de D045; no acredita los casos
+manuales aplazados de autenticación ni sincronización entre dos administradores.
+
+D049 — Descartar un intento local en conflicto (2026-10-15)
+
+El usuario permite descartar el intento local tras revisar el historial y confirmar,
+en vez de bloquear nuevos envíos hasta revisión técnica. Exigir lectura de servidor
+antes de limpiarlo; no borrar ni anular movimientos. Avisar de que descartar no
+detiene una solicitud anterior en curso y que hay que revisar antes de registrar
+de nuevo el dinero. Sin conexión o con otro intento distinto, conservar el pendiente.
+
+D050 — Calendario del grupo (2026-10-15)
+
+El usuario elige la zona horaria del grupo para determinar «hoy», aunque el móvil
+esté en otra zona. Adaptar IANA en Service (timezone); la fecha efectiva sigue
+siendo un día civil UTC. Zona inválida bloquea el envío. La hora del dispositivo
+sigue aportando el instante de referencia; Rules conserva su cota de servidor.
+No afirmar que esto implementa una validación exacta de zonas IANA en Security Rules.
+
+Decisiones del rediseño por referencias
+
+D051 — Dirección visual proporcionada por el usuario (2026-10-15)
+
+Las ocho referencias sustituyen la propuesta visual inicial: verde oscuro,
+menta, coral para retiradas, degradados, contornos finos y títulos serif. Reutilizar
+App* y centralizar estilos. Predeterminado oscuro para reproducir la referencia;
+se conserva la variante clara. Personas pasa a pantalla completa según la nueva
+referencia; sustituye la composición en panel de D036, no sus reglas de dominio.
+
+D052 — Alcance actual: estética e iniciales (2026-10-15)
+
+El usuario elige rediseño con iniciales y posponer subidas de fotos, frente a activar
+Firebase Storage/Blaze ahora. También elige rediseñar solo las funciones actuales,
+sin adelantar estadísticas, invitaciones o notificaciones de las imágenes. No crear
+controles inertes ni datos inventados para aparentar esas funciones. La cabecera de
+grupo utiliza una cubierta con iniciales que admite imagen futura; AppAvatar admite
+ImageProvider y fallback con iniciales de nombre y apellidos.
+
+D053 — Permisos futuros de fotos (2026-10-15)
+
+El usuario elige foto de cuenta propia y fotos independientes dentro de cada grupo:
+
+- Foto global de cuenta: solo la cambia su dueño, no administradores de otro perfil.
+- Foto de miembro en grupo: cada miembro cambia la suya; admin cambia las de
+  miembros normales y no las de otro admin/owner; owner puede cambiar también admins.
+- Imagen de grupo: solo owner (actualmente el creador con control completo).
+
+Es un acuerdo de producto para la implementación posterior, no permisos desplegados.
+Antes de habilitar fotos de personas internas, concretar su relación con la foto
+de membresía y los vínculos usuario/persona. No inventar sincronización entre ellas.
+
 Decisiones todavía pendientes
 
-Diseño visual definitivo: base v0.1 en uso por petición del usuario en Phase 2;
-la apariencia puede seguir iterándose con él.
+Aprobación visual del rediseño v0.2 según las referencias del usuario; la apariencia
+puede iterarse tras revisar la instalación. No afirmar coincidencia exacta sin revisión.
 
 Política concreta de generación de exportaciones grandes.
 
@@ -381,7 +453,8 @@ Momento exacto en que introducir Cloud Functions.
 
 Estrategia definitiva para agregados de estadísticas.
 
-Política final de caché y funcionamiento offline para operaciones económicas.
+Caché y confirmación económica del MVP decididas en D046; reevaluar la política
+si una fase futura introduce escrituras económicas offline.
 
 Reglas exactas para una futura baja completa de cuenta de usuario.
 

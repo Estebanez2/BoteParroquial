@@ -11,29 +11,34 @@ class StatisticCard extends StatelessWidget {
     required this.value,
     required this.icon,
     this.caption,
+    this.framed = true,
   });
   final String label, value;
   final IconData icon;
   final String? caption;
+  final bool framed;
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final t = AppTypography.of(context);
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: c.secondary, size: AppSpacing.iconLarge),
-          const SizedBox(height: AppSpacing.lg),
-          Text(value, style: t.statisticValue),
-          const SizedBox(height: AppSpacing.xs),
-          Text(label, style: t.bodyMedium.copyWith(color: c.textSecondary)),
-          if (caption != null) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Text(caption!, style: t.bodySmall.copyWith(color: c.textMuted)),
-          ],
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: c.primary, size: AppSpacing.iconLarge),
+        const SizedBox(height: AppSpacing.lg),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(value, style: t.statisticValue),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(label, style: t.bodyMedium.copyWith(color: c.textSecondary)),
+        if (caption != null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(caption!, style: t.bodySmall.copyWith(color: c.textMuted)),
         ],
-      ),
+      ],
     );
+    return framed ? AppCard(child: content) : content;
   }
 }

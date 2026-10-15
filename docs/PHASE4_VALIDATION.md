@@ -96,9 +96,14 @@ Referencia de [validación de operaciones atómicas con getAfter](https://fireba
   a operaciones concurrentes entre revisión y escritura. Negativo está permitido.
 - El ID se mantiene mientras existe el formulario. Tras cerrar/reabrir la app,
   revisar historial ante resultados inciertos antes de iniciar un envío nuevo.
+  Actualización Phase 6: ahora se persiste el intento por UID/grupo antes de enviar,
+  se consulta su resultado al abrir el grupo y se recupera el mismo ID/datos.
 - «Hoy» usa el calendario del dispositivo; Rules añade un margen técnico de 24 h
   para fechas civiles UTC. La validación exacta por reloj/zona del grupo en servidor
   y la política offline quedan para hardening. Transacciones requieren conexión.
+  Actualización Phase 6: la app usa la zona IANA del grupo y se permite consulta
+  de caché señalizada; operaciones económicas requieren servidor. El margen de Rules
+  permanece y la comprobación IANA exacta en servidor sigue pendiente.
 - No se ha probado sincronización en dos móviles ni una segunda cuenta real.
   Las pruebas manuales aplazadas de Phase 1 siguen pendientes.
 - La degradación persistida del rol admin continúa en Phase 7; Rules sí exige

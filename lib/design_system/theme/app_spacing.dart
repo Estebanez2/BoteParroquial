@@ -6,8 +6,8 @@ abstract final class AppSpacing {
   static const double xl = 24;
   static const double xxl = 32;
   static const double xxxl = 48;
-  static const double page = 24;
-  static const double section = 40;
+  static const double page = 16;
+  static const double section = 28;
   static const double contentMax = 1080;
   static const double readingMax = 640;
   static const double controlHeight = 52;
@@ -18,4 +18,9 @@ abstract final class AppSpacing {
   static const double avatarSmall = 32;
   static const double avatarMedium = 48;
   static const double avatarLarge = 64;
+  static const double coverSmall = 88;
+  static const double coverLarge = 112;
+  static const double avatarEditor = 112;
+  static const double compactBreakpoint = 440;
+  static const double formSection = 20;
 }

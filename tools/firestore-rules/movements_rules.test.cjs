@@ -37,7 +37,8 @@ test('Permisos, céntimos, autores, fechas y personas del mismo grupo',async()=>
   await assertFails(getDocs(collection(owner,'groups/b/movements')));
   for(const patch of [{amountCents:20.5},{amountCents:0},{amountCents:-100},{createdBy:'other'},{createdAt:Timestamp.fromMillis(1)},
     {personId:'missing'},{personId:null},{type:'withdrawal',description:'  '},{role:'owner'},{status:'cancelled'},{amountCents:100000000000000},
-    {occurredAt:Timestamp.fromMillis(Date.now()+3*86400000)}]) {
+    {occurredAt:Timestamp.fromMillis(Date.now()+3*86400000)},
+    {occurredAt:Timestamp.fromDate(new Date('2025-01-01T12:00:00Z'))}]) {
     await assertFails(setDoc(doc(owner,'groups/a/movements/invalid'),movement('owner',patch)));
   }
   await assertFails(updateDoc(doc(owner,'groups/a/movements/income'),{amountCents:100,updatedAt:serverTimestamp()}));

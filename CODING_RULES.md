@@ -150,6 +150,12 @@ await
 
 Evitar dobles envíos mientras una operación está en progreso.
 
+Conservar la intención económica antes de enviarla, separada por UID/grupo, y
+comprobar resultados inciertos en servidor. Un reintento conserva ID y datos;
+no borrar/sobrescribir otro pendiente ni reenviar automáticamente al abrir la app.
+Limpiar el intento local solo por confirmación coincidente o descarte explícito.
+«Hoy» se obtiene del calendario del grupo; no calcularlo directamente en widgets.
+
 Después de un await, comprobar context.mounted antes de utilizar un BuildContext.
 
 Persistencia

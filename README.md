@@ -94,7 +94,8 @@ Firestore ha sido creado.
 Base `(default)`, edición Standard, región `europe-southwest1` (Madrid).
 Metadatos comprobados con Firebase CLI el 2026-10-15.
 
-Reglas de Phase 4 publicadas: cada cuenta mantiene privado su perfil users/{uid}.
+Reglas vigentes publicadas en Phase 6, conservando los permisos de Phase 4:
+cada cuenta mantiene privado su perfil users/{uid}.
 Puede descubrir sus membresías por uid y leer grupos activos y miembros si tiene
 membresía activa. No puede asignarse roles ni escribir grupos/membresías.
 Personas admite lectura de miembros activos y gestión de owner/admin autorizado.
@@ -131,6 +132,7 @@ nombre/notas en panel inferior, activar e inactivar con confirmación, sin borra
 Datos separados por grupo, validación de autor/fechas y protección ante edición
 concurrente. Comprobaciones dirigidas: una prueba Flutter de flujo, tres pruebas
 de reglas, análisis sin incidencias y APK compilado e instalado en A059P.
+El rediseño v0.2 posterior sustituye el panel de edición por pantalla completa.
 El usuario confirma que Personas funciona el 2026-10-15. La sincronización entre dos
 móviles sigue sin comprobarse; esa confirmación no se extiende a pruebas no realizadas.
 
@@ -152,22 +154,43 @@ Se reutilizan las suscripciones existentes por elección del usuario para el MVP
 optimizar agregados cuando crezca el historial sigue pendiente.
 
 Análisis sin incidencias, ocho pruebas dirigidas superadas y APK debug compilado.
-El móvil está desconectado por indicación del usuario: la validación física de este
-Dashboard queda pendiente, igual que la sincronización de dos administradores.
+El usuario reconecta el móvil y confirma que funciona el 2026-10-15. Esta confirmación
+del Dashboard no acredita una segunda cuenta ni sincronización entre dos móviles.
 Ver docs/PHASE5_VALIDATION.md y el apartado de cierre de MVP en docs/ROADMAP.md.
 
-Design System v0.1 en uso por petición del usuario desde Phase 2.
+Phase 6 en curso: consulta de caché con aviso de actualización sin confirmar y
+operaciones económicas con confirmación de servidor. Los envíos se guardan antes
+de escribir, en archivos privados por cuenta/grupo, y se comprueban al volver al
+grupo. Si faltan, el reintento requiere confirmación y conserva datos e ID; no se
+reenvían automáticamente. Cambiar de cuenta no expone pendientes de otra cuenta.
+La lista de grupos no depende de poder actualizar el perfil al abrir sin red.
+El usuario permite descartar el intento local tras revisar y confirmar; nunca se
+borra dinero. «Hoy» usa la zona IANA del grupo y Rules exige medianoche UTC para
+la fecha efectiva. El margen de 24 h de servidor sigue sin validación IANA exacta.
+Detalle y pendientes de cierre: docs/PHASE6_VALIDATION.md.
+Tras instalar el APK de Phase 6, el usuario confirma que al activar la conexión
+vuelven a aparecer los grupos. Comprobación online confirmada; caché sin conexión
+y recuperación tras cierre siguen pendientes de validación física.
+
+Design System v0.2: rediseño basado en las ocho referencias del usuario.
+Verde casi negro, acentos menta/coral, degradados, tarjetas con contorno y títulos
+serif. Inicio, resumen, historial, formularios, Personas, Miembros y login usan App*.
+Tema oscuro predeterminado; el tema claro se conserva y se revisa en vistas simuladas.
+Personas pasa de panel a pantalla completa. Avatares e imágenes de grupo muestran
+iniciales; subidas de fotos se aplazan expresamente, junto con Storage.
+Los permisos de fotos futuras están acordados, pero no están implementados ni activos.
+No se adelantan invitaciones, notificaciones ni estadísticas de las referencias.
+Detalle: docs/VISUAL_REDESIGN_VALIDATION.md.
 Tokens y componentes en lib/design_system/; galería debug sin Firebase:
 
 flutter run --debug -t lib/main_showcase.dart
 
-La app habitual sigue en lib/main.dart con AppTheme claro/oscuro. Home y grupos
-componen App* con entrada animada respetuosa con movimiento reducido; login
-mantiene su composición previa con el tema común.
+La app habitual sigue en lib/main.dart con AppTheme claro/oscuro y componentes App*,
+con entrada animada respetuosa con movimiento reducido.
 La galería muestra cifras y personas de ejemplo, sin implementar lógica financiera.
 Las pruebas de segunda cuenta y restauración real aplazadas no se han reanudado.
 
-Validación actual: docs/PHASE5_VALIDATION.md.
+Validación actual: docs/PHASE6_VALIDATION.md y docs/VISUAL_REDESIGN_VALIDATION.md.
 Aprovisionamiento inicial: docs/PHASE2_VALIDATION.md.
 
 No asumir que una funcionalidad está implementada simplemente porque aparezca documentada.

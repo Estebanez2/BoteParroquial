@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bote_parroquial/app/app.dart';
 import 'package:bote_parroquial/app/router.dart';
 import 'package:bote_parroquial/core/errors/app_failure.dart';
+import 'package:bote_parroquial/design_system/design_system.dart';
 import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
 import 'package:bote_parroquial/features/auth/providers/auth_providers.dart';
 import 'package:bote_parroquial/models/auth_user.dart';
@@ -11,7 +12,6 @@ import 'package:bote_parroquial/repositories/auth_repository.dart';
 import 'package:bote_parroquial/repositories/user_profile_repository.dart';
 import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -116,6 +116,8 @@ void main() {
     );
     await tester.tap(find.text('Continuar con Google'));
     await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Tu cuenta'));
+    await tester.pumpAndSettle();
     expect(find.text('Hola, Alicia'), findsOneWidget);
     expect(profiles.requests, ['alice']);
     await tester.tap(find.text('Cerrar sesión'));
@@ -149,8 +151,13 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Tu cuenta'));
+    await tester.pumpAndSettle();
     expect(find.text('Hola, Alicia'), findsOneWidget);
     auth.emit(bob);
+    await tester.pumpAndSettle();
+    expect(find.text('Hola, Alicia'), findsNothing);
+    await tester.tap(find.byTooltip('Tu cuenta'));
     await tester.pumpAndSettle();
     expect(find.text('Hola, Roberto'), findsOneWidget);
     expect(find.text('alice@example.test'), findsNothing);
@@ -181,9 +188,15 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Sin permisos de perfil.'), findsOneWidget);
+    await tester.tap(find.byTooltip('Tu cuenta'));
+    await tester.pumpAndSettle();
     expect(find.text('Cerrar sesión'), findsOneWidget);
+    await tester.tapAt(const Offset(8, 500));
+    await tester.pumpAndSettle();
     profiles.failure = null;
     await tester.tap(find.text('Reintentar perfil'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Tu cuenta'));
     await tester.pumpAndSettle();
     expect(find.text('Hola, Alicia'), findsOneWidget);
     expect(profiles.requests.length, 2);
@@ -211,7 +224,7 @@ void main() {
     await tester.tap(find.text('Continuar con Google'));
     await tester.pump();
     expect(
-      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      tester.widget<AppButton>(find.byType(AppButton).last).onPressed,
       isNull,
     );
     final second = container.read(authControllerProvider.notifier).signIn();

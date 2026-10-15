@@ -12,14 +12,32 @@ Future<void> showPersonEditor(
   Person? person,
 }) async {
   ref.read(personControllerProvider(groupId).notifier).clearError();
-  await AppBottomSheet.show<void>(
-    context,
-    title: person == null
-        ? 'Una persona más, un bote más nuestro.'
-        : 'Cuidemos los detalles.',
-    isDismissible: false,
-    enableDrag: false,
-    builder: (context) => PersonEditor(groupId: groupId, person: person),
+  await Navigator.of(context).push<void>(
+    PageRouteBuilder<void>(
+      transitionDuration: AppMotion.duration(context, AppMotion.durationNormal),
+      reverseTransitionDuration: AppMotion.duration(
+        context,
+        AppMotion.durationNormal,
+      ),
+      pageBuilder: (context, animation, secondaryAnimation) => AppScaffold(
+        maxWidth: AppSpacing.readingMax,
+        appBar: AppTopBar(
+          title: person == null ? 'Nueva persona' : 'Editar persona',
+          leading: Consumer(
+            builder: (context, ref, _) => AppIconButton(
+              icon: Icons.arrow_back_rounded,
+              label: 'Volver a personas',
+              onPressed: ref.watch(personControllerProvider(groupId)).isLoading
+                  ? null
+                  : () => Navigator.pop(context),
+            ),
+          ),
+        ),
+        child: PersonEditor(groupId: groupId, person: person),
+      ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+          FadeTransition(opacity: animation, child: child),
+    ),
   );
 }
 
@@ -77,26 +95,63 @@ class _PersonEditorState extends ConsumerState<PersonEditor> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'No necesita una cuenta de Google para formar parte del bote.',
-                    style: AppTypography.of(context).bodyMedium,
+                  AppHeroPanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.person == null
+                              ? 'Añade una persona'
+                              : 'Los detalles importan',
+                          style: AppTypography.of(context).editorialTitle,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Incluye a las personas de tu comunidad, tengan o no una cuenta en la aplicación.',
+                          style: AppTypography.of(context).bodyMedium,
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  AppTextField(
-                    label: 'Nombre',
-                    controller: _name,
-                    validator: controller.validateName,
-                    enabled: !action.isLoading,
-                    icon: Icons.person_outline,
+                  Center(
+                    child: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _name,
+                      builder: (context, value, child) => AppAvatar(
+                        name: value.text,
+                        size: AppAvatarSize.editor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Sus iniciales ayudan a identificarla en el grupo.',
+                    textAlign: TextAlign.center,
+                    style: AppTypography.of(context).bodySmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  AppCard(
+                    child: AppTextField(
+                      label: 'Nombre',
+                      controller: _name,
+                      validator: controller.validateName,
+                      enabled: !action.isLoading,
+                      icon: Icons.person_outline,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  AppTextField(
-                    label: 'Notas (opcional)',
-                    controller: _notes,
-                    validator: controller.validateNotes,
-                    enabled: !action.isLoading,
-                    helper:
-                        'Las notas son visibles para los miembros del grupo.',
+                  AppCard(
+                    child: AppTextField(
+                      label: 'Notas (opcional)',
+                      controller: _notes,
+                      validator: controller.validateNotes,
+                      enabled: !action.isLoading,
+                      helper:
+                          'Las notas son visibles para los miembros del grupo.',
+                      minLines: 3,
+                      maxLines: 5,
+                      icon: Icons.notes_outlined,
+                    ),
                   ),
                   if (action.hasError) ...[
                     const SizedBox(height: AppSpacing.lg),
@@ -110,6 +165,8 @@ class _PersonEditorState extends ConsumerState<PersonEditor> {
                   const SizedBox(height: AppSpacing.xl),
                   AppButton(
                     label: 'Guardar persona',
+                    leadingIcon: Icons.save_outlined,
+                    fullWidth: true,
                     loading: action.isLoading,
                     onPressed: action.isLoading
                         ? null

@@ -7,6 +7,7 @@ import '../../../models/group_member.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../groups/providers/group_providers.dart';
 import '../../groups/presentation/group_widgets.dart';
+import '../../dashboard/providers/dashboard_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -15,17 +16,28 @@ class HomeScreen extends ConsumerWidget {
     final profile = ref.watch(userProfileProvider);
     final action = ref.watch(authControllerProvider);
     final type = AppTypography.of(context);
+    final session = ref.watch(authStateProvider);
+    final user = session.isLoading || session.hasError
+        ? null
+        : session.asData?.value;
+    final savedProfile = profile.isLoading || profile.hasError
+        ? null
+        : profile.asData?.value;
+    final ownProfile = savedProfile?.uid == user?.uid ? savedProfile : null;
     return AppScaffold(
       maxWidth: AppSpacing.readingMax,
       appBar: AppTopBar(
         title: 'BoteParroquial',
+        editorial: true,
+        leading: const Icon(Icons.groups_outlined),
         actions: [
-          AppButton(
-            label: 'Cerrar sesión',
-            variant: AppButtonVariant.ghost,
-            onPressed: action.isLoading
-                ? null
-                : () => ref.read(authControllerProvider.notifier).signOut(),
+          AppAvatarMenu(
+            accountId: user?.uid,
+            name: ownProfile?.displayName ?? user?.displayName ?? 'Tu cuenta',
+            email: ownProfile?.email ?? user?.email,
+            enabled: !action.isLoading,
+            onSignOut: () =>
+                ref.read(authControllerProvider.notifier).signOut(),
           ),
         ],
       ),
@@ -46,36 +58,19 @@ class HomeScreen extends ConsumerWidget {
               onAction: () =>
                   ref.read(authControllerProvider.notifier).retryProfile(),
             ),
-            data: (user) => user == null
-                ? const SizedBox.shrink()
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hola, ${user.displayName}',
-                        style: type.headingSmall,
-                      ),
-                      if (user.email != null)
-                        Text(user.email!, style: type.bodySmall),
-                      const SizedBox(height: AppSpacing.xl),
-                      const GroupOpening(
-                        eyebrow: 'UN LUGAR PARA LO COMPARTIDO',
-                        title: 'Lo nuestro,\nen común.',
-                        description:
-                            'Cada grupo es un espacio propio. Elige dónde quieres estar hoy.',
-                      ),
-                      const SizedBox(height: AppSpacing.section),
-                      Text('Tus espacios', style: type.headingMedium),
-                      const SizedBox(height: AppSpacing.lg),
-                      const _GroupList(),
-                      const SizedBox(height: AppSpacing.xxl),
-                      Text(
-                        'Tu perfil está guardado y tu sesión está activa.',
-                        style: type.bodySmall,
-                      ),
-                    ],
-                  ),
+            data: (user) => const SizedBox.shrink(),
           ),
+          const SizedBox(height: AppSpacing.xl),
+          const GroupOpening(
+            eyebrow: 'JUNTOS HACEMOS MÁS',
+            title: 'Gestiona el bote\nde tu parroquia.',
+            description:
+                'Una forma sencilla y transparente de organizar los fondos de tu comunidad para actividades y proyectos.',
+          ),
+          const SizedBox(height: AppSpacing.section),
+          Text('Tus espacios', style: type.editorialTitle),
+          const SizedBox(height: AppSpacing.lg),
+          const _GroupList(),
         ],
       ),
     );
@@ -123,7 +118,7 @@ class _GroupTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groupId = membership.groupId;
-    final type = AppTypography.of(context);
+    final t = AppTypography.of(context);
     return ref
         .watch(groupProvider(groupId))
         .when(
@@ -132,7 +127,6 @@ class _GroupTile extends ConsumerWidget {
           loading: () => const LoadingIndicator(label: 'Abriendo espacio…'),
           error: (error, _) => AppCard(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(failureMessage(error)),
                 AppButton(
@@ -143,36 +137,92 @@ class _GroupTile extends ConsumerWidget {
               ],
             ),
           ),
-          data: (group) => group == null
-              ? const SizedBox.shrink()
-              : AppReveal(
-                  child: AppCard(
-                    variant: AppCardVariant.interactive,
-                    onTap: () =>
-                        context.go('/groups/${Uri.encodeComponent(groupId)}'),
-                    child: Column(
+          data: (group) {
+            if (group == null) return const SizedBox.shrink();
+            final details = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(group.name, style: t.editorialTitle),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    AppBadge(
+                      roleLabel(membership.role),
+                      tone: AppTone.primary,
+                      icon: membership.role == GroupRole.owner
+                          ? Icons.workspace_premium_outlined
+                          : Icons.people_outline,
+                    ),
+                    AppBadge(group.currency),
+                  ],
+                ),
+                if (group.description?.isNotEmpty == true) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(group.description!, style: t.bodySmall),
+                ],
+                const SizedBox(height: AppSpacing.md),
+                ref
+                    .watch(dashboardProvider(groupId))
+                    .when(
+                      skipLoadingOnReload: false,
+                      skipLoadingOnRefresh: false,
+                      loading: () =>
+                          Text('Actualizando saldo…', style: t.bodySmall),
+                      error: (error, _) =>
+                          Text('Saldo no disponible', style: t.bodySmall),
+                      data: (summary) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Saldo disponible', style: t.bodySmall),
+                          MoneyText(
+                            summary.balanceCents,
+                            currency: group.currency,
+                          ),
+                        ],
+                      ),
+                    ),
+                const SizedBox(height: AppSpacing.sm),
+                AppButton(
+                  label: 'Entrar',
+                  trailingIcon: Icons.chevron_right_rounded,
+                  size: AppButtonSize.compact,
+                  onPressed: () =>
+                      context.go('/groups/${Uri.encodeComponent(groupId)}'),
+                ),
+              ],
+            );
+            return AppReveal(
+              child: AppCard(
+                variant: AppCardVariant.interactive,
+                onTap: () =>
+                    context.go('/groups/${Uri.encodeComponent(groupId)}'),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (MediaQuery.textScalerOf(context).scale(1) > 1.3) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppCover(name: group.name),
+                          const SizedBox(height: AppSpacing.lg),
+                          details,
+                        ],
+                      );
+                    }
+                    return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            AppAvatar(name: group.name),
-                            const Spacer(),
-                            const Icon(Icons.arrow_outward_rounded),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-                        Text(group.name, style: type.headingLarge),
-                        const SizedBox(height: AppSpacing.md),
-                        AppBadge(
-                          roleLabel(membership.role),
-                          tone: AppTone.primary,
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        Text('Entrar a este espacio', style: type.labelLarge),
+                        AppCover(name: group.name),
+                        const SizedBox(width: AppSpacing.lg),
+                        Expanded(child: details),
                       ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
+              ),
+            );
+          },
         );
   }
 }

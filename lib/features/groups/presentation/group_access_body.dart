@@ -6,6 +6,8 @@ import '../../../design_system/design_system.dart';
 import '../../../models/group.dart';
 import '../../../models/group_member.dart';
 import '../providers/group_providers.dart';
+import 'group_sync_notice.dart';
+import 'group_identity_header.dart';
 
 class GroupAccessBody extends ConsumerWidget {
   const GroupAccessBody({
@@ -60,7 +62,15 @@ class GroupAccessBody extends ConsumerWidget {
                   title: 'Espacio no disponible',
                   description: 'Este grupo ya no está activo.',
                 )
-              : builder(group, member),
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    GroupSyncNotice(groupId: groupId),
+                    GroupIdentityHeader(group: group, membership: member),
+                    const SizedBox(height: AppSpacing.xl),
+                    builder(group, member),
+                  ],
+                ),
         );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_typography.dart';
 
 class AppDropdown<T> extends StatelessWidget {
   const AppDropdown({
@@ -22,6 +23,7 @@ class AppDropdown<T> extends StatelessWidget {
     key: ValueKey(value),
     initialValue: value,
     isExpanded: true,
+    style: AppTypography.of(context).bodyLarge,
     decoration: InputDecoration(
       labelText: label,
       hintText: hint,

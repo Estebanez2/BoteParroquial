@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
+import '../../theme/app_colors.dart';
 
 class AppTextField extends StatelessWidget {
   const AppTextField({
@@ -22,6 +24,9 @@ class AppTextField extends StatelessWidget {
     this.onTap,
     this.initialValue,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
+    this.maxLines = 1,
+    this.minLines,
+    this.prominent = false,
   });
   final String label;
   final String? hint, error, helper, initialValue;
@@ -35,6 +40,8 @@ class AppTextField extends StatelessWidget {
   final Widget? suffix;
   final VoidCallback? onTap;
   final AutovalidateMode autovalidateMode;
+  final int? maxLines, minLines;
+  final bool prominent;
   @override
   Widget build(BuildContext context) => TextFormField(
     controller: controller,
@@ -42,6 +49,11 @@ class AppTextField extends StatelessWidget {
     enabled: enabled,
     readOnly: readOnly,
     obscureText: password,
+    maxLines: maxLines,
+    minLines: minLines,
+    style: prominent
+        ? AppTypography.of(context).moneyHero
+        : AppTypography.of(context).bodyLarge,
     autocorrect: !password,
     enableSuggestions: !password,
     onChanged: onChanged,
@@ -53,10 +65,16 @@ class AppTextField extends StatelessWidget {
     decoration: InputDecoration(
       labelText: label,
       hintText: hint,
+      hintStyle: prominent
+          ? AppTypography.of(
+              context,
+            ).moneyHero.copyWith(color: AppColors.of(context).textSecondary)
+          : null,
       errorText: error,
       helperText: helper,
       prefixIcon: icon == null ? null : Icon(icon, size: AppSpacing.icon),
       suffixIcon: suffix,
+      floatingLabelBehavior: FloatingLabelBehavior.always,
     ),
   );
 }

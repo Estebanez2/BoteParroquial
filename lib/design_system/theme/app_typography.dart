@@ -21,10 +21,16 @@ class AppTypography {
     color: colors.textPrimary,
   );
   TextStyle get displayLarge => _style(
-    48,
+    36,
     FontWeight.w400,
     height: 1.08,
     spacing: -1.5,
+  ).copyWith(fontFamily: 'Newsreader');
+  TextStyle get editorialTitle => _style(
+    28,
+    FontWeight.w500,
+    height: 1.15,
+    spacing: -.6,
   ).copyWith(fontFamily: 'Newsreader');
   TextStyle get headingLarge =>
       _style(30, FontWeight.w700, height: 1.2, spacing: -0.9);
@@ -40,12 +46,11 @@ class AppTypography {
       _style(12, FontWeight.w700, height: 1.3, spacing: 0.2);
   TextStyle get labelSmall =>
       _style(11, FontWeight.w700, height: 1.3, spacing: 0.7);
-  TextStyle get moneyHero => _style(
-    48,
-    FontWeight.w600,
-    height: 1.15,
-    spacing: -1.8,
-  ).copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+  TextStyle get moneyHero =>
+      _style(44, FontWeight.w600, height: 1.15, spacing: -1.8).copyWith(
+        fontFamily: 'Newsreader',
+        fontFeatures: const [FontFeature.tabularFigures()],
+      );
   TextStyle get moneyLarge => _style(
     30,
     FontWeight.w600,

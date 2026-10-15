@@ -8,8 +8,9 @@ import '../../../models/group.dart';
 import '../../../models/group_member.dart';
 import '../../../models/movement.dart';
 import '../../groups/presentation/group_access_body.dart';
-import '../../groups/presentation/group_widgets.dart';
+
 import '../../movements/providers/movement_providers.dart';
+import '../../movements/presentation/pending_movement_card.dart';
 import '../../persons/providers/person_providers.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -20,7 +21,7 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) => AppScaffold(
     maxWidth: AppSpacing.readingMax,
     appBar: AppTopBar(
-      title: 'Tu espacio',
+      title: 'BoteParroquial',
       leading: AppIconButton(
         icon: Icons.arrow_back_rounded,
         label: 'Volver a mis grupos',
@@ -41,49 +42,11 @@ class _Dashboard extends ConsumerWidget {
   final GroupMember membership;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final type = AppTypography.of(context);
     final groupId = group.id;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('LO NUESTRO, DE UN VISTAZO', style: type.labelSmall),
-        const SizedBox(height: AppSpacing.md),
-        AppReveal(child: Text(group.name, style: type.displayLarge)),
-        const SizedBox(height: AppSpacing.lg),
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: [
-            AppBadge(roleLabel(membership.role), tone: AppTone.primary),
-            AppBadge(group.currency),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: [
-            AppButton(
-              label: 'Ver movimientos',
-              variant: AppButtonVariant.outline,
-              leadingIcon: Icons.receipt_long_outlined,
-              onPressed: () => context.push('/groups/$groupId/movements'),
-            ),
-            AppButton(
-              label: 'Ver personas',
-              variant: AppButtonVariant.ghost,
-              leadingIcon: Icons.people_outline,
-              onPressed: () => context.push('/groups/$groupId/persons'),
-            ),
-            AppButton(
-              label: 'Ver miembros',
-              variant: AppButtonVariant.ghost,
-              leadingIcon: Icons.group_outlined,
-              onPressed: () => context.push('/groups/$groupId/members'),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xl),
+        PendingMovementCard(groupId: groupId, currency: group.currency),
         ref
             .watch(dashboardProvider(groupId))
             .when(
@@ -149,18 +112,19 @@ class _SummaryBody extends ConsumerWidget {
         ],
         if (canManage) ...[
           const SizedBox(height: AppSpacing.xl),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
+          AppAdaptiveRow(
             children: [
               AppButton(
                 label: 'Registrar ingreso',
-                leadingIcon: Icons.south_west_rounded,
+                fullWidth: true,
+                trailingIcon: Icons.chevron_right_rounded,
+                leadingIcon: Icons.add_rounded,
                 onPressed: () =>
                     context.push('/groups/$groupId/movements/new?type=income'),
               ),
               AppButton(
                 label: 'Registrar retirada',
+                fullWidth: true,
                 variant: AppButtonVariant.outline,
                 leadingIcon: Icons.north_east_rounded,
                 onPressed: () => context.push(
@@ -170,85 +134,107 @@ class _SummaryBody extends ConsumerWidget {
             ],
           ),
         ],
-        const SizedBox(height: AppSpacing.section),
-        Text('La historia en cifras', style: type.headingMedium),
-        const SizedBox(height: AppSpacing.sm),
-        Text(
-          'Totales de todo el historial, descontando anulaciones y originales corregidos.',
-          style: type.bodyMedium,
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final income = StatisticCard(
-              label: 'Total ingresado',
-              value: formatMoneyCents(
-                summary.incomeCents,
-                currency: group.currency,
-              ),
-              icon: Icons.south_west_rounded,
-            );
-            final withdrawal = StatisticCard(
-              label: 'Total retirado',
-              value: formatMoneyCents(
-                summary.withdrawalCents,
-                currency: group.currency,
-              ),
-              icon: Icons.north_east_rounded,
-            );
-            if (constraints.maxWidth >=
-                AppSpacing.readingMax - AppSpacing.page * 2) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: income),
-                  const SizedBox(width: AppSpacing.lg),
-                  Expanded(child: withdrawal),
-                ],
-              );
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                income,
-                const SizedBox(height: AppSpacing.lg),
-                withdrawal,
-              ],
-            );
-          },
+        const SizedBox(height: AppSpacing.lg),
+        AppAdaptiveRow(
+          children: [
+            AppNavigationTile(
+              label: 'Ver movimientos',
+              icon: Icons.receipt_long_outlined,
+              onTap: () => context.push('/groups/$groupId/movements'),
+            ),
+            AppNavigationTile(
+              label: 'Ver personas',
+              icon: Icons.people_outline,
+              onTap: () => context.push('/groups/$groupId/persons'),
+            ),
+            AppNavigationTile(
+              label: 'Ver miembros',
+              icon: Icons.groups_outlined,
+              onTap: () => context.push('/groups/$groupId/members'),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.lg),
-        StatisticCard(
-          label: 'Personas activas',
-          value: '${summary.activePersonsCount}',
-          icon: Icons.people_outline,
-          caption:
-              '${summary.inactivePersonsCount} inactivas · ${summary.totalPersonsCount} en total',
-        ),
-        const SizedBox(height: AppSpacing.section),
-        Text('Lo último que ha pasado', style: type.headingMedium),
-        const SizedBox(height: AppSpacing.sm),
-        Text(
-          'Últimos cambios de movimientos por fecha de registro. Las correcciones aparecen una sola vez.',
-          style: type.bodyMedium,
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        if (summary.recentActivity.isEmpty)
-          const EmptyState(
-            icon: Icons.auto_stories_outlined,
-            title: 'La historia está por empezar.',
-            description: 'Cuando registréis un movimiento, aparecerá aquí.',
-          )
-        else
-          for (final event in summary.recentActivity)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-              child: _ActivityCard(
-                groupId: groupId,
-                currency: group.currency,
-                event: event,
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('La historia en cifras', style: type.headingSmall),
+              const SizedBox(height: AppSpacing.xl),
+              AppAdaptiveRow(
+                children: [
+                  StatisticCard(
+                    framed: false,
+                    label: 'Total ingresado',
+                    value: formatMoneyCents(
+                      summary.incomeCents,
+                      currency: group.currency,
+                    ),
+                    icon: Icons.south_west_rounded,
+                  ),
+                  StatisticCard(
+                    framed: false,
+                    label: 'Total retirado',
+                    value: formatMoneyCents(
+                      summary.withdrawalCents,
+                      currency: group.currency,
+                    ),
+                    icon: Icons.north_east_rounded,
+                  ),
+                  StatisticCard(
+                    framed: false,
+                    label: 'Personas activas',
+                    value: '${summary.activePersonsCount}',
+                    icon: Icons.people_outline,
+                    caption:
+                        '${summary.inactivePersonsCount} inactivas · ${summary.totalPersonsCount} en total',
+                  ),
+                ],
               ),
-            ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Lo último que ha pasado',
+                      style: type.headingSmall,
+                    ),
+                  ),
+                  AppIconButton(
+                    icon: Icons.chevron_right_rounded,
+                    label: 'Ver todo el historial',
+                    variant: AppIconButtonVariant.ghost,
+                    onPressed: () => context.push('/groups/$groupId/movements'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              if (summary.recentActivity.isEmpty)
+                const EmptyState(
+                  icon: Icons.auto_stories_outlined,
+                  title: 'La historia está por empezar.',
+                  description:
+                      'Cuando registréis un movimiento, aparecerá aquí.',
+                )
+              else
+                for (var i = 0; i < summary.recentActivity.length; i++) ...[
+                  if (i != 0) const Divider(height: AppSpacing.xl),
+                  _ActivityCard(
+                    groupId: groupId,
+                    currency: group.currency,
+                    event: summary.recentActivity[i],
+                  ),
+                ],
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -264,10 +250,9 @@ class _ActivityCard extends ConsumerWidget {
   final DashboardActivity event;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final type = AppTypography.of(context),
+    final t = AppTypography.of(context),
         labels = ref.watch(movementLabelsProvider(groupId));
-    final localDate = event.at.toLocal(),
-        localization = MaterialLocalizations.of(context);
+    final date = event.at.toLocal(), l = MaterialLocalizations.of(context);
     final title = switch (event.kind) {
       DashboardActivityKind.registered =>
         event.input.type == MovementType.income
@@ -278,43 +263,59 @@ class _ActivityCard extends ConsumerWidget {
     };
     return AppReveal(
       key: ValueKey('${event.movementId}/${event.kind.name}'),
-      child: AppCard(
-        variant: AppCardVariant.interactive,
-        onTap: () => context.push(
-          '/groups/$groupId/movements?focus=${Uri.encodeQueryComponent(event.movementId)}',
-        ),
-        semanticLabel: '$title. Ver movimiento',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppBadge(
-              title,
-              tone: event.kind == DashboardActivityKind.cancelled
-                  ? AppTone.warning
-                  : AppTone.primary,
+      child: Semantics(
+        button: true,
+        label: '$title. Ver movimiento',
+        child: InkWell(
+          borderRadius: AppRadius.control,
+          onTap: () => context.push(
+            '/groups/$groupId/movements?focus=${Uri.encodeQueryComponent(event.movementId)}',
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppAvatar(name: labels.person(event.input.personId)),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppBadge(
+                        title,
+                        tone: event.kind == DashboardActivityKind.cancelled
+                            ? AppTone.warning
+                            : AppTone.primary,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      MoneyText(
+                        event.input.amountCents,
+                        currency: currency,
+                        variant: event.input.type == MovementType.income
+                            ? MoneyTextVariant.income
+                            : MoneyTextVariant.withdrawal,
+                      ),
+                      Text(
+                        labels.person(event.input.personId),
+                        style: t.labelLarge,
+                      ),
+                      if (event.reason != null)
+                        Text(event.reason!, style: t.bodySmall)
+                      else if (event.input.description.isNotEmpty)
+                        Text(event.input.description, style: t.bodySmall),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        '${labels.author(event.actorUid)} · ${l.formatMediumDate(date)} · ${l.formatTimeOfDay(TimeOfDay.fromDateTime(date), alwaysUse24HourFormat: true)}',
+                        style: t.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded),
+              ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            MoneyText(
-              event.input.amountCents,
-              currency: currency,
-              variant: event.input.type == MovementType.income
-                  ? MoneyTextVariant.income
-                  : MoneyTextVariant.withdrawal,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(labels.person(event.input.personId), style: type.headingSmall),
-            if (event.reason != null)
-              Text(event.reason!, style: type.bodyMedium)
-            else if (event.input.description.isNotEmpty)
-              Text(event.input.description, style: type.bodyMedium),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              '${labels.author(event.actorUid)} · ${localization.formatMediumDate(localDate)} · ${localization.formatTimeOfDay(TimeOfDay.fromDateTime(localDate), alwaysUse24HourFormat: true)}',
-              style: type.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text('Ver movimiento ↗', style: type.labelMedium),
-          ],
+          ),
         ),
       ),
     );

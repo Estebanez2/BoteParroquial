@@ -14,42 +14,44 @@ final groupRepositoryProvider = Provider<GroupRepository>(
 
 final membershipsProvider = StreamProvider.autoDispose<List<GroupMember>>((
   ref,
-) async* {
-  final user = await ref.watch(authStateProvider.future);
-  if (!ref.mounted) return;
+) {
+  final session = ref.watch(authStateProvider);
+  if (session.isLoading) return const Stream.empty();
+  if (session.hasError) return Stream.error(session.error!, session.stackTrace);
+  final user = session.asData?.value;
   if (user == null) {
-    yield const [];
-    return;
+    return Stream.value(const []);
   }
-  yield* ref.watch(groupRepositoryProvider).watchMemberships(user.uid);
+  return ref.watch(groupRepositoryProvider).watchMemberships(user.uid);
 }, retry: (_, _) => null);
 
 // The route supplies groupId. Access is re-evaluated on account or membership changes.
 final groupProvider = StreamProvider.autoDispose.family<Group?, String>((
   ref,
   groupId,
-) async* {
-  final memberships = await ref.watch(membershipsProvider.future);
-  if (!ref.mounted) return;
+) {
+  final state = ref.watch(membershipsProvider);
+  if (state.isLoading) return const Stream.empty();
+  if (state.hasError) return Stream.error(state.error!, state.stackTrace);
+  final memberships = state.asData?.value ?? <GroupMember>[];
   if (!memberships.any((m) => m.groupId == groupId && m.isActive)) {
-    yield null;
-    return;
+    return Stream.value(null);
   }
-  yield* ref
+  return ref
       .watch(groupRepositoryProvider)
       .watchGroup(groupId)
       .map((group) => group?.isActive == true ? group : null);
 }, retry: (_, _) => null);
 
 final groupMembersProvider = StreamProvider.autoDispose
-    .family<List<GroupMember>, String>((ref, groupId) async* {
-      final group = await ref.watch(groupProvider(groupId).future);
-      if (!ref.mounted) return;
-      if (group == null) {
-        yield const [];
-        return;
+    .family<List<GroupMember>, String>((ref, groupId) {
+      final group = ref.watch(groupProvider(groupId));
+      if (group.isLoading) return const Stream.empty();
+      if (group.hasError) return Stream.error(group.error!, group.stackTrace);
+      if (group.asData?.value == null) {
+        return Stream.value(const []);
       }
-      yield* ref.watch(groupRepositoryProvider).watchMembers(groupId);
+      return ref.watch(groupRepositoryProvider).watchMembers(groupId);
     }, retry: (_, _) => null);
 
 final currentMembershipProvider = Provider.autoDispose

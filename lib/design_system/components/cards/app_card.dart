@@ -4,6 +4,7 @@ import '../../theme/app_motion.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_gradients.dart';
 
 enum AppCardVariant { standard, elevated, outlined, interactive }
 
@@ -12,7 +13,7 @@ class AppCard extends StatelessWidget {
     super.key,
     required this.child,
     this.variant = AppCardVariant.standard,
-    this.padding = const EdgeInsets.all(AppSpacing.xl),
+    this.padding = const EdgeInsets.all(AppSpacing.lg),
     this.onTap,
     this.semanticLabel,
   });
@@ -30,7 +31,7 @@ class AppCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: AppMotion.duration(context, AppMotion.durationNormal),
         decoration: BoxDecoration(
-          color: c.surface,
+          gradient: AppGradients.surface(context),
           borderRadius: AppRadius.card,
           border: Border.all(
             color: variant == AppCardVariant.outlined ? c.outline : c.divider,

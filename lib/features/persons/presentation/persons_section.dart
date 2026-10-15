@@ -16,9 +16,7 @@ class PersonsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('LAS PERSONAS DEL BOTE', style: type.labelSmall),
-        const SizedBox(height: AppSpacing.sm),
-        Text('Lo compartido\ntiene nombres.', style: type.displayLarge),
+        Text('Personas', style: type.displayLarge),
         const SizedBox(height: AppSpacing.lg),
         Text(
           'Personas que forman parte del bote, tengan o no una cuenta en la app.',
@@ -30,6 +28,7 @@ class PersonsSection extends ConsumerWidget {
             alignment: Alignment.centerLeft,
             child: AppButton(
               label: 'Añadir persona',
+              fullWidth: true,
               leadingIcon: Icons.add_rounded,
               onPressed: () => showPersonEditor(context, ref, groupId),
             ),
@@ -90,97 +89,106 @@ class _PersonCard extends ConsumerWidget {
   final String groupId;
   final Person person;
   final bool canManage;
+  Future<void> _changeState(BuildContext context, WidgetRef ref) async {
+    final confirmed = await AppDialog.show(
+      context,
+      title: person.isActive
+          ? '¿Inactivar a ${person.displayName}?'
+          : '¿Activar a ${person.displayName}?',
+      description: person.isActive
+          ? 'Conservará todos sus datos y podrás reactivarla cuando quieras.'
+          : 'Volverá a aparecer como persona activa del bote.',
+      confirmLabel: person.isActive ? 'Inactivar persona' : 'Activar persona',
+    );
+    if (!context.mounted || !confirmed) return;
+    final saved = await ref
+        .read(personControllerProvider(groupId).notifier)
+        .setActive(person, !person.isActive);
+    if (!context.mounted) return;
+    final result = ref.read(personControllerProvider(groupId));
+    AppSnackbar.show(
+      context,
+      saved
+          ? 'Estado de la persona actualizado.'
+          : failureMessage(
+              result.error ??
+                  const AppFailure(
+                    FailureCode.unknown,
+                    'No se pudo guardar el cambio.',
+                  ),
+            ),
+      variant: saved ? AppSnackbarVariant.success : AppSnackbarVariant.error,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final action = ref.watch(personControllerProvider(groupId));
-    final type = AppTypography.of(context);
+    final t = AppTypography.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppAvatar(name: person.displayName),
-              const Spacer(),
-              AppBadge(
-                person.isActive ? 'Activa' : 'Inactiva',
-                tone: person.isActive ? AppTone.success : AppTone.neutral,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(person.displayName, style: type.headingSmall),
-          if (person.notes != null) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Text(person.notes!, style: type.bodyMedium),
-          ],
-          if (canManage) ...[
-            const SizedBox(height: AppSpacing.lg),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                AppButton(
-                  label: 'Editar',
-                  variant: AppButtonVariant.outline,
-                  size: AppButtonSize.compact,
-                  onPressed: action.isLoading
-                      ? null
-                      : () => showPersonEditor(
-                          context,
-                          ref,
-                          groupId,
-                          person: person,
-                        ),
+              AppAvatar(name: person.displayName, size: AppAvatarSize.large),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(person.displayName, style: t.labelLarge),
+                    if (person.notes != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        person.notes!,
+                        style: t.bodySmall,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.sm),
+                    AppBadge(
+                      person.isActive ? 'Activa' : 'Inactiva',
+                      tone: person.isActive ? AppTone.success : AppTone.neutral,
+                    ),
+                  ],
                 ),
-                AppButton(
-                  label: person.isActive ? 'Inactivar' : 'Activar',
-                  variant: AppButtonVariant.ghost,
-                  size: AppButtonSize.compact,
-                  onPressed: action.isLoading
-                      ? null
-                      : () async {
-                          final confirmed = await AppDialog.show(
-                            context,
-                            title: person.isActive
-                                ? '¿Inactivar a ${person.displayName}?'
-                                : '¿Activar a ${person.displayName}?',
-                            description: person.isActive
-                                ? 'Conservará todos sus datos y podrás reactivarla cuando quieras.'
-                                : 'Volverá a aparecer como persona activa del bote.',
-                            confirmLabel: person.isActive
-                                ? 'Inactivar persona'
-                                : 'Activar persona',
-                            variant: AppDialogVariant.confirmation,
-                          );
-                          if (!context.mounted || !confirmed) return;
-                          final saved = await ref
-                              .read(personControllerProvider(groupId).notifier)
-                              .setActive(person, !person.isActive);
-                          if (!context.mounted) return;
-                          final result = ref.read(
-                            personControllerProvider(groupId),
-                          );
-                          AppSnackbar.show(
-                            context,
-                            saved
-                                ? 'Estado de la persona actualizado.'
-                                : failureMessage(
-                                    result.error ??
-                                        const AppFailure(
-                                          FailureCode.unknown,
-                                          'No se pudo guardar el cambio.',
-                                        ),
-                                  ),
-                            variant: saved
-                                ? AppSnackbarVariant.success
-                                : AppSnackbarVariant.error,
-                          );
-                        },
+              ),
+              if (canManage) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Column(
+                  children: [
+                    AppIconButton(
+                      icon: Icons.edit_outlined,
+                      label: 'Editar',
+                      onPressed: action.isLoading
+                          ? null
+                          : () => showPersonEditor(
+                              context,
+                              ref,
+                              groupId,
+                              person: person,
+                            ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    AppActionMenu<bool>(
+                      label: 'Más opciones',
+                      enabled: !action.isLoading,
+                      items: {true: person.isActive ? 'Inactivar' : 'Activar'},
+                      onSelected: (_) => _changeState(context, ref),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            ],
+          ),
+          const Divider(height: AppSpacing.xl),
+          Text(
+            'Persona creada el ${MaterialLocalizations.of(context).formatMediumDate(person.createdAt.toLocal())}',
+            style: t.bodySmall,
+          ),
         ],
       ),
     );

@@ -1,93 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../core/errors/app_failure.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
+import '../../../design_system/design_system.dart';
 import '../providers/auth_providers.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final startup = ref.watch(firebaseStartupProvider);
     final action = ref.watch(authControllerProvider);
     final session = ref.watch(authStateProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('BoteParroquial')),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+    final t = AppTypography.of(context);
+    return AppScaffold(
+      maxWidth: AppSpacing.readingMax,
+      appBar: const AppTopBar(title: 'BoteParroquial', editorial: true),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: AppSpacing.xl),
+          AppReveal(
+            child: AppHeroPanel(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.groups_outlined, size: 64),
-                  const SizedBox(height: 24),
+                  const Icon(Icons.groups_outlined, size: AppSpacing.xxxl),
+                  const SizedBox(height: AppSpacing.xl),
+                  Text('LO NUESTRO, EN COMÚN', style: t.labelSmall),
+                  const SizedBox(height: AppSpacing.md),
+                  Text('Bienvenido a BoteParroquial', style: t.displayLarge),
+                  const SizedBox(height: AppSpacing.lg),
                   Text(
-                    'Bienvenido a BoteParroquial',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Accede con tu cuenta de Google.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  if (!startup.isReady)
-                    Text(
-                      startup.error == null
-                          ? 'Configuración de Firebase pendiente.'
-                          : 'Firebase no disponible. Completa la configuración o revisa la conexión.',
-                      textAlign: TextAlign.center,
-                    ),
-                  if (action.hasError)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        failureMessage(action.error!),
-                        textAlign: TextAlign.center,
-                        semanticsLabel:
-                            'Error de acceso: ${failureMessage(action.error!)}',
-                      ),
-                    ),
-                  if (session.hasError) ...[
-                    Text(
-                      failureMessage(session.error!),
-                      textAlign: TextAlign.center,
-                    ),
-                    TextButton(
-                      onPressed: () => ref
-                          .read(authControllerProvider.notifier)
-                          .retrySession(),
-                      child: const Text('Reintentar sesión'),
-                    ),
-                  ],
-                  FilledButton.icon(
-                    onPressed: !startup.isReady || action.isLoading
-                        ? null
-                        : () => ref
-                              .read(authControllerProvider.notifier)
-                              .signIn(),
-                    icon: action.isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.login),
-                    label: Text(
-                      action.isLoading ? 'Conectando…' : 'Continuar con Google',
-                    ),
+                    'Un espacio para cuidar los fondos y las actividades de tu comunidad.',
+                    style: t.bodyLarge,
                   ),
                 ],
               ),
             ),
           ),
-        ),
+          const SizedBox(height: AppSpacing.xl),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Accede con tu cuenta de Google.', style: t.bodyLarge),
+                const SizedBox(height: AppSpacing.xl),
+                if (!startup.isReady) ...[
+                  Text(
+                    startup.error == null
+                        ? 'Configuración de Firebase pendiente.'
+                        : 'Firebase no disponible. Completa la configuración o revisa la conexión.',
+                    style: t.bodyMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+                if (action.hasError) ...[
+                  Text(
+                    failureMessage(action.error!),
+                    semanticsLabel:
+                        'Error de acceso: ${failureMessage(action.error!)}',
+                    style: t.bodyMedium.copyWith(
+                      color: AppColors.of(context).danger,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+                if (session.hasError) ...[
+                  Text(failureMessage(session.error!), style: t.bodyMedium),
+                  AppButton(
+                    label: 'Reintentar sesión',
+                    variant: AppButtonVariant.ghost,
+                    onPressed: () => ref
+                        .read(authControllerProvider.notifier)
+                        .retrySession(),
+                  ),
+                ],
+                AppButton(
+                  label: action.isLoading
+                      ? 'Conectando…'
+                      : 'Continuar con Google',
+                  leadingIcon: Icons.login_rounded,
+                  fullWidth: true,
+                  loading: action.isLoading,
+                  onPressed: !startup.isReady || action.isLoading
+                      ? null
+                      : () =>
+                            ref.read(authControllerProvider.notifier).signIn(),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

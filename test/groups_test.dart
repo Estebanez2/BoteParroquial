@@ -5,6 +5,7 @@ import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
 import 'package:bote_parroquial/core/errors/app_failure.dart';
 import 'package:bote_parroquial/features/auth/providers/auth_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
+import 'package:bote_parroquial/features/groups/providers/group_sync_providers.dart';
 import 'package:bote_parroquial/features/persons/providers/person_providers.dart';
 import 'package:bote_parroquial/features/movements/providers/movement_providers.dart';
 import 'package:bote_parroquial/models/group.dart';
@@ -122,6 +123,10 @@ void main() {
         final groups = FakeGroups();
         final container = ProviderContainer(
           overrides: [
+            groupServerConfirmedProvider.overrideWith(
+              (ref, groupId) => Stream.value(true),
+            ),
+            pendingMovementProvider.overrideWith((ref, groupId) async => null),
             firebaseStartupProvider.overrideWithValue(
               FirebaseStartup.ready(fixtures.FakeApp()),
             ),
@@ -151,7 +156,9 @@ void main() {
                 textScaler: TextScaler.linear(1.6),
                 disableAnimations: true,
               ),
-              child: const BoteParroquialApp(),
+              child: BoteParroquialApp(
+                themeMode: dark ? ThemeMode.dark : ThemeMode.light,
+              ),
             ),
           ),
         );
@@ -191,6 +198,8 @@ void main() {
         expect(find.text('Encuentro'), findsNothing);
         router.go('/');
         await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('Tu cuenta'));
+        await tester.pumpAndSettle();
         expect(find.text('Hola, Roberto'), findsOneWidget);
         expect(find.text('Tu próximo espacio empieza aquí'), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -210,7 +219,11 @@ void main() {
         ),
         authRepositoryProvider.overrideWithValue(auth),
         userProfileRepositoryProvider.overrideWithValue(
-          fixtures.FakeProfileRepository(),
+          fixtures.FakeProfileRepository()
+            ..failure = const AppFailure(
+              FailureCode.network,
+              'Perfil sin actualizar por falta de conexión.',
+            ),
         ),
         groupRepositoryProvider.overrideWithValue(groups),
         movementsProvider.overrideWith(
@@ -238,5 +251,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Encuentro'), findsOneWidget);
     expect(find.text('No hay conexión con tus grupos.'), findsNothing);
+    expect(
+      find.text('Perfil sin actualizar por falta de conexión.'),
+      findsOneWidget,
+    );
   });
 }

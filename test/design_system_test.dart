@@ -17,6 +17,15 @@ Widget host(Widget child, {bool dark = false, bool reduceMotion = true}) =>
     );
 
 void main() {
+  testWidgets('Avatar sin foto muestra iniciales del nombre y apellidos', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(const AppAvatar(name: 'Álvaro Estebanez Moreno'), dark: true),
+    );
+    expect(find.text('ÁEM'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   test('Dinero se interpreta exactamente en céntimos sin coma flotante', () {
     expect(parseMoneyCents('20,50'), 2050);
     expect(parseMoneyCents('20.50'), 2050);

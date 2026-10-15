@@ -60,6 +60,7 @@ service cloud.firestore {
         && data.type in ['income','withdrawal'] && data.status in ['active','cancelled','corrected']
         && data.amountCents is int && data.amountCents > 0 && data.amountCents <= 99999999999999
         && data.occurredAt is timestamp && data.occurredAt >= timestamp.date(2000,1,1) && data.occurredAt < timestamp.date(2101,1,1)
+        && data.occurredAt == data.occurredAt.date()
         // Civil dates use UTC midnight. Allow the timezone margin for local "today".
         && data.occurredAt <= request.time + duration.value(1,'d')
         && data.description is string && data.description.size() <= 2000

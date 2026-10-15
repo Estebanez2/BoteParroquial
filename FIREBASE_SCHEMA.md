@@ -198,10 +198,13 @@ para retirada. Motivos de anulación/corrección obligatorios, hasta 2000 caract
 occurredAt representa un día civil: guardar año/mes/día elegidos como medianoche UTC,
 sin convertir a UTC un instante de medianoche local. Mostrar esos componentes sin
 toLocal para no desplazar el día entre móviles. La app admite hoy o fechas anteriores
-según el calendario del dispositivo (selector 2000–hoy); no son operaciones planificadas.
+según el calendario de la zona IANA del grupo desde Phase 6 (selector 2000–hoy);
+no son operaciones planificadas. El reloj del dispositivo aporta el instante de
+referencia; cambiar solo su zona no cambia «hoy» del grupo. Zona IANA inválida bloquea.
 Rules añade una cota de servidor request.time+24 h para el margen de zonas horarias
-de esa representación; la validación exacta de «hoy» por zona de grupo/servidor queda
-para hardening. createdAt/updatedAt y metadatos de cambio usan hora de servidor.
+de esa representación y exige occurredAt == occurredAt.date() (medianoche UTC).
+La validación exacta de «hoy» por zona IANA en servidor sigue pendiente: Rules no
+usa la base IANA del cliente. createdAt/updatedAt y metadatos usan hora de servidor.
 
 Solo owner/admin válido escribe; miembros activos leen. Las reglas impiden editar
 importe, tipo, persona, fecha, descripción o creador de un documento existente.
@@ -214,10 +217,14 @@ Las reglas getAfter exigen enlaces recíprocos dentro del grupo, sustituto inexi
 antes y activo después, actor y timestamps de la misma operación. Un sustituto puede
 ser corregido otra vez o anulado, conservando toda la cadena.
 
-El ID del nuevo documento funciona como clave de envío: se conserva al reintentar
-en el mismo formulario. La transacción comprueba el ID y los datos existentes; un
-reintento idéntico no crea otro movimiento. Reabrir un formulario tras cerrar la app
-es otro envío: ante un resultado incierto, revisar primero el historial.
+El ID del nuevo documento funciona como clave de envío. Desde Phase 6, el intento
+se conserva antes de escribir en un archivo privado por UID/grupo, fuera de Firestore.
+Reabrir la app permite comprobar en servidor su resultado y recuperar el mismo envío
+con los mismos datos/ID. No se repite automáticamente. La transacción comprueba el
+ID y los datos existentes; un reintento idéntico no crea otro movimiento. No iniciar
+un envío nuevo mientras siga pendiente otro en esa cuenta/grupo.
+El descarte explícito de un intento local, tras revisar historial, leer servidor
+y confirmar, no borra/anula un movimiento ni detiene una solicitud anterior en curso.
 
 Saldo
 
@@ -254,6 +261,19 @@ active → corrected
 No reactivar movimientos antiguos anulados o corregidos.
 
 Una corrección crea un nuevo movimiento y conserva el anterior.
+
+Imágenes — acuerdo de producto, todavía sin persistencia implementada
+
+El usuario pospone subidas y Storage en el rediseño del 2026-10-15. No se añaden
+campos de foto a groups/members/persons ni se abren reglas por esa preparación.
+El photoUrl existente en users sigue siendo el dato del perfil de autenticación;
+no implica que exista un editor de fotos. La UI actual utiliza iniciales.
+
+Para la fase de fotos: cuenta global editable solo por su dueño, foto independiente
+por grupo editable por su miembro; admin puede editar miembros normales, owner
+también admins. Solo owner cambia la imagen del grupo. El vínculo entre foto de
+persona interna y foto de miembro aún debe concretarse. Ver D053; no asumir campos,
+rutas de Storage ni sincronizaciones antes de implementar y probar esas reglas.
 
 Futuro: cuotas
 

@@ -3,6 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_gradients.dart';
 import '../display/money_text.dart';
 
 /// Displays supplied values. It never calculates or persists a group balance.
@@ -11,7 +12,7 @@ class BalanceCard extends StatelessWidget {
     super.key,
     required this.balanceCents,
     required this.currency,
-    this.title = 'Nuestro fondo común',
+    this.title = 'SALDO DISPONIBLE',
     this.incomeCents,
     this.withdrawalCents,
     this.caption,
@@ -26,8 +27,12 @@ class BalanceCard extends StatelessWidget {
     final t = AppTypography.of(context);
     return ClipRRect(
       borderRadius: AppRadius.hero,
-      child: ColoredBox(
-        color: c.hero,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: AppGradients.hero(context),
+          borderRadius: AppRadius.hero,
+          border: Border.all(color: c.outline),
+        ),
         child: Stack(
           children: [
             Positioned.fill(
@@ -46,23 +51,16 @@ class BalanceCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           title,
-                          style: t.labelLarge.copyWith(color: c.onHero),
+                          style: t.labelSmall.copyWith(color: c.onHero),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Icon(
-                        Icons.savings_outlined,
+                        Icons.account_balance_wallet_outlined,
                         color: c.onHero,
                         size: AppSpacing.iconLarge,
                       ),
                     ],
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  Text(
-                    'SALDO DISPONIBLE',
-                    style: t.labelSmall.copyWith(
-                      color: c.onHero.withValues(alpha: .78),
-                    ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   MoneyText(

@@ -14,12 +14,13 @@ registran en su documento específico, sin cambiar los criterios de cierre.
 | --- | --- | --- |
 | Phase 0 — Foundation | Completada y arranque comprobado en A059P | Sin pendientes de cierre Android |
 | Phase 1 — Authentication | Implementada; validación parcial en móvil | Segunda cuenta aplazada y restauración con sesión abierta sin comprobar |
-| Etapa visual previa a Phase 2 | Design System v0.1 y galería implementados; base en uso por petición del usuario | Iteraciones visuales posteriores; login conserva su composición previa |
+| Etapa visual previa a Phase 2 | Base histórica v0.1 y galería implementadas | Sustituida visualmente por v0.2; ver rediseño durante Phase 6 |
 | Phase 2 — Groups & Membership | Implementada y validada: Prueba1 en A059P, aislamiento probado en emulador | Segunda cuenta real e iOS sin probar; gestión completa de grupos permanece en Phase 7 |
 | Phase 3 — Persons | Implementada; usuario confirma que funciona en móvil | Sincronización entre móviles sin comprobar |
 | Phase 4 — Movements | Implementada; reglas, flujo visual y operaciones nativas verificadas | Hardening y pruebas con varios móviles en fases posteriores |
-| Phase 5 — Dashboard | Implementada; cálculos y flujos dirigidos comprobados | Probar APK en móvil y estado compartido entre dos administradores |
-| Phase 6 — MVP Hardening | No iniciada | Revisión final y comprobaciones de cierre del MVP |
+| Phase 5 — Dashboard | Implementada; cálculos y flujos dirigidos comprobados; usuario confirma funcionamiento en móvil | Estado compartido entre dos administradores sin comprobar |
+| Phase 6 — MVP Hardening | En curso: caché señalizada y recuperación persistente de envíos | Validación física de los cambios, revisión final y comprobaciones de cierre del MVP |
+| Rediseño por referencias, durante Phase 6 | Base visual v0.2 y pantallas actuales adaptadas; iniciales | Aprobación visual del usuario; fotos/subidas y funciones futuras aplazadas |
 | Phase 7–12 | No iniciadas | Ampliaciones posteriores al MVP |
 
 Prueba aplazada por el usuario el 2026-10-15:
@@ -40,7 +41,8 @@ independiente implementados. La suite completa pasa 22 pruebas; las vistas se ha
 exportado y revisado visualmente. Ver DESIGN_SYSTEM.md desde la raíz.
 Esta etapa visual inicial no implementó grupos ni lógica financiera. Después,
 el usuario pidió continuar Phase 2 usando esta base: home/grupos ya componen App*
-y AppTheme está conectado a la app; login conserva su composición anterior.
+y AppTheme está conectado a la app; login conservaba su composición anterior en
+aquella etapa. El rediseño posterior v0.2 también lo migra a App*.
 No cambia el aplazamiento de pruebas manuales de Phase 1.
 
 Phase 0 — Foundation
@@ -226,6 +228,10 @@ El usuario ha desconectado el móvil: no se instala ni se afirma validación fí
 del Dashboard. El criterio de dos administradores actualizados sigue pendiente.
 Detalle: docs/PHASE5_VALIDATION.md.
 
+Actualización posterior: el usuario vuelve a conectar el móvil y confirma «he
+comprobado que todo funciona». Se registra como confirmación de uso del Dashboard,
+sin atribuirle casos concretos no descritos ni pruebas con una segunda cuenta.
+
 Incluye:
 
 saldo;
@@ -244,18 +250,53 @@ dos administradores ven el mismo estado actualizado.
 
 Phase 6 — MVP Hardening
 
+Rediseño solicitado durante esta fase:
+
+El usuario aporta ocho referencias y decide aplicar su estética solo a funciones
+actuales, con iniciales y sin activar Storage. Tema oscuro de referencia, menta,
+degradados, contornos y serif; cabecera común por grupo, resumen, historial por días,
+formulario financiero, Personas en pantalla completa, Miembros e inicio/login.
+Los cálculos financieros siguen en repositories y el agrupado del historial se
+proyecta en MovementHistoryRepository; no cambia el orden por fecha efectiva.
+Los permisos de fotos quedan acordados para después, no se abren Rules ahora.
+Evidencia y límites: docs/VISUAL_REDESIGN_VALIDATION.md. No cierra los pendientes
+de conectividad/recuperación, segunda cuenta, dos móviles ni iOS.
+
+Avance del 2026-10-15:
+
+- El usuario elige consultar datos guardados con aviso y exigir conexión para
+  confirmar operaciones económicas. Metadata de Firestore se adapta en Service;
+  las pantallas no consultan Firebase. El aviso no es un detector de conexión física.
+- El usuario elige conservar envíos pendientes al cerrar la app. Se escribe un
+  archivo privado por cuenta/grupo antes del envío; al volver al grupo se consulta
+  el servidor. Resultado confirmado limpia el intento local, ausencia permite
+  reintento explícito con el mismo ID y datos. Nunca se reenvía automáticamente.
+- El inicio muestra grupos aunque actualizar el perfil falle; providers de Groups
+  seleccionan streams sin usar Ref dentro de generadores diferidos.
+- El usuario permite descartar solo el intento local tras revisar/confirmar y
+  elige el calendario de la zona del grupo para «hoy». Implementados en repository
+  y Service; zona desconocida bloquea la operación, sin fallback silencioso.
+- Rules exige occurredAt a medianoche UTC, coherente con el esquema. Cuatro pruebas
+  económicas pasan y la regla se publica. Sin nuevos datos financieros reales.
+  Ver docs/PHASE6_VALIDATION.md para evidencia y límites.
+- Tras instalar el APK, el usuario activa la conexión del A059P y confirma que ya
+  aparecen los grupos. Se resuelve la comprobación online pendiente del arranque;
+  no se da por validada la consulta offline ni la recuperación de envíos tras cierre.
+
 Qué falta para cerrar el MVP después de Phase 5:
 
 Las funcionalidades básicas ya están implementadas. Falta esta fase de cierre,
 no las ampliaciones de Phase 7–12:
 
-- Instalar y comprobar el Dashboard y el flujo completo en Android cuando el móvil
-  vuelva a estar conectado. Confirmar también saldo negativo, vacío y recuperación de errores.
+- Comprobar físicamente los cambios nuevos de Phase 6, incluidos caché, cierre
+  durante un envío y recuperación. El usuario ya confirma el funcionamiento del Dashboard.
 - Configurar una segunda cuenta real como administrador autorizado, vinculada a
   persona activa, y comprobar personas, movimientos y resumen desde dos móviles.
   Retomar las pruebas de auth aplazadas solo cuando el usuario lo solicite.
-- Revisar reglas/permisos y casos de concurrencia, cierre/reapertura durante envíos,
-  conexión/caché, reintentos y validación de fechas por reloj/zona de grupo.
+- Completar la validación física de recuperación/conexión y la revisión de cierre.
+  Calendario del grupo implementado en app, pero el instante depende del reloj del
+  dispositivo y Rules mantiene margen de 24 h; validación exacta IANA en servidor
+  no resuelta. Transacciones, reglas y recuperación tienen evidencia dirigida.
 - Revisión final de UX/accesibilidad y corrección de incidencias encontradas;
   acordar el procedimiento de pasar de los datos DEMO al uso real.
 

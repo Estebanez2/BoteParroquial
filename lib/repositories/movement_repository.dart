@@ -20,7 +20,7 @@ class MovementRepository {
       : value.trim().length > 2000
       ? 'El motivo admite hasta 2000 caracteres.'
       : null;
-  static String? inputError(MovementInput input) {
+  static String? inputError(MovementInput input, {DateTime? today}) {
     if (input.amountCents <= 0 || input.amountCents > maximumCents) {
       return 'Introduce una cantidad mayor que cero y dentro del límite admitido.';
     }
@@ -38,7 +38,7 @@ class MovementRepository {
     if (input.occurredAt.year < 2000 || input.occurredAt.year > 2100) {
       return 'Selecciona una fecha entre 2000 y 2100.';
     }
-    final now = DateTime.now();
+    final now = today ?? DateTime.now();
     if (DateTime.utc(
       input.occurredAt.year,
       input.occurredAt.month,
@@ -67,9 +67,10 @@ class MovementRepository {
     String? reason,
     String? operationId,
     String? actorUid,
+    DateTime? today,
   }) async {
     if (original != null) _checkScope(groupId, original);
-    final error = input == null ? null : inputError(input);
+    final error = input == null ? null : inputError(input, today: today);
     if (error != null) throw AppFailure(FailureCode.invalidData, error);
     if (original != null) {
       final reasonFailure = reasonError(reason);
@@ -165,9 +166,11 @@ class MovementRepository {
     MovementInput input, {
     Movement? original,
     String? reason,
+    DateTime? today,
   }) {
     final error =
-        inputError(input) ?? (original == null ? null : reasonError(reason));
+        inputError(input, today: today) ??
+        (original == null ? null : reasonError(reason));
     if (error != null) throw AppFailure(FailureCode.invalidData, error);
     if (original != null) _checkScope(groupId, original);
     final normalized = MovementInput(

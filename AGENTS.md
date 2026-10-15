@@ -280,7 +280,15 @@ Respetar modo oscuro, texto ampliado y movimiento reducido.
 La galería se ejecuta mediante lib/main_showcase.dart, solo en debug y sin Firebase.
 No incorporarla a la navegación de producción. En Phase 2 el usuario solicita
 avanzar usando esta base: AppTheme está conectado y home/grupos componen App*.
-Login conserva su composición previa con el tema común; no copiar esa composición
-provisional al crear pantallas nuevas. La apariencia puede seguir iterándose.
+Actualización visual (2026-10-15): las ocho imágenes aportadas por el usuario son
+la referencia de estética. Base v0.2 con verde oscuro, menta, degradados, bordes y
+títulos serif. Tema oscuro predeterminado; mantener también el tema claro y la
+accesibilidad. Login ya compone App*. Personas se edita en pantalla completa según
+la nueva referencia, sustituyendo el panel elegido en Phase 3.
+El usuario decide hacer ahora solo el rediseño de funciones existentes con iniciales;
+subidas de fotos, Storage, invitaciones, notificaciones y estadísticas avanzadas
+siguen pendientes. No mostrar controles de esas funciones como si estuvieran listas.
+Permisos de futuras fotos acordados en docs/DECISIONS.md; no confundirlos con Rules
+implementadas. Estado y evidencia: docs/VISUAL_REDESIGN_VALIDATION.md.
 Petición del usuario: UI distintiva y animaciones siempre que encajen, con propósito
 y respetando movimiento reducido; no animar por animar ni sacrificar accesibilidad.

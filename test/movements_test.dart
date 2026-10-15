@@ -4,10 +4,12 @@ import 'package:bote_parroquial/app/router.dart';
 import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
 import 'package:bote_parroquial/features/auth/providers/auth_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
+import 'package:bote_parroquial/features/groups/providers/group_sync_providers.dart';
 import 'package:bote_parroquial/features/persons/providers/person_providers.dart';
 import 'package:bote_parroquial/features/movements/providers/movement_providers.dart';
 import 'package:bote_parroquial/models/movement.dart';
 import 'package:bote_parroquial/models/person.dart';
+import 'package:bote_parroquial/models/pending_movement.dart';
 import 'package:bote_parroquial/repositories/movement_repository.dart';
 import 'package:bote_parroquial/services/movement_service.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'auth_flow_test.dart' as auth;
 import 'groups_test.dart' as groups;
+import 'support/memory_pending_movements.dart';
 
 class MemoryMovements implements MovementService {
   final changes = StreamController<List<Movement>>.broadcast();
@@ -122,6 +125,7 @@ void main() {
       final session = auth.FakeAuthRepository(auth.alice),
           membership = groups.FakeGroups(),
           service = MemoryMovements();
+      final journal = MemoryPendingMovements();
       final person = Person(
         id: 'inactive',
         groupId: 'a',
@@ -134,6 +138,10 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          groupServerConfirmedProvider.overrideWith(
+            (ref, groupId) => Stream.value(true),
+          ),
+          pendingMovementServiceProvider.overrideWithValue(journal),
           firebaseStartupProvider.overrideWithValue(
             FirebaseStartup.ready(auth.FakeApp()),
           ),
@@ -222,6 +230,29 @@ void main() {
             .length,
         1,
       );
+      await journal.write(
+        PendingMovement(
+          groupId: 'a',
+          actorUid: 'alice',
+          id: 'recovered',
+          input: MovementInput(
+            type: MovementType.income,
+            amountCents: 250,
+            occurredAt: DateTime.utc(2025),
+            description: 'Recuperado',
+            personId: 'inactive',
+          ),
+        ),
+      );
+      container.invalidate(pendingMovementProvider('a'));
+      await tester.pumpAndSettle();
+      expect(find.text('Envío pendiente de confirmar'), findsOneWidget);
+      await tap('Comprobar y recuperar envío');
+      await tap('Continuar con persona inactiva');
+      await tap('Reintentar el mismo envío');
+      expect(service.current.last.id, 'recovered');
+      expect(MovementRepository.balanceOf(service.current), 1250);
+      expect(await journal.read('alice', 'a'), isNull);
       expect(tester.takeException(), isNull);
     },
   );

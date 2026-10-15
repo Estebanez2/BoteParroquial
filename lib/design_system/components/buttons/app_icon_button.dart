@@ -27,12 +27,15 @@ class AppIconButton extends StatelessWidget {
       style: IconButton.styleFrom(
         minimumSize: const Size.square(AppSpacing.compactHeight),
         backgroundColor: variant == AppIconButtonVariant.standard
-            ? c.surfaceVariant
+            ? c.surfaceVariant.withValues(alpha: .65)
             : Colors.transparent,
         foregroundColor: variant == AppIconButtonVariant.danger
             ? c.danger
             : c.textPrimary,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.control),
+        side: variant == AppIconButtonVariant.standard
+            ? BorderSide(color: c.outline.withValues(alpha: .4))
+            : null,
       ),
     );
   }

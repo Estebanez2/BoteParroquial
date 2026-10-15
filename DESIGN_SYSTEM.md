@@ -1,19 +1,22 @@
-# BoteParroquial — Design System v0.1
+# BoteParroquial — Design System v0.2
 
-Implementación y galería disponibles. Base visual en uso en Phase 2 por petición
-del usuario (2026-10-15); la apariencia sigue abierta a iteraciones. Home y grupos
-usan App*; login mantiene su composición anterior con el tema común.
+Implementación y galería disponibles. v0.2 adapta las ocho referencias visuales
+aportadas por el usuario el 2026-10-15. Inicio, grupos, resumen, personas, miembros,
+formularios, historial y login usan App*. Oscuro predeterminado y variante clara
+conservada para compatibilidad y revisión; no hay selector de tema implementado.
 Los datos de la galería son ejemplos, no información del backend.
 
 ## Identidad visual
 
-Serena, cercana y contemporánea: verde profundo, marfil cálido y acentos arcilla.
-Superficies ligeras, contornos suaves y jerarquía fuerte para las cifras. La marca
+Verde casi negro, menta luminosa y coral en retiradas. Degradados suaves, contornos
+verdes, paneles con anillos y jerarquía fuerte para las cifras. El modo claro mantiene
+marfil y verdes. La marca
 vectorial representa dos formas que comparten un centro; es una propuesta de
 interfaz, no un logotipo definitivo. No incorpora símbolos religiosos explícitos.
 
 Manrope para lectura, acciones y cifras; Newsreader para titulares editoriales.
-No usar serif en formularios o tablas. Las fuentes se incluyen localmente en
+Usar serif en títulos editoriales e importe destacado; campos de texto y tablas
+usan Manrope. Las fuentes se incluyen localmente en
 `assets/fonts/` con sus licencias SIL OFL, sin descargas al abrir la app.
 Iconografía Material outlined/rounded coherente, sin otra dependencia de iconos.
 
@@ -37,31 +40,31 @@ seguirán en su feature y compondrán estas piezas cuando se implementen.
 Resolver con `AppColors.of(context)` y `AppTypography.of(context)`. AppColors es
 una ThemeExtension con `copyWith`, `lerp` y paletas light/dark. AppTheme configura
 la implementación Material de inputs, calendario, diálogos, paneles y tipografía.
-AppTheme se conecta tanto a la galería como a la app desde Phase 2.
+  AppTheme se conecta tanto a la galería como a la app desde Phase 2.
 
 ### Color
 
 | Token | Claro | Oscuro |
 | --- | --- | --- |
-| primary | #22594D | #A8D4BD |
-| primaryContainer | #E0EEE6 | #234B3D |
-| onPrimary | #FFFFFF | #142D24 |
-| secondary | #9A503A | #E8AD94 |
-| secondaryContainer | #F5E6DE | #50352C |
-| background | #F7F6F1 | #121D18 |
-| surface | #FFFEFA | #1A2821 |
-| surfaceVariant | #EEEFE8 | #23352B |
-| textPrimary | #20372F | #EDF0E6 |
-| textSecondary | #52645B | #BECABE |
-| textMuted | #66736B | #A5B6A7 |
-| success | #236749 | #9BD6B4 |
+| primary | #22594D | #A6F1D0 |
+| primaryContainer | #E0EEE6 | #123E2D |
+| onPrimary | #FFFFFF | #032117 |
+| secondary | #9A503A | #FFA190 |
+| secondaryContainer | #F5E6DE | #54372D |
+| background | #F7F6F1 | #020E09 |
+| surface | #FFFEFA | #081C14 |
+| surfaceVariant | #EEEFE8 | #153B2B |
+| textPrimary | #20372F | #F5F7F1 |
+| textSecondary | #52645B | #C0CFC4 |
+| textMuted | #66736B | #9DB3A5 |
+| success | #236749 | #92E7C2 |
 | warning | #88591A | #F0CB88 |
-| danger | #B23E3E | #F6AAAA |
+| danger | #B23E3E | #FF9987 |
 | info | #345F87 | #A9CEEE |
-| divider | #E2E5DC | #354A3B |
-| outline | #818D82 | #829A86 |
-| hero | #193F35 | #284E3F |
-| onHero | #F5F5E9 | #F5F5E9 |
+| divider | #E2E5DC | #264C3B |
+| outline | #818D82 | #4E8D70 |
+| hero | #193F35 | #104A34 |
+| onHero | #F5F5E9 | #F5F9F0 |
 
 Primary identifica acciones, secondary aporta acento cálido, hero distingue el
 saldo, surface contiene cards/formularios, divider separa y outline delimita
@@ -72,11 +75,11 @@ conceden permisos ni interpretan estados persistidos.
 
 | Estilos | Tamaños base |
 | --- | --- |
-| displayLarge | 48, Newsreader |
+| displayLarge / editorialTitle | 36 / 28, Newsreader |
 | headingLarge / Medium / Small | 30 / 24 / 19, Manrope |
 | bodyLarge / Medium / Small | 16 / 14 / 12 |
 | labelLarge / Medium / Small | 14 / 12 / 11 |
-| moneyHero / Large / Medium | 48 / 30 / 20, cifras tabulares |
+| moneyHero / Large / Medium | 44 / 30 / 20, cifras tabulares; hero en Newsreader |
 | sectionTitle / statisticValue / movementAmount | Alias de headingSmall / moneyLarge / moneyMedium |
 
 Usar estilos semánticos, no TextStyle arbitrarios por pantalla. Las cifras usan
@@ -84,11 +87,11 @@ Usar estilos semánticos, no TextStyle arbitrarios por pantalla. Las cifras usan
 
 ### Espaciado, radios y sombras
 
-- AppSpacing: xs 4, sm 8, md 12, lg 16, xl 24, xxl 32, xxxl 48. Página 24,
-  separación de secciones 40, contenido máximo 1080.
+- AppSpacing: xs 4, sm 8, md 12, lg 16, xl 24, xxl 32, xxxl 48. Página 16,
+  separación de secciones 28, contenido máximo 1080.
 - Botón normal: mínimo 52; compacto e icon button: mínimo 48 de alto.
 - AppRadius: small 8, medium 12, large 20, extraLarge 28, pill 999.
-  Controles 12, cards 20, hero/overlays 28.
+  Controles y cards 20, hero/overlays 28. Cubiertas 88/112; avatar de editor 112.
 - AppShadows.soft: elevación ligera; floating: preparada para superficies
   flotantes. Las cards base usan borde, sin sombra. No inventar sombras por feature.
 
@@ -113,7 +116,7 @@ icono estático accesible cuando ese ajuste está activo.
 | AppCard | standard (por defecto), elevated, outlined, interactive |
 | BalanceCard | Saldo/moneda proporcionados; ingresos/retiradas opcionales; pie y motivo decorativo |
 | StatisticCard | Etiqueta, valor ya preparado, icono y pie opcional |
-| AppAvatar | ImageProvider con fallback a iniciales; small/medium/large; indicador con etiqueta |
+| AppAvatar | ImageProvider con fallback a iniciales de nombre y apellidos; small/medium/large/editor; indicador con etiqueta |
 | AppBadge | neutral, primary, success, warning, danger, info; icono opcional |
 | StatusChip | Pagado, Pendiente, Parcial, Adelantado, Admin, Owner, Member, Activo, Inactivo |
 | MoneyText | balance, income, withdrawal; hero/large/medium; moneda y animación opcionales |
@@ -123,13 +126,22 @@ icono estático accesible cuando ese ajuste está activo.
 | EmptyState | Icono, título, explicación y acción opcional |
 | AppTopBar | Título, leading, acciones; sin elevación ni tintes automáticos |
 | AppBottomNavigation | Destinos tipados, índice y callback, sin lógica de rutas |
-| AppScaffold | SafeArea, margen, fondo, ancho máximo, scroll, app bar y navegación inferior |
+| AppScaffold | SafeArea, margen, fondo con degradado, ancho máximo, scroll, app bar y navegación inferior |
 | AppSection | Título, introducción opcional y separación común |
 | AppBottomSheet | Título, builder, scroll y ajuste al teclado |
 | AppBrand | Marca vectorial con nombre o compacta |
 
 Cada archivo tiene implementación real. Los enums usan `standard` para la
 variante por defecto porque `default` es palabra reservada de Dart.
+
+Ampliaciones v0.2: AppHeroPanel, AppCover, AppNavigationTile, AppAdaptiveRow,
+AppChoiceBar, AppExpandableRow, AppAvatarMenu y AppActionMenu. Gradientes en
+theme/app_gradients.dart; las features no repiten colores ni estilos.
+AppAvatarMenu cierra el menú abierto si cambia la identidad para no conservar
+datos de la cuenta anterior. Estos controles no conceden permisos de Firebase.
+AppCover/AppAvatar admiten imágenes proporcionadas por el llamador, pero las
+subidas se aplazan por elección del usuario. Ahora muestran iniciales; no hay
+selector de fotos, Storage ni imágenes de demostración asignadas a grupos reales.
 
 ### Dinero y fechas
 
@@ -183,9 +195,9 @@ Para volver a la app: `flutter run --debug -t lib/main.dart`. Ambos entrypoints
 usan el mismo identificador Android: ejecutar uno sustituye temporalmente el
 binario instalado. No hace falta desinstalar para alternarlos.
 
-Home y las nuevas pantallas de grupos usan el tema y componentes comunes desde
-Phase 2. Login conserva su composición anterior con AppTheme; esa composición
-provisional es una excepción documentada, no un patrón para nuevas pantallas.
+Desde v0.2 también login compone App*. Personas abre una pantalla completa según
+la referencia; no modifica sus validaciones ni añade activación durante el alta.
+Las funciones futuras dibujadas en las imágenes no se simulan con botones inertes.
 
 ## Librerías evaluadas
 
@@ -211,7 +223,7 @@ Referencias: [tokens shadcn/ui](https://ui.shadcn.com/docs/theming),
 [Manrope](https://github.com/google/fonts/tree/main/ofl/manrope) y
 [Newsreader](https://github.com/google/fonts/tree/main/ofl/newsreader).
 
-## Validación inicial de la etapa visual
+## Validación inicial de la etapa visual (histórico v0.1)
 
 - Suite completa: 22 pruebas superadas; exportación visual optativa omitida por
   defecto. Las ocho pruebas de auth/base siguen pasando.
@@ -236,3 +248,5 @@ escriben artefactos ni dependen de un golden de plataforma.
 La validación anterior registra la etapa visual inicial. Ver docs/PHASE2_VALIDATION.md
 para las pantallas que ya usan esta base. Las pruebas manuales de autenticación
 aplazadas siguen pendientes. iOS requiere Mac/Xcode para validación nativa.
+
+Validación actual de v0.2, capturas y límites: docs/VISUAL_REDESIGN_VALIDATION.md.

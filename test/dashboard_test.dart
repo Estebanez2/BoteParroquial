@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bote_parroquial/app/app.dart';
 import 'package:bote_parroquial/app/router.dart';
 import 'package:bote_parroquial/core/errors/app_failure.dart';
@@ -5,6 +6,7 @@ import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
 import 'package:bote_parroquial/design_system/design_system.dart';
 import 'package:bote_parroquial/features/auth/providers/auth_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
+import 'package:bote_parroquial/features/groups/providers/group_sync_providers.dart';
 import 'package:bote_parroquial/features/movements/providers/movement_providers.dart';
 import 'package:bote_parroquial/features/persons/providers/person_providers.dart';
 import 'package:bote_parroquial/models/dashboard_summary.dart';
@@ -12,6 +14,7 @@ import 'package:bote_parroquial/models/movement.dart';
 import 'package:bote_parroquial/models/person.dart';
 import 'package:bote_parroquial/repositories/dashboard_repository.dart';
 import 'package:bote_parroquial/repositories/movement_repository.dart';
+import 'package:bote_parroquial/repositories/movement_history_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -98,6 +101,12 @@ void main() {
       expect(result.activePersonsCount, 1);
       expect(result.inactivePersonsCount, 1);
       expect(result.totalPersonsCount, 2);
+      final days = const MovementHistoryRepository().groupByDay('a', rows);
+      expect(days.single.movements.length, rows.length);
+      expect(
+        () => const MovementHistoryRepository().groupByDay('foreign', rows),
+        throwsA(isA<AppFailure>()),
+      );
       expect(result.recentActivity.first.kind, DashboardActivityKind.cancelled);
       expect(result.recentActivity.length, 4);
       expect(
@@ -147,8 +156,14 @@ void main() {
           membership = groups.FakeGroups(),
           service = money.MemoryMovements();
       service.current = [movement('income', 1000)];
+      final confirmation = StreamController<bool>.broadcast();
       final container = ProviderContainer(
         overrides: [
+          groupServerConfirmedProvider.overrideWith((ref, groupId) async* {
+            yield false;
+            yield* confirmation.stream;
+          }),
+          pendingMovementProvider.overrideWith((ref, groupId) async => null),
           firebaseStartupProvider.overrideWithValue(
             FirebaseStartup.ready(auth.FakeApp()),
           ),
@@ -170,6 +185,7 @@ void main() {
         await session.changes.close();
         await membership.changes.close();
         await service.changes.close();
+        await confirmation.close();
       });
       await tester.pumpWidget(
         UncontrolledProviderScope(
@@ -181,6 +197,10 @@ void main() {
       final router = container.read(routerProvider);
       router.go('/groups/a');
       await tester.pumpAndSettle();
+      expect(find.text('Actualización sin confirmar'), findsOneWidget);
+      confirmation.add(true);
+      await tester.pumpAndSettle();
+      expect(find.text('Actualización sin confirmar'), findsNothing);
       expect(
         tester.widget<BalanceCard>(find.byType(BalanceCard)).balanceCents,
         1000,

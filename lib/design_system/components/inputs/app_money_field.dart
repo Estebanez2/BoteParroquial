@@ -33,11 +33,10 @@ class AppMoneyField extends StatelessWidget {
   Widget build(BuildContext context) => AppTextField(
     label: label,
     hint: '0,00',
-    icon: Icons.payments_outlined,
+    prominent: true,
     controller: controller,
     enabled: enabled,
     error: error,
-    helper: 'Hasta dos decimales · sin separadores de miles',
     keyboardType: const TextInputType.numberWithOptions(decimal: true),
     inputFormatters: [
       TextInputFormatter.withFunction(

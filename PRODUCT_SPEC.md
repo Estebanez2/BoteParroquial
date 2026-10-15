@@ -147,6 +147,23 @@ member
 
 Los permisos completos de la futura versión están definidos en docs/FULL_PRODUCT_SPEC.md.
 
+Uso sin conexión y recuperación (acordado en Phase 6)
+
+Consultar los datos ya guardados con aviso de posible desactualización o información
+incompleta. Confirmar operaciones económicas requiere conexión. Guardar localmente
+el envío antes de escribir y comprobar su resultado al volver al grupo; un reintento
+explícito conserva el mismo identificador y datos, sin reenvíos automáticos.
+En un conflicto, permitir descartar solo el intento local tras revisar el historial
+y confirmar. «Hoy» se determina por la zona del grupo, no por la zona del móvil.
+
+Presentación del MVP
+
+Ajuste visual acordado el 2026-10-15: rediseñar las funciones actuales según las
+referencias del usuario. Iniciales para cuentas, personas y grupos sin imagen;
+subidas de fotos expresamente aplazadas. Los permisos futuros de edición de fotos
+se registran en DECISIONS; no habilitan todavía escrituras nuevas de perfiles,
+grupos o membresías. No se adelantan funciones futuras dibujadas en las referencias.
+
 Fuera del MVP inicial
 
 No implementar todavía salvo fase específica:

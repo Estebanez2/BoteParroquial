@@ -5,6 +5,7 @@ import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/movement.dart';
 import '../../groups/providers/group_providers.dart';
+import '../../groups/presentation/group_sync_notice.dart';
 import '../../persons/providers/person_providers.dart';
 import '../providers/movement_providers.dart';
 import 'movement_review_dialog.dart';
@@ -128,7 +129,9 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
         .startDraft();
     final input = _original?.input;
     _type = input?.type ?? widget.initialType;
-    _date = input?.occurredAt ?? DateTime.now();
+    _date =
+        input?.occurredAt ??
+        ref.read(movementControllerProvider(widget.groupId).notifier).today();
     _personId = input?.personId;
     _cents = input?.amountCents;
     _amount = TextEditingController(
@@ -252,15 +255,14 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    AppReveal(
-                      child: Text(
-                        widget.cancel
-                            ? 'La historia\nse conserva.'
-                            : _original == null
-                            ? 'Cada movimiento\ncuenta.'
-                            : 'Corregir también\nes cuidar.',
-                        style: type.displayLarge,
-                      ),
+                    GroupSyncNotice(groupId: groupId),
+                    AppReveal(child: Text(title, style: type.editorialTitle)),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      widget.cancel
+                          ? 'El movimiento original y su motivo quedarán conservados.'
+                          : 'Registra un ingreso o una retirada en el fondo común de tu comunidad.',
+                      style: type.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     if (_original != null) ...[
@@ -290,75 +292,97 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
                       const SizedBox(height: AppSpacing.xl),
                     ],
                     if (!widget.cancel) ...[
-                      AppDropdown<MovementType>(
-                        label: 'Tipo',
-                        value: _type,
-                        options: const {
-                          MovementType.income: 'Ingreso',
-                          MovementType.withdrawal: 'Retirada',
-                        },
-                        enabled: !busy,
-                        onChanged: (value) {
-                          if (value != null) setState(() => _type = value);
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      AppMoneyField(
-                        currency: group.currency,
-                        controller: _amount,
-                        enabled: !busy,
-                        onChangedCents: (value) => _cents = value,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      people.when(
-                        skipLoadingOnRefresh: false,
-                        skipLoadingOnReload: false,
-                        loading: () =>
-                            const LoadingIndicator(label: 'Cargando personas…'),
-                        error: (error, _) => EmptyState(
-                          icon: Icons.cloud_off_outlined,
-                          title: 'No se pudieron cargar las personas',
-                          description: failureMessage(error),
-                          actionLabel: 'Reintentar personas',
-                          onAction: () =>
-                              ref.invalidate(personsProvider(groupId)),
+                      AppCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text('TIPO DE MOVIMIENTO', style: type.labelSmall),
+                            const SizedBox(height: AppSpacing.md),
+                            AppChoiceBar<MovementType>(
+                              value: _type,
+                              options: const {
+                                MovementType.income: 'Ingreso',
+                                MovementType.withdrawal: 'Retirada',
+                              },
+                              enabled: !busy,
+                              onChanged: (value) =>
+                                  setState(() => _type = value),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              'Los ingresos aumentan el saldo del fondo. Las retiradas lo disminuyen.',
+                              style: type.bodySmall,
+                            ),
+                          ],
                         ),
-                        data: (persons) => AppDropdown<String>(
-                          label: _type == MovementType.income
-                              ? 'Persona del ingreso'
-                              : 'Persona o grupo',
-                          value: _personId ?? '',
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      AppCard(
+                        child: AppMoneyField(
+                          currency: group.currency,
+                          controller: _amount,
                           enabled: !busy,
-                          options: {
-                            '': _type == MovementType.income
-                                ? 'Selecciona una persona'
-                                : 'El grupo (retirada general)',
-                            for (final person in persons)
-                              person.id:
-                                  '${person.displayName}${person.isActive ? '' : ' · Inactiva'}',
-                          },
-                          onChanged: (value) => setState(
-                            () => _personId = value == null || value.isEmpty
-                                ? null
-                                : value,
+                          onChangedCents: (value) => _cents = value,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      AppCard(
+                        child: people.when(
+                          skipLoadingOnRefresh: false,
+                          skipLoadingOnReload: false,
+                          loading: () => const LoadingIndicator(
+                            label: 'Cargando personas…',
+                          ),
+                          error: (error, _) => EmptyState(
+                            icon: Icons.cloud_off_outlined,
+                            title: 'No se pudieron cargar las personas',
+                            description: failureMessage(error),
+                            actionLabel: 'Reintentar personas',
+                            onAction: () =>
+                                ref.invalidate(personsProvider(groupId)),
+                          ),
+                          data: (persons) => AppDropdown<String>(
+                            label: _type == MovementType.income
+                                ? 'Persona del ingreso'
+                                : 'Persona o grupo',
+                            value: _personId ?? '',
+                            enabled: !busy,
+                            options: {
+                              '': _type == MovementType.income
+                                  ? 'Selecciona una persona'
+                                  : 'El grupo (retirada general)',
+                              for (final person in persons)
+                                person.id:
+                                    '${person.displayName}${person.isActive ? '' : ' · Inactiva'}',
+                            },
+                            onChanged: (value) => setState(
+                              () => _personId = value == null || value.isEmpty
+                                  ? null
+                                  : value,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      AppDateField(
-                        label: 'Fecha efectiva',
-                        lastDate: DateTime.now(),
-                        value: _date,
-                        onChanged: (value) => setState(() => _date = value),
-                        enabled: !busy,
+                      AppCard(
+                        child: AppDateField(
+                          label: 'Fecha efectiva',
+                          lastDate: controller.today(),
+                          value: _date,
+                          onChanged: (value) => setState(() => _date = value),
+                          enabled: !busy,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      AppTextField(
-                        label: _type == MovementType.income
-                            ? 'Descripción (opcional)'
-                            : 'Motivo de la retirada',
-                        controller: _description,
-                        enabled: !busy,
+                      AppCard(
+                        child: AppTextField(
+                          label: _type == MovementType.income
+                              ? 'Descripción (opcional)'
+                              : 'Motivo de la retirada',
+                          controller: _description,
+                          icon: Icons.description_outlined,
+                          enabled: !busy,
+                        ),
                       ),
                     ],
                     if (_original != null) ...[
@@ -387,16 +411,14 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
                           ? 'Revisar anulación'
                           : 'Revisar y guardar',
                       leadingIcon: Icons.check_rounded,
+                      trailingIcon: Icons.chevron_right_rounded,
+                      fullWidth: true,
                       loading: state.isLoading,
                       onPressed: busy || people.isLoading || people.hasError
                           ? null
                           : () => _submit(group.currency),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'El dinero se guarda en céntimos. La fecha efectiva es el día elegido; la fecha de registro se guarda aparte.',
-                      style: type.bodySmall,
-                    ),
                   ],
                 ),
               ),

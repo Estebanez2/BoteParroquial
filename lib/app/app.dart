@@ -6,7 +6,8 @@ import '../design_system/design_system.dart';
 import 'router.dart';
 
 class BoteParroquialApp extends ConsumerWidget {
-  const BoteParroquialApp({super.key});
+  const BoteParroquialApp({super.key, this.themeMode = ThemeMode.dark});
+  final ThemeMode themeMode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
@@ -14,6 +15,7 @@ class BoteParroquialApp extends ConsumerWidget {
     debugShowCheckedModeBanner: false,
     theme: AppTheme.light,
     darkTheme: AppTheme.dark,
+    themeMode: themeMode,
     locale: const Locale('es'),
     supportedLocales: const [Locale('es')],
     localizationsDelegates: GlobalMaterialLocalizations.delegates,

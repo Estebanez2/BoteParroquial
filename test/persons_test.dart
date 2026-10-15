@@ -4,6 +4,7 @@ import 'package:bote_parroquial/app/router.dart';
 import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
 import 'package:bote_parroquial/features/auth/providers/auth_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
+import 'package:bote_parroquial/features/groups/providers/group_sync_providers.dart';
 import 'package:bote_parroquial/features/persons/providers/person_providers.dart';
 import 'package:bote_parroquial/models/group_member.dart';
 import 'package:bote_parroquial/models/person.dart';
@@ -87,6 +88,9 @@ void main() {
       final service = MemoryPersons();
       final container = ProviderContainer(
         overrides: [
+          groupServerConfirmedProvider.overrideWith(
+            (ref, groupId) => Stream.value(true),
+          ),
           firebaseStartupProvider.overrideWithValue(
             FirebaseStartup.ready(auth.FakeApp()),
           ),
@@ -114,8 +118,17 @@ void main() {
       container.read(routerProvider).go('/groups/a/persons');
       await tester.pumpAndSettle();
       Future<void> tap(String label) async {
-        await tester.ensureVisible(find.text(label).last);
-        await tester.tap(find.text(label).last);
+        if ((label == 'Activar' || label == 'Inactivar') &&
+            find.text(label).evaluate().isEmpty) {
+          await tester.ensureVisible(find.byTooltip('Más opciones').last);
+          await tester.tap(find.byTooltip('Más opciones').last);
+          await tester.pumpAndSettle();
+        }
+        final target = label == 'Editar'
+            ? find.byTooltip('Editar').last
+            : find.text(label).last;
+        await tester.ensureVisible(target);
+        await tester.tap(target);
         await tester.pumpAndSettle();
       }
 
@@ -147,7 +160,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Ana María'), findsOneWidget);
       expect(find.text('Añadir persona'), findsNothing);
-      expect(find.text('Editar'), findsNothing);
+      expect(find.byTooltip('Editar'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

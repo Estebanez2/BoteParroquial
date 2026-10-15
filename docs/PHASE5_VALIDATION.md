@@ -1,7 +1,9 @@
 # Phase 5 — Dashboard
 
-2026-10-15. Implementado; validación dirigida. El usuario ha desconectado el móvil,
-por lo que no se instala ni se afirma prueba física del Dashboard.
+2026-10-15. Implementado; validación dirigida. Durante la implementación el móvil
+estaba desconectado. Posteriormente, el usuario vuelve a conectarlo y confirma
+«he comprobado que todo funciona». Se registra como confirmación del Dashboard
+en el móvil; no acredita casos concretos ni sincronización de dos administradores.
 
 Decisiones explícitas:
 
@@ -35,7 +37,8 @@ Verificado:
 | Pruebas dirigidas | 8 superadas: dashboard (2), groups (4), persons (1), movements (1) |
 | flutter build apk --debug --no-pub -t lib/main.dart | Correcto; APK listo en build/app/outputs/flutter-apk/app-debug.apk |
 | Reglas/datos Firebase | Sin modificaciones; no se repiten pruebas de Rules |
-| Móvil / dos administradores | No comprobados en esta fase |
+| Móvil | Confirmación posterior del usuario; no especifica casos concretos |
+| Dos administradores | Sin comprobar; segunda cuenta sigue aplazada |
 
 El caso de dominio comprueba cifras esperadas con anulaciones/correcciones,
 conteo de personas, deduplicación/orden de actividad, límite, vacío, negativo y
@@ -52,7 +55,7 @@ La actividad es una proyección del estado conservado, no un registro exhaustivo
 La distinción entre caché y conexión y las pruebas de zona horaria siguen en hardening.
 
 Para cerrar el MVP falta Phase 6: revisar robustez/permisos, conexión y concurrencia;
-probar el APK/flujo real; configurar y probar otro administrador con sincronización
+validar físicamente los cambios de esa fase; configurar y probar otro administrador con sincronización
 entre móviles, y completar las comprobaciones de auth pendientes cuando se retomen.
 Si se usa iOS, requiere validación en Mac/Xcode. Las ampliaciones Phase 7–12 no son
 requisitos para cerrar el MVP Android. Ver docs/ROADMAP.md como registro principal.
