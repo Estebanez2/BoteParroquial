@@ -1,0 +1,31 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "boteparroquial",
+          "appId": "1:146917525912:android:19e9cd4589791d82a103ed",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "boteparroquial",
+          "configurations": {
+            "android": "1:146917525912:android:19e9cd4589791d82a103ed",
+            "ios": "1:146917525912:ios:1ce7c8765b923fe3a103ed"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "rules": "firestore.rules"
+  },
+  "emulators": {
+    "firestore": { "port": 8080 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

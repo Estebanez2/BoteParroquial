@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "146917525912",
+    "project_id": "boteparroquial",
+    "storage_bucket": "boteparroquial.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:146917525912:android:19e9cd4589791d82a103ed",
+        "android_client_info": {
+          "package_name": "com.example.bote_parroquial"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "146917525912-pu7uppsdkdd6vdg7nog0bpkanc8hm6gi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bote_parroquial",
+            "certificate_hash": "79bf23ac79c1efc7e1ed7af015f34d3226ae5b9e"
+          }
+        },
+        {
+          "client_id": "146917525912-30hck3erel24fkn1sl5c98b4espqpvvk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbHCznyDlVZFr5aJNX20azyZOM6pSete8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "146917525912-30hck3erel24fkn1sl5c98b4espqpvvk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "146917525912-nttic5ph5bh0dgiqghbqq7poj1h7ge2j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.boteParroquial"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
