@@ -340,6 +340,36 @@ del prototipo; indica que él borrará los datos antes del uso real. Marcar ejem
 DEMO/[Prueba], no sobrescribir existentes al sembrar y no hacer ahora un borrado global.
 Permanece vigente la preferencia de ejecutar solo comprobaciones necesarias.
 
+Decisiones de Phase 5
+
+D042 — Dashboard como inicio de grupo
+
+El usuario elige abrir el resumen al entrar en un grupo. Personas, miembros y
+movimientos tienen pantallas accesibles desde él. Los cálculos permanecen en
+DashboardRepository y el estado en Riverpod; los widgets presentan modelos.
+Totales históricos de movimientos activos, sin presentar métricas de cuotas futuras.
+
+D043 — Actividad por último cambio registrado
+
+El usuario elige cambios recientes, incluidas anulaciones/correcciones, en lugar
+de ordenar por fecha efectiva. Mostrar cinco entradas; cada movimiento aporta su
+último cambio, sin duplicar como registro nuevo el sustituto activo. No es auditoría
+completa: esa funcionalidad sigue en Phase 11.
+
+D044 — Proyección del MVP con flujos existentes
+
+El usuario aprueba reutilizar los datos actuales en tiempo real sin modificar
+Firestore, en vez de adelantar agregados/reglas. Esta implementación lee el historial
+del grupo; optimizar con resúmenes/consultas acotadas cuando crezca sigue pendiente.
+Conservar el contrato DashboardSummary para sustituir la fuente sin rehacer la UI.
+
+D045 — Móvil desconectado y cierre del MVP
+
+El usuario comunica que ha desenchufado el móvil. En Phase 5 se valida código/APK
+sin afirmar pruebas físicas ni instalarlo. Solicita indicar las partes pendientes
+del MVP; registrarlas en el apartado Phase 6 de ROADMAP y en la validación de Phase 5.
+Siguen pendientes segunda cuenta, sincronización en dos móviles y hardening.
+
 Decisiones todavía pendientes
 
 Diseño visual definitivo: base v0.1 en uso por petición del usuario en Phase 2;

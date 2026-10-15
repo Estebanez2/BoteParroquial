@@ -15,14 +15,12 @@ final movementRepositoryProvider = Provider<MovementRepository>(
   ),
 );
 final movementsProvider = StreamProvider.autoDispose
-    .family<List<Movement>, String>((ref, groupId) async* {
-      final group = await ref.watch(groupProvider(groupId).future);
-      if (!ref.mounted) return;
-      if (group == null) {
-        yield const [];
-        return;
-      }
-      yield* ref.watch(movementRepositoryProvider).watchMovements(groupId);
+    .family<List<Movement>, String>((ref, groupId) {
+      final group = ref.watch(groupProvider(groupId));
+      if (group.isLoading) return const Stream.empty();
+      if (group.hasError) return Stream.error(group.error!, group.stackTrace);
+      if (group.asData?.value == null) return Stream.value(const []);
+      return ref.watch(movementRepositoryProvider).watchMovements(groupId);
     }, retry: (_, _) => null);
 final canManageMovementsProvider = Provider.autoDispose.family<bool, String>(
   (ref, groupId) => ref.watch(canManagePersonsProvider(groupId)),

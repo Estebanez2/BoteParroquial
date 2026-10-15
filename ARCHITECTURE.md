@@ -263,4 +263,25 @@ y prepara revisiones; providers coordinan permisos y acciones; la UI confirma av
 El ID se asigna una vez por formulario. Save/cancel usan transacciones con comprobación
 de versión y reintentos idempotentes del mismo envío. Las reglas getAfter validan la
 corrección atómica y sus enlaces; no se actualiza un saldo mutable ni se borran registros.
-El saldo solo se deriva para las advertencias. El Dashboard sigue en Phase 5.
+Desde Phase 5 el saldo también se muestra en el Dashboard, siempre derivado.
+
+Dashboard (Phase 5)
+
+DashboardScreen → dashboardProvider → DashboardRepository.summarize → DashboardSummary.
+El provider coordina los flujos existentes de Movements y Persons, que ya siguen
+Repository → Service → Firebase. No se crea un service vacío ni otro acceso paralelo
+a Firestore. El repository de Dashboard es una proyección pura, sin Flutter/Firebase:
+totales, conteos, actividad, orden y deduplicación están fuera de los widgets.
+
+La UI solo presenta DashboardSummary y usa los providers de permisos para acciones.
+Cambiar su composición no cambia el cálculo ni las operaciones de Personas/Movements.
+El inicio del grupo es el Dashboard; personas y miembros tienen rutas independientes.
+GroupAccessBody concentra el guard visual compartido, sin sustituir Security Rules.
+Los listeners de personas/movimientos se seleccionan sin Ref después de await ni
+dentro de un generador diferido; esto evita accesos a providers ya cerrados.
+
+Decisión explícita del usuario para el MVP: reutilizar los datos actuales completos.
+No se escribe ningún saldo ni agregado. Con más volumen se sustituirá esta fuente
+por consultas/resúmenes acotados manteniendo el contrato del Dashboard; la prohibición
+de leer todo el historial de la especificación completa sigue siendo el objetivo
+de escalabilidad, no algo ya resuelto por esta fase.

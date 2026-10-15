@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/providers/auth_providers.dart';
-import '../features/groups/presentation/group_screen.dart';
+import '../features/dashboard/presentation/dashboard_screen.dart';
+import '../features/persons/presentation/persons_screen.dart';
+import '../features/groups/presentation/group_members_screen.dart';
 import '../features/movements/presentation/movements_screen.dart';
 import '../features/movements/presentation/movement_editor_screen.dart';
 import '../models/movement.dart';
@@ -34,7 +36,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/groups/:groupId',
         builder: (context, state) =>
-            GroupScreen(groupId: state.pathParameters['groupId']!),
+            DashboardScreen(groupId: state.pathParameters['groupId']!),
+      ),
+      GoRoute(
+        path: '/groups/:groupId/persons',
+        builder: (context, state) =>
+            PersonsScreen(groupId: state.pathParameters['groupId']!),
+      ),
+      GoRoute(
+        path: '/groups/:groupId/members',
+        builder: (context, state) =>
+            GroupMembersScreen(groupId: state.pathParameters['groupId']!),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(

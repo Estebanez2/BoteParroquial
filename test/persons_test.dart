@@ -111,7 +111,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      container.read(routerProvider).go('/groups/a');
+      container.read(routerProvider).go('/groups/a/persons');
       await tester.pumpAndSettle();
       Future<void> tap(String label) async {
         await tester.ensureVisible(find.text(label).last);

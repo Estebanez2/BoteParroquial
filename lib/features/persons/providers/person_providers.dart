@@ -13,14 +13,12 @@ final personRepositoryProvider = Provider<PersonRepository>(
       PersonRepository(FirestorePersonService(ref.watch(firestoreProvider))),
 );
 final personsProvider = StreamProvider.autoDispose.family<List<Person>, String>(
-  (ref, groupId) async* {
-    final group = await ref.watch(groupProvider(groupId).future);
-    if (!ref.mounted) return;
-    if (group == null) {
-      yield const [];
-      return;
-    }
-    yield* ref.watch(personRepositoryProvider).watchPersons(groupId);
+  (ref, groupId) {
+    final group = ref.watch(groupProvider(groupId));
+    if (group.isLoading) return const Stream.empty();
+    if (group.hasError) return Stream.error(group.error!, group.stackTrace);
+    if (group.asData?.value == null) return Stream.value(const []);
+    return ref.watch(personRepositoryProvider).watchPersons(groupId);
   },
   retry: (_, _) => null,
 );

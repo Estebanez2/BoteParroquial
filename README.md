@@ -143,8 +143,18 @@ comprobación nativa con la sesión real en A059P. No se repitió la suite compl
 Hay datos DEMO autorizados en Prueba1, «Prueba · Saldo negativo» y
 «Prueba · Historial vacío». Ver docs/PHASE4_VALIDATION.md para cifras y límites.
 
-No existe todavía dashboard financiero. El saldo se deriva para confirmar operaciones,
-sin almacenarlo como cifra editable.
+Phase 5 incorpora el Dashboard como inicio del grupo: saldo, totales históricos de
+movimientos activos, personas activas/inactivas y los cinco últimos cambios financieros.
+Corregidos/anulados no suman; la actividad ordena por fecha de registro/cambio y no
+duplica el sustituto activo. Personas y miembros tienen pantallas independientes.
+Los cálculos viven en DashboardRepository, fuera de widgets; no hay saldo persistido.
+Se reutilizan las suscripciones existentes por elección del usuario para el MVP;
+optimizar agregados cuando crezca el historial sigue pendiente.
+
+Análisis sin incidencias, ocho pruebas dirigidas superadas y APK debug compilado.
+El móvil está desconectado por indicación del usuario: la validación física de este
+Dashboard queda pendiente, igual que la sincronización de dos administradores.
+Ver docs/PHASE5_VALIDATION.md y el apartado de cierre de MVP en docs/ROADMAP.md.
 
 Design System v0.1 en uso por petición del usuario desde Phase 2.
 Tokens y componentes en lib/design_system/; galería debug sin Firebase:
@@ -157,7 +167,7 @@ mantiene su composición previa con el tema común.
 La galería muestra cifras y personas de ejemplo, sin implementar lógica financiera.
 Las pruebas de segunda cuenta y restauración real aplazadas no se han reanudado.
 
-Validación actual: docs/PHASE4_VALIDATION.md.
+Validación actual: docs/PHASE5_VALIDATION.md.
 Aprovisionamiento inicial: docs/PHASE2_VALIDATION.md.
 
 No asumir que una funcionalidad está implementada simplemente porque aparezca documentada.

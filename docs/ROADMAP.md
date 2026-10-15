@@ -18,7 +18,9 @@ registran en su documento específico, sin cambiar los criterios de cierre.
 | Phase 2 — Groups & Membership | Implementada y validada: Prueba1 en A059P, aislamiento probado en emulador | Segunda cuenta real e iOS sin probar; gestión completa de grupos permanece en Phase 7 |
 | Phase 3 — Persons | Implementada; usuario confirma que funciona en móvil | Sincronización entre móviles sin comprobar |
 | Phase 4 — Movements | Implementada; reglas, flujo visual y operaciones nativas verificadas | Hardening y pruebas con varios móviles en fases posteriores |
-| Phase 5–12 | No iniciadas | Desarrollo según las fases descritas más abajo |
+| Phase 5 — Dashboard | Implementada; cálculos y flujos dirigidos comprobados | Probar APK en móvil y estado compartido entre dos administradores |
+| Phase 6 — MVP Hardening | No iniciada | Revisión final y comprobaciones de cierre del MVP |
+| Phase 7–12 | No iniciadas | Ampliaciones posteriores al MVP |
 
 Prueba aplazada por el usuario el 2026-10-15:
 
@@ -210,6 +212,20 @@ movimientos persistidos de forma segura sin doble contabilización.
 
 Phase 5 — Dashboard
 
+Estado:
+
+implementada el 2026-10-15. El usuario elige que sea el inicio de cada grupo y que
+actividad reciente muestre los últimos cambios registrados, incluidas correcciones
+y anulaciones. Totales históricos de active, personas activas/inactivas y cinco
+cambios recientes; sustituto activo no duplicado en actividad.
+Cálculos en DashboardRepository puro y coordinación en providers; la UI no calcula.
+El usuario aprueba reutilizar los flujos completos del MVP y optimizar agregados después.
+Sin cambios de Firebase, reglas, índices ni dependencias. Ocho pruebas dirigidas pasan;
+análisis sin incidencias y APK debug generado. Se corrige una lectura diferida de Ref al cerrar providers.
+El usuario ha desconectado el móvil: no se instala ni se afirma validación física
+del Dashboard. El criterio de dos administradores actualizados sigue pendiente.
+Detalle: docs/PHASE5_VALIDATION.md.
+
 Incluye:
 
 saldo;
@@ -227,6 +243,25 @@ Cierre:
 dos administradores ven el mismo estado actualizado.
 
 Phase 6 — MVP Hardening
+
+Qué falta para cerrar el MVP después de Phase 5:
+
+Las funcionalidades básicas ya están implementadas. Falta esta fase de cierre,
+no las ampliaciones de Phase 7–12:
+
+- Instalar y comprobar el Dashboard y el flujo completo en Android cuando el móvil
+  vuelva a estar conectado. Confirmar también saldo negativo, vacío y recuperación de errores.
+- Configurar una segunda cuenta real como administrador autorizado, vinculada a
+  persona activa, y comprobar personas, movimientos y resumen desde dos móviles.
+  Retomar las pruebas de auth aplazadas solo cuando el usuario lo solicite.
+- Revisar reglas/permisos y casos de concurrencia, cierre/reapertura durante envíos,
+  conexión/caché, reintentos y validación de fechas por reloj/zona de grupo.
+- Revisión final de UX/accesibilidad y corrección de incidencias encontradas;
+  acordar el procedimiento de pasar de los datos DEMO al uso real.
+
+Si el MVP se va a utilizar también en iOS, compilar y validar allí requiere Mac/Xcode.
+Invitaciones completas, gestión libre de grupos, cuotas, notificaciones, estadísticas
+avanzadas, auditoría y exportaciones continúan fuera de este MVP.
 
 Incluye:
 

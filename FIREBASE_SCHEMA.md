@@ -236,6 +236,13 @@ no contribuyen al saldo original.
 
 Un movimiento sustituto con estado active sí contribuye.
 
+Phase 5 presenta esta proyección sin campos ni colecciones nuevos. Los totales de
+ingresos/retiradas son históricos y solo incluyen active; el conteo de personas usa
+persons, no members. La actividad reciente deriva del último cambio de cada movimiento:
+createdAt, cancelledAt o correctedAt, no de occurredAt. No constituye una auditoría
+completa de todos los eventos. No duplicar como otro registro de actividad la creación
+del sustituto activo de una corrección ya representada por su original.
+
 Transiciones
 
 Permitidas inicialmente:
