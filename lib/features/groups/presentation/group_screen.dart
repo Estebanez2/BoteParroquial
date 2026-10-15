@@ -5,6 +5,7 @@ import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../providers/group_providers.dart';
 import 'group_widgets.dart';
+import '../../persons/presentation/persons_section.dart';
 
 class GroupScreen extends ConsumerWidget {
   const GroupScreen({super.key, required this.groupId});
@@ -89,13 +90,40 @@ class GroupScreen extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: AppSpacing.section),
+                            AppCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Cada aporte deja huella.',
+                                    style: type.headingMedium,
+                                  ),
+                                  const SizedBox(height: AppSpacing.md),
+                                  Text(
+                                    'Consulta los ingresos, las retiradas y la historia de cada cambio.',
+                                    style: type.bodyMedium,
+                                  ),
+                                  const SizedBox(height: AppSpacing.xl),
+                                  AppButton(
+                                    label: 'Ver movimientos',
+                                    leadingIcon: Icons.receipt_long_outlined,
+                                    onPressed: () => context.push(
+                                      '/groups/$groupId/movements',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.section),
+                            PersonsSection(groupId: groupId),
+                            const SizedBox(height: AppSpacing.section),
                             Text(
                               'Quiénes lo compartís',
                               style: type.headingMedium,
                             ),
                             const SizedBox(height: AppSpacing.sm),
                             Text(
-                              'Las cuentas con acceso a este grupo. Las personas del bote se incorporarán en la próxima fase.',
+                              'Las cuentas que tienen acceso a este espacio son distintas de las personas del bote.',
                               style: type.bodyMedium,
                             ),
                             const SizedBox(height: AppSpacing.xl),

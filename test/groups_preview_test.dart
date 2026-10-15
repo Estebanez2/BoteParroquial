@@ -5,6 +5,7 @@ import 'package:bote_parroquial/app/router.dart';
 import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
 import 'package:bote_parroquial/features/auth/providers/auth_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
+import 'package:bote_parroquial/features/persons/providers/person_providers.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -43,6 +44,9 @@ void main() {
             auth.FakeProfileRepository(),
           ),
           groupRepositoryProvider.overrideWithValue(repository),
+          personsProvider.overrideWith(
+            (ref, groupId) => Stream.value(const []),
+          ),
         ],
       );
       addTearDown(() async {

@@ -5,6 +5,7 @@ import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
 import 'package:bote_parroquial/core/errors/app_failure.dart';
 import 'package:bote_parroquial/features/auth/providers/auth_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
+import 'package:bote_parroquial/features/persons/providers/person_providers.dart';
 import 'package:bote_parroquial/models/group.dart';
 import 'package:bote_parroquial/models/group_member.dart';
 import 'package:bote_parroquial/repositories/group_repository.dart';
@@ -128,6 +129,9 @@ void main() {
               fixtures.FakeProfileRepository(),
             ),
             groupRepositoryProvider.overrideWithValue(groups),
+            personsProvider.overrideWith(
+              (ref, groupId) => Stream.value(const []),
+            ),
           ],
         );
         addTearDown(() async {
@@ -205,6 +209,7 @@ void main() {
           fixtures.FakeProfileRepository(),
         ),
         groupRepositoryProvider.overrideWithValue(groups),
+        personsProvider.overrideWith((ref, groupId) => Stream.value(const [])),
       ],
     );
     addTearDown(() async {

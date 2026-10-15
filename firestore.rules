@@ -35,6 +35,73 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/groups/$(groupId)).data.isActive == true;
     }
     // Discovery is restricted to one's own membership records, never group data.
+    function managesPersons(groupId) {
+      let member = get(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data;
+      return activeMember(groupId) && (member.role == 'owner'
+        || (member.role == 'admin' && member.personId is string
+          && get(/databases/$(database)/documents/groups/$(groupId)/persons/$(member.personId)).data.isActive == true));
+    }
+    function validPerson(data) {
+      return data.keys().hasAll(['displayName', 'isActive', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['displayName', 'notes', 'isActive', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt'])
+        && data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 256
+        && data.displayName.matches('.*\\S.*')
+        && (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() <= 2000))
+        && data.isActive is bool && data.createdBy is string && data.updatedBy is string
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+    function movementPath(groupId, movementId) {
+      return /databases/$(database)/documents/groups/$(groupId)/movements/$(movementId);
+    }
+    function validMovement(data) {
+      return data.keys().hasAll(['type','amountCents','status','occurredAt','description','personId','createdBy','createdAt','updatedAt'])
+        && data.keys().hasOnly(['type','amountCents','status','occurredAt','description','personId','createdBy','createdAt','updatedAt',
+          'cancelledAt','cancelledBy','cancellationReason','correctedAt','correctedBy','correctionReason','correctedByMovementId','correctionOfMovementId'])
+        && data.type in ['income','withdrawal'] && data.status in ['active','cancelled','corrected']
+        && data.amountCents is int && data.amountCents > 0 && data.amountCents <= 99999999999999
+        && data.occurredAt is timestamp && data.occurredAt >= timestamp.date(2000,1,1) && data.occurredAt < timestamp.date(2101,1,1)
+        // Civil dates use UTC midnight. Allow the timezone margin for local "today".
+        && data.occurredAt <= request.time + duration.value(1,'d')
+        && data.description is string && data.description.size() <= 2000
+        && (data.type == 'income' || data.description.matches('.*\\S.*'))
+        && (data.personId == null || (data.personId is string && data.personId.size() > 0))
+        && (data.type != 'income' || data.personId is string)
+        && data.createdBy is string && data.createdAt is timestamp && data.updatedAt is timestamp
+        && (!('correctionOfMovementId' in data) || (data.correctionOfMovementId is string && data.correctionOfMovementId.size() > 0));
+    }
+    function validMovementPerson(groupId, data) {
+      return data.personId == null || exists(/databases/$(database)/documents/groups/$(groupId)/persons/$(data.personId));
+    }
+    function activeMovement(data) {
+      return data.status == 'active' && !data.keys().hasAny(['cancelledAt','cancelledBy','cancellationReason',
+        'correctedAt','correctedBy','correctionReason','correctedByMovementId']);
+    }
+    function replacementCreate(groupId, movementId, data) {
+      let originalPath = movementPath(groupId,data.correctionOfMovementId);
+      let before = get(originalPath).data;
+      let after = getAfter(originalPath).data;
+      return data.correctionOfMovementId != movementId && before.status == 'active'
+        && after.status == 'corrected' && after.correctedByMovementId == movementId
+        && after.correctedBy == request.auth.uid && after.correctedAt == request.time;
+    }
+    function cancelMovement(before, after) {
+      return after.status == 'cancelled'
+        && after.diff(before).affectedKeys().hasOnly(['status','updatedAt','cancelledAt','cancelledBy','cancellationReason'])
+        && after.cancelledAt == request.time && after.cancelledBy == request.auth.uid
+        && after.cancellationReason is string && after.cancellationReason.size() <= 2000
+        && after.cancellationReason.matches('.*\\S.*');
+    }
+    function correctMovement(groupId, movementId, before, after) {
+      let target = movementPath(groupId,after.correctedByMovementId);
+      let replacement = getAfter(target).data;
+      return after.status == 'corrected' && after.correctedByMovementId != movementId
+        && after.diff(before).affectedKeys().hasOnly(['status','updatedAt','correctedAt','correctedBy','correctionReason','correctedByMovementId'])
+        && after.correctedAt == request.time && after.correctedBy == request.auth.uid
+        && after.correctionReason is string && after.correctionReason.size() <= 2000 && after.correctionReason.matches('.*\\S.*')
+        && !exists(target) && replacement.status == 'active'
+        && replacement.correctionOfMovementId == movementId
+        && replacement.createdBy == request.auth.uid && replacement.createdAt == request.time;
+    }
     // The uid filter in the collection-group query is mandatory.
     match /{path=**}/members/{memberId} {
       allow read: if request.auth != null && resource.data.uid == request.auth.uid;
@@ -47,8 +114,36 @@ service cloud.firestore {
         // Controlled provisioning only in Phase 2. No client can grant roles.
         allow write: if false;
       }
+      match /persons/{personId} {
+        allow read: if activeMember(groupId);
+        allow create: if managesPersons(groupId) && validPerson(request.resource.data)
+          && request.resource.data.isActive == true
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if managesPersons(groupId) && validPerson(request.resource.data)
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+      }
+      match /movements/{movementId} {
+        allow read: if activeMember(groupId);
+        allow create: if managesPersons(groupId) && validMovement(request.resource.data)
+          && validMovementPerson(groupId,request.resource.data) && activeMovement(request.resource.data)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+          && (!('correctionOfMovementId' in request.resource.data) || replacementCreate(groupId,movementId,request.resource.data));
+        allow update: if managesPersons(groupId) && resource.data.status == 'active'
+          && validMovement(request.resource.data) && request.resource.data.updatedAt == request.time
+          && (cancelMovement(resource.data,request.resource.data)
+            || correctMovement(groupId,movementId,resource.data,request.resource.data));
+        allow delete: if false;
+      }
     }
-    // Persons, money and future collections remain closed until their phases.
+    // Future collections remain closed until their phases.
     match /{document=**} {
       allow read, write: if false;
     }

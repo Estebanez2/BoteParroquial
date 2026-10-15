@@ -7,10 +7,14 @@ abstract final class AppBottomSheet {
     BuildContext context, {
     required String title,
     required WidgetBuilder builder,
+    bool isDismissible = true,
+    bool enableDrag = true,
   }) => showModalBottomSheet<T>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
+    isDismissible: isDismissible,
+    enableDrag: enableDrag,
     constraints: const BoxConstraints(maxWidth: AppSpacing.readingMax),
     builder: (context) => ConstrainedBox(
       constraints: BoxConstraints(

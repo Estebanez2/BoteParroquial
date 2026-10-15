@@ -137,6 +137,19 @@ Las personas con historial financiero no se eliminan.
 
 Se inactivan.
 
+Phase 3 habilita lectura para miembros activos del grupo activo y creación/edición
+para owner o admin vinculado a persona activa del mismo grupo. Todos los borrados
+están denegados; activar/inactivar conserva el documento y su ID.
+displayName: obligatorio, máximo 256 caracteres y no solo espacios.
+notes: opcional/null, máximo 2000 caracteres. No hay campos nuevos de cuotas ni enlaces.
+createdBy/createdAt son inmutables; updatedBy es el UID autenticado y updatedAt
+usa hora de servidor. La creación exige isActive=true y ambos autores iguales al UID.
+La edición y cambio de estado desde la app comprueban updatedAt en transacción
+para no sobrescribir silenciosamente un cambio concurrente.
+Las membresías siguen sin poder escribirse desde el cliente. Si se inactiva una
+persona vinculada a un admin, este pierde el permiso efectivo de gestionar
+personas; la degradación persistida del rol y las vinculaciones pertenecen a Phase 7.
+
 groups/{groupId}/movements/{movementId}
 
 Campos:
@@ -175,6 +188,36 @@ correctionOfMovementId: string?
 amountCents debe ser:
 
 > 0
+
+Phase 4: entero positivo hasta 99999999999999 céntimos. Nunca double.
+Ingreso exige personId de una persona existente del mismo grupo; retirada permite
+personId=null para el grupo. Se permite persona inactiva con advertencia en la app.
+description admite hasta 2000 caracteres: opcional/vacía para ingreso y obligatoria
+para retirada. Motivos de anulación/corrección obligatorios, hasta 2000 caracteres.
+
+occurredAt representa un día civil: guardar año/mes/día elegidos como medianoche UTC,
+sin convertir a UTC un instante de medianoche local. Mostrar esos componentes sin
+toLocal para no desplazar el día entre móviles. La app admite hoy o fechas anteriores
+según el calendario del dispositivo (selector 2000–hoy); no son operaciones planificadas.
+Rules añade una cota de servidor request.time+24 h para el margen de zonas horarias
+de esa representación; la validación exacta de «hoy» por zona de grupo/servidor queda
+para hardening. createdAt/updatedAt y metadatos de cambio usan hora de servidor.
+
+Solo owner/admin válido escribe; miembros activos leen. Las reglas impiden editar
+importe, tipo, persona, fecha, descripción o creador de un documento existente.
+Cambiar cualquiera de esos datos requiere una corrección con un sustituto nuevo.
+Se permite cambiar también income/withdrawal al corregir, conservando el original.
+No se borran movimientos ni se reactivan estados terminales.
+
+Una corrección actualiza el original y crea el sustituto en una misma transacción.
+Las reglas getAfter exigen enlaces recíprocos dentro del grupo, sustituto inexistente
+antes y activo después, actor y timestamps de la misma operación. Un sustituto puede
+ser corregido otra vez o anulado, conservando toda la cadena.
+
+El ID del nuevo documento funciona como clave de envío: se conserva al reintentar
+en el mismo formulario. La transacción comprueba el ID y los datos existentes; un
+reintento idéntico no crea otro movimiento. Reabrir un formulario tras cerrar la app
+es otro envío: ante un resultado incierto, revisar primero el historial.
 
 Saldo
 

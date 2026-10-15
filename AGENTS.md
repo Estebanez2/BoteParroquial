@@ -31,6 +31,12 @@ pruebas aplazadas. No reanudar una prueba manual aplazada sin que el usuario lo 
 
 Las instrucciones explícitas del usuario tienen prioridad.
 
+Durante el prototipo, el usuario autoriza crear datos ficticios en Firestore para
+comprobar casos funcionales (2026-10-15). Etiquetarlos como DEMO/[Prueba] y registrar
+lo generado. No sobrescribir datos existentes para sembrar ejemplos. El usuario
+indica que borrará los datos al empezar el uso real: no es una petición de borrar
+ni reiniciar la base ahora. Revisar esta autorización cuando indique uso real.
+
 Preferencia explícita del usuario (2026-10-15): no dar decisiones por entendidas.
 Cuando algo admita varias formas de hacerse, preguntar cuál prefiere antes de
 elegir o implementar la alternativa. Explicar brevemente las diferencias y
@@ -225,6 +231,12 @@ Las fases están definidas en docs/ROADMAP.md.
 Storage, Cloud Functions, Scheduler y notificaciones se añadirán cuando una fase realmente los necesite.
 
 Validación
+
+Preferencia del usuario (2026-10-15): ejecutar solo las pruebas necesarias para
+el cambio, sin multiplicar casos ni repetir suites completas sin motivo. Priorizar
+permisos, integridad de datos y el flujo afectado; análisis y compilación pertinentes.
+Las listas siguientes son referencias generales, no una obligación de ejecutar
+toda la suite en cada cambio. Registrar exactamente qué se ha comprobado.
 
 Para cambios Dart:
 

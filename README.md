@@ -94,10 +94,13 @@ Firestore ha sido creado.
 Base `(default)`, edición Standard, región `europe-southwest1` (Madrid).
 Metadatos comprobados con Firebase CLI el 2026-10-15.
 
-Reglas de Phase 2 publicadas: cada cuenta mantiene privado su perfil users/{uid}.
+Reglas de Phase 4 publicadas: cada cuenta mantiene privado su perfil users/{uid}.
 Puede descubrir sus membresías por uid y leer grupos activos y miembros si tiene
 membresía activa. No puede asignarse roles ni escribir grupos/membresías.
-Personas y datos económicos siguen cerrados. Ver docs/PHASE2_VALIDATION.md.
+Personas admite lectura de miembros activos y gestión de owner/admin autorizado.
+Movimientos permite lectura de miembros y escritura controlada de owner/admin válido:
+registro, anulación y corrección atómica, sin borrar ni editar importes históricos.
+Ver docs/PHASE4_VALIDATION.md.
 
 Login con Google y perfil guardado comprobados con una primera cuenta real en
 A059P (Android 16, API 36). El cierre de sesión también está confirmado en registros.
@@ -121,9 +124,27 @@ docs/PHASE1_VALIDATION.md.
 Phase 2 implementa lista de grupos propios, contexto por ruta, roles y lectura
 de miembros en tiempo real. Prueba1 está aprovisionado con la cuenta de la app
 confirmada por el usuario como propietaria. La creación desde UI y gestión de
-membresías siguen en Phase 7; no existe todavía CRUD de personas o movimientos.
+membresías siguen en Phase 7.
 
-No existe todavía saldo ni dashboard financiero.
+Phase 3 implementa listado de personas en tiempo real, creación y edición de
+nombre/notas en panel inferior, activar e inactivar con confirmación, sin borrado.
+Datos separados por grupo, validación de autor/fechas y protección ante edición
+concurrente. Comprobaciones dirigidas: una prueba Flutter de flujo, tres pruebas
+de reglas, análisis sin incidencias y APK compilado e instalado en A059P.
+El usuario confirma que Personas funciona el 2026-10-15. La sincronización entre dos
+móviles sigue sin comprobarse; esa confirmación no se extiende a pruebas no realizadas.
+
+Phase 4 incorpora ingresos, retiradas generales o por persona, historial en tiempo
+real, anulación y corrección conservando originales. Formularios en pantalla completa,
+advertencia por persona inactiva y confirmación de saldo negativo. Solo fechas de hoy
+o anteriores. Reintentos del mismo envío sin crear otro documento.
+Comprobaciones dirigidas: cuatro pruebas de reglas, una del flujo visual y una
+comprobación nativa con la sesión real en A059P. No se repitió la suite completa.
+Hay datos DEMO autorizados en Prueba1, «Prueba · Saldo negativo» y
+«Prueba · Historial vacío». Ver docs/PHASE4_VALIDATION.md para cifras y límites.
+
+No existe todavía dashboard financiero. El saldo se deriva para confirmar operaciones,
+sin almacenarlo como cifra editable.
 
 Design System v0.1 en uso por petición del usuario desde Phase 2.
 Tokens y componentes en lib/design_system/; galería debug sin Firebase:
@@ -136,7 +157,8 @@ mantiene su composición previa con el tema común.
 La galería muestra cifras y personas de ejemplo, sin implementar lógica financiera.
 Las pruebas de segunda cuenta y restauración real aplazadas no se han reanudado.
 
-Validación de la fase actual y aprovisionamiento: docs/PHASE2_VALIDATION.md.
+Validación actual: docs/PHASE4_VALIDATION.md.
+Aprovisionamiento inicial: docs/PHASE2_VALIDATION.md.
 
 No asumir que una funcionalidad está implementada simplemente porque aparezca documentada.
 

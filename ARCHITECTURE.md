@@ -242,3 +242,25 @@ ni ID de grupo hardcodeado. Los providers vuelven a comprobar membresía al camb
 sesión o acceso. La UI no muestra los datos anteriores durante carga o error.
 Las reglas son la autoridad de permisos; el guard de UI solo mejora la navegación.
 Las escrituras cliente de grupos/membresías siguen cerradas hasta Phase 7.
+
+Personas (Phase 3)
+
+PersonsSection y PersonEditor → providers de Personas → PersonRepository →
+PersonService/FirestorePersonService → Firestore. Person es un modelo de dominio.
+Cada operación recibe groupId explícito; el repository rechaza personas de otro
+grupo y valida/normaliza los campos. Los providers coordinan sesión, permisos y
+envíos, y la UI consume esa información. Rules vuelven a comprobar los permisos.
+Las actualizaciones usan transacciones y la versión updatedAt leída; un conflicto
+pide reabrir el panel. No hay API de borrado. El listado escucha cambios remotos.
+
+Movimientos (Phase 4)
+
+Historial y pantallas completas de registro/corrección/anulación → providers de
+Movements → MovementRepository → MovementService/FirestoreMovementService → Firebase.
+Movement/MovementInput son modelos independientes del SDK. Toda operación recibe
+groupId. La UI no calcula saldo ni decide reglas financieras: el repository valida
+y prepara revisiones; providers coordinan permisos y acciones; la UI confirma avisos.
+El ID se asigna una vez por formulario. Save/cancel usan transacciones con comprobación
+de versión y reintentos idempotentes del mismo envío. Las reglas getAfter validan la
+corrección atómica y sus enlaces; no se actualiza un saldo mutable ni se borran registros.
+El saldo solo se deriva para las advertencias. El Dashboard sigue en Phase 5.

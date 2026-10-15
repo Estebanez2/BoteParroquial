@@ -16,7 +16,9 @@ registran en su documento específico, sin cambiar los criterios de cierre.
 | Phase 1 — Authentication | Implementada; validación parcial en móvil | Segunda cuenta aplazada y restauración con sesión abierta sin comprobar |
 | Etapa visual previa a Phase 2 | Design System v0.1 y galería implementados; base en uso por petición del usuario | Iteraciones visuales posteriores; login conserva su composición previa |
 | Phase 2 — Groups & Membership | Implementada y validada: Prueba1 en A059P, aislamiento probado en emulador | Segunda cuenta real e iOS sin probar; gestión completa de grupos permanece en Phase 7 |
-| Phase 3–12 | No iniciadas | Desarrollo según las fases descritas más abajo |
+| Phase 3 — Persons | Implementada; usuario confirma que funciona en móvil | Sincronización entre móviles sin comprobar |
+| Phase 4 — Movements | Implementada; reglas, flujo visual y operaciones nativas verificadas | Hardening y pruebas con varios móviles en fases posteriores |
+| Phase 5–12 | No iniciadas | Desarrollo según las fases descritas más abajo |
 
 Prueba aplazada por el usuario el 2026-10-15:
 
@@ -141,6 +143,21 @@ solo miembros autorizados pueden acceder al grupo.
 
 Phase 3 — Persons
 
+Estado:
+
+implementada el 2026-10-15. Listado en tiempo real por grupo, alta/edición mediante
+panel inferior elegido por el usuario, activar/inactivar con confirmación y sin
+borrado. Reglas publicadas para owner/admin autorizado y lectura de miembros.
+Una prueba Flutter de flujo y tres pruebas de reglas superadas; analyze limpio,
+APK compilado e instalado en A059P. No se ha repetido la suite completa por petición
+del usuario. No se han creado personas ficticias en la base real.
+Pendiente validar CRUD con datos reales y sincronización entre móviles; no dar
+por cumplido todavía el criterio de cierre. Ver docs/PHASE3_VALIDATION.md.
+
+Actualización posterior: el usuario confirma «funciona» al iniciar Phase 4.
+No se especifican operaciones concretas ni se confirma un segundo móvil, por lo que
+ese criterio de cierre sigue pendiente. Autoriza crear datos ficticios en Firestore.
+
 Incluye:
 
 listado;
@@ -158,6 +175,16 @@ Cierre:
 los administradores comparten las mismas personas desde varios móviles.
 
 Phase 4 — Movements
+
+Estado:
+
+implementada el 2026-10-15. Ingresos, retiradas, historial, validaciones, motivos,
+anulación y corrección atómica. Enteros en céntimos, conservación de originales,
+IDs de envío para reintentos y advertencias elegidas por el usuario.
+Cuatro pruebas dirigidas de Rules y una del flujo visual pasan. SDK Android en A059P
+contra Firestore real confirma crear/reintentar, corregir/reintentar y anular/reintentar
+sin duplicar documentos. Datos DEMO autorizados en tres grupos. No se ha repetido la
+suite completa ni se han reanudado pruebas aplazadas de auth. Ver docs/PHASE4_VALIDATION.md.
 
 Incluye:
 

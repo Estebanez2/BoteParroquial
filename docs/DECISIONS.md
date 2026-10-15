@@ -294,6 +294,52 @@ Petición explícita: no dar decisiones por entendidas; cuando haya varias forma
 de hacer algo, explicar alternativas, recomendar una y preguntar antes de elegir.
 No volver a consultar decisiones ya acordadas ni interpretar silencio como respuesta.
 
+Decisiones de Phase 3
+
+D036 — Formularios de Personas en panel inferior (2026-10-15)
+
+El usuario elige panel inferior para alta y edición: nombre y notas opcionales.
+Activar/inactivar usa confirmación y conserva el documento; no hay borrado.
+No se adelantan cuotas, vinculaciones ni gestión de roles.
+
+D037 — Validación proporcional (2026-10-15)
+
+El usuario solicita solo las pruebas necesarias para reducir tiempo y consumo.
+Ejecutar comprobaciones dirigidas al cambio y riesgos reales; no repetir suites
+completas ni generar capturas o matrices de casos sin necesidad. Mantener análisis
+estático y compilación pertinentes, y documentar los límites de la evidencia.
+
+Decisiones de Phase 4
+
+D038 — Formularios y personas inactivas
+
+El usuario elige pantallas completas para movimientos. Se permite registrar para
+personas inactivas, con advertencia, sin reactivarlas. Un ingreso exige persona;
+una retirada puede pertenecer al grupo. El owner/admin conserva los mismos requisitos
+de acceso que en Personas. No se añaden cuotas ni asignaciones mensuales.
+
+D039 — Corrección y fechas
+
+El usuario permite cambiar también ingreso/retirada al corregir. El original se
+conserva y el sustituto se crea atómicamente. Solo se admiten fechas efectivas de hoy
+o anteriores en la app. Día civil representado como medianoche UTC; metadatos de
+registro separados, con hora del servidor. Ver los límites de zona horaria en el esquema.
+
+D040 — Integridad y advertencias
+
+El ID del envío permanece durante los reintentos del formulario. Las transacciones
+verifican documento/versión y las reglas exigen correcciones recíprocas atómicas.
+Solo active contribuye al saldo. Antes de confirmar se consulta el servidor y se
+advierte si la operación deja saldo negativo. No se persiste un saldo editable.
+El aviso refleja esa consulta, no una reserva de saldo frente a operaciones concurrentes.
+
+D041 — Datos de prueba autorizados
+
+El usuario confirma que Personas funciona y autoriza crear casos ficticios en la base
+del prototipo; indica que él borrará los datos antes del uso real. Marcar ejemplos como
+DEMO/[Prueba], no sobrescribir existentes al sembrar y no hacer ahora un borrado global.
+Permanece vigente la preferencia de ejecutar solo comprobaciones necesarias.
+
 Decisiones todavía pendientes
 
 Diseño visual definitivo: base v0.1 en uso por petición del usuario en Phase 2;

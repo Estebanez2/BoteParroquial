@@ -119,6 +119,22 @@ firestore.indexes.json. No había índices personalizados anteriores.
 Prueba1 creado mediante commit atómico de grupo y owner con timestamps de servidor.
 Detalle, herramienta de aprovisionamiento y validación: docs/PHASE2_VALIDATION.md.
 
+Phase 3 (2026-10-15): reglas de Personas publicadas tras tres pruebas específicas
+en emulador. Ruleset 462d2c3d-0f34-41b0-8ec2-cd607e26d0c9. Lectura para miembros
+activos; alta/edición para owner o admin vinculado a persona activa del mismo grupo.
+Autores, tipos, campos y timestamps validados; createdAt/createdBy inmutables;
+borrado denegado. Sin índices nuevos ni cambios de configuración en Console.
+Movimientos y demás colecciones futuras siguen cerrados.
+Ver docs/PHASE3_VALIDATION.md para el alcance exacto y las comprobaciones pendientes.
+
+Phase 4 (2026-10-15): reglas financieras publicadas y leídas de nuevo para comprobar
+que coinciden con el fichero local. Ruleset final:
+89e8c7fc-2898-4366-a310-139a8a2b26f7. Sin índices nuevos; el índice de memberships
+continúa READY. Operaciones cliente reales en A059P verifican ingreso, reintento,
+corrección y anulación; los datos DEMO se conservan por autorización del usuario.
+Ver docs/PHASE4_VALIDATION.md para el estado actual. Los párrafos de Phase 1–3
+anteriores registran sus despliegues históricos, no las reglas vigentes completas.
+
 No crear otra base simplemente porque estos datos todavía no estén documentados.
 
 No asumir que la configuración de la base garantiza autorización correcta.

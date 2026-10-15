@@ -56,7 +56,7 @@ test('Ningún cliente puede autopromoverse, editar al owner o crear/borrar grupo
     await assertFails(setDoc(doc(db, `groups/a/members/${uid}`), {uid, role:'owner', status:'active'}));
     await assertFails(updateDoc(doc(db, 'groups/a/members/alice'), {role:'member'}));
     await assertFails(deleteDoc(doc(db, 'groups/a/members/alice')));
-    for (const path of ['groups/a/persons/p', 'groups/a/movements/m', 'groups/a/auditEvents/e', 'persons/p','movements/m','admins/alice']) {
+    for (const path of ['groups/a/auditEvents/e', 'persons/p','movements/m','admins/alice']) {
       await assertFails(getDoc(doc(db,path)));
       await assertFails(setDoc(doc(db,path),{value:1}));
     }

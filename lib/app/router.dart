@@ -6,6 +6,9 @@ import '../features/home/presentation/home_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/providers/auth_providers.dart';
 import '../features/groups/presentation/group_screen.dart';
+import '../features/movements/presentation/movements_screen.dart';
+import '../features/movements/presentation/movement_editor_screen.dart';
+import '../models/movement.dart';
 import '../core/firebase/firebase_bootstrap.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -34,6 +37,37 @@ final routerProvider = Provider<GoRouter>((ref) {
             GroupScreen(groupId: state.pathParameters['groupId']!),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/groups/:groupId/movements',
+        builder: (context, state) => MovementsScreen(
+          groupId: state.pathParameters['groupId']!,
+          focusId: state.uri.queryParameters['focus'],
+        ),
+      ),
+      GoRoute(
+        path: '/groups/:groupId/movements/new',
+        builder: (context, state) => MovementEditorScreen(
+          groupId: state.pathParameters['groupId']!,
+          initialType: state.uri.queryParameters['type'] == 'withdrawal'
+              ? MovementType.withdrawal
+              : MovementType.income,
+        ),
+      ),
+      GoRoute(
+        path: '/groups/:groupId/movements/:movementId/correct',
+        builder: (context, state) => MovementEditorScreen(
+          groupId: state.pathParameters['groupId']!,
+          originalId: state.pathParameters['movementId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/groups/:groupId/movements/:movementId/cancel',
+        builder: (context, state) => MovementEditorScreen(
+          groupId: state.pathParameters['groupId']!,
+          originalId: state.pathParameters['movementId']!,
+          cancel: true,
+        ),
+      ),
       GoRoute(
         path: '/loading',
         builder: (context, state) => const Scaffold(
