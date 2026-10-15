@@ -212,3 +212,22 @@ actualizar providers;
 mantener los cambios limitados a la feature afectada.
 
 No realizar una migración total en una tarea no relacionada.
+
+Arquitectura visual
+
+Flutter / Material / librería externa → Design System → componentes App* → features.
+
+La presentación utiliza la API pública lib/design_system/design_system.dart.
+Tokens de color, tipografía, spacing, radio, sombras y movimiento se centralizan
+en lib/design_system/theme/. Esta carpeta sustituye la ubicación prevista
+core/theme/ para los tokens visuales; no mantener dos fuentes de estilos.
+Componentes reutilizables en design_system/components/. Componentes específicos
+como PersonListTile se crearán en su feature componiendo esos componentes.
+
+La galería vive en design_system/showcase/ y tiene entrypoint debug independiente
+lib/main_showcase.dart, sin Firebase ni rutas de producción. Los valores que muestra
+son ejemplos de presentación y no implementan Groups, Persons, Movements o Dashboard.
+
+Ver DESIGN_SYSTEM.md para APIs, reglas de uso y evaluación de dependencias.
+La identidad visual todavía requiere aprobación. La UI actual de autenticación
+permanece sin migrar; no se cambia su lógica durante esta fase visual.

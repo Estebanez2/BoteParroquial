@@ -18,6 +18,8 @@ Consultar docs/DECISIONS.md para no contradecir decisiones ya tomadas.
 
 Consultar docs/ROADMAP.md para respetar la fase actual.
 
+Leer DESIGN_SYSTEM.md antes de crear o modificar UI.
+
 Seguimiento del trabajo:
 
 docs/ROADMAP.md es el registro general de fases completadas y pendientes.
@@ -241,3 +243,23 @@ las reglas permitan las operaciones.
 Para afirmar que algo funciona en dispositivo debe haberse probado realmente.
 
 iOS requiere Mac y Xcode para compilar y probar.
+
+Design System
+
+Las futuras pantallas deben reutilizar lib/design_system/design_system.dart.
+Buscar componentes existentes antes de crear uno nuevo.
+No hardcodear colores ni estilos tipográficos en features.
+No inventar paddings, radios o sombras arbitrarios: usar los tokens centrales.
+Los componentes reutilizables van a lib/design_system/.
+Los componentes específicos de una feature permanecen en ella y componen App*.
+Envolver librerías visuales externas detrás de componentes propios cuando exista
+o deba existir una abstracción equivalente; no exponer su API por todas las pantallas.
+
+Los tokens visuales viven en design_system/theme, no duplicarlos en core/theme.
+Los componentes no calculan reglas financieras ni permisos y no llaman a Firebase.
+Respetar modo oscuro, texto ampliado y movimiento reducido.
+
+La galería se ejecuta mediante lib/main_showcase.dart, solo en debug y sin Firebase.
+No incorporarla a la navegación de producción. La identidad v0.1 está pendiente
+de aprobación del usuario. Login/home actuales se migrarán después de esa aprobación;
+su apariencia provisional no debe copiarse al crear nuevas pantallas.

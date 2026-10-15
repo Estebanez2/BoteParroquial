@@ -43,6 +43,9 @@ FIREBASE_SCHEMA.md
 CODING_RULES.md
     Convenciones de implementación.
 
+DESIGN_SYSTEM.md
+    Identidad propuesta, tokens, componentes, galería y evaluación de librerías.
+
 docs/DECISIONS.md
     Decisiones técnicas y funcionales ya tomadas.
 
@@ -117,6 +120,16 @@ docs/PHASE1_VALIDATION.md.
 No existe todavía CRUD funcional de grupos, personas o movimientos.
 
 No existe todavía saldo ni dashboard financiero.
+
+Design System v0.1 implementado antes de Phase 2, pendiente de aprobación visual.
+Tokens y componentes en lib/design_system/; galería debug sin Firebase:
+
+flutter run --debug -t lib/main_showcase.dart
+
+La app habitual sigue en lib/main.dart y mantiene login/home con su aspecto previo.
+La suite actual pasa 22 pruebas; una exportación visual optativa está omitida por defecto.
+La galería muestra cifras y personas de ejemplo, sin implementar lógica financiera.
+Las pruebas de segunda cuenta y restauración real aplazadas no se han reanudado.
 
 No asumir que una funcionalidad está implementada simplemente porque aparezca documentada.
 

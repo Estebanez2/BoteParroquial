@@ -251,9 +251,22 @@ La eliminación es definitiva.
 
 Debe existir una confirmación fuerte antes de hacerlo.
 
+D030 — Encapsular el sistema visual
+
+Tokens y componentes visuales en lib/design_system/, con API pública propia App*.
+Las features no exponen componentes de bibliotecas visuales externas directamente.
+Los tokens viven en design_system/theme y no se duplican en core/theme.
+
+D031 — Galería de desarrollo separada
+
+La propuesta se revisa mediante lib/main_showcase.dart, solo debug y sin Firebase.
+La aprobación de identidad visual y la migración de pantallas son pasos separados.
+No se ha rediseñado el login existente ni alterado su lógica.
+
 Decisiones todavía pendientes
 
-Diseño visual definitivo.
+Diseño visual definitivo: v0.1 implementada y documentada en DESIGN_SYSTEM.md,
+pendiente de aprobación del usuario. No dar por aprobada la propuesta por compilar.
 
 Política concreta de generación de exportaciones grandes.
 

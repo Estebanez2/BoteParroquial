@@ -14,6 +14,7 @@ registran en su documento específico, sin cambiar los criterios de cierre.
 | --- | --- | --- |
 | Phase 0 — Foundation | Completada y arranque comprobado en A059P | Sin pendientes de cierre Android |
 | Phase 1 — Authentication | Implementada; validación parcial en móvil | Segunda cuenta aplazada y restauración con sesión abierta sin comprobar |
+| Etapa visual previa a Phase 2 | Design System v0.1 y galería implementados | Aprobación de identidad visual y posterior migración de pantallas |
 | Phase 2 — Groups & Membership | No iniciada | Implementación y validación de su alcance |
 | Phase 3–12 | No iniciadas | Desarrollo según las fases descritas más abajo |
 
@@ -27,6 +28,15 @@ tampoco se ha comprobado en dispositivo y se mantiene como pendiente separado.
 No hay una prueba manual actualmente en curso.
 
 Ver docs/PHASE1_VALIDATION.md para la evidencia y los pasos para retomarlas.
+
+Etapa visual previa a Phase 2 — Design System
+
+Tokens, componentes App*, fuentes locales, temas claro/oscuro y galería debug
+independiente implementados. La suite completa pasa 22 pruebas; las vistas se han
+exportado y revisado visualmente. Ver DESIGN_SYSTEM.md desde la raíz.
+Esta etapa no implementa grupos ni lógica financiera. La identidad visual v0.1
+es una propuesta pendiente de aprobación; login/home siguen sin migrar.
+No cambia el aplazamiento de pruebas manuales de Phase 1.
 
 Phase 0 — Foundation
 

@@ -185,3 +185,17 @@ fechas;
 cálculos;
 
 aislamiento entre grupos.
+
+Reglas visuales
+
+Usar los componentes de lib/design_system/design_system.dart en nuevas pantallas.
+Consultar DESIGN_SYSTEM.md y buscar un componente equivalente antes de añadir otro.
+No fijar Color(0xFF...), TextStyle, padding, radio o sombras arbitrarios en features.
+Resolver AppColors y AppTypography desde el contexto; usar AppSpacing y AppRadius.
+Envolver componentes externos complejos en App* cuando corresponda.
+Los widgets específicos de feature reutilizan el Design System y permanecen en su feature.
+No mezclar enums visuales de StatusChip con roles o estados de persistencia.
+MoneyText y AppMoneyField solo presentan/convierten enteros: no calculan saldo,
+validan permisos ni deciden la validez financiera de una operación.
+Probar claro/oscuro, texto ampliado, interacción y movimiento reducido cuando se
+cambien controles compartidos. No considerar aprobada la estética solo por compilar.
