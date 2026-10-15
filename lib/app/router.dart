@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/providers/auth_providers.dart';
+import '../features/groups/presentation/group_screen.dart';
 import '../core/firebase/firebase_bootstrap.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -27,6 +28,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+      GoRoute(
+        path: '/groups/:groupId',
+        builder: (context, state) =>
+            GroupScreen(groupId: state.pathParameters['groupId']!),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/loading',

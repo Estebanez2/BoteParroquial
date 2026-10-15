@@ -14,8 +14,8 @@ registran en su documento específico, sin cambiar los criterios de cierre.
 | --- | --- | --- |
 | Phase 0 — Foundation | Completada y arranque comprobado en A059P | Sin pendientes de cierre Android |
 | Phase 1 — Authentication | Implementada; validación parcial en móvil | Segunda cuenta aplazada y restauración con sesión abierta sin comprobar |
-| Etapa visual previa a Phase 2 | Design System v0.1 y galería implementados | Aprobación de identidad visual y posterior migración de pantallas |
-| Phase 2 — Groups & Membership | No iniciada | Implementación y validación de su alcance |
+| Etapa visual previa a Phase 2 | Design System v0.1 y galería implementados; base en uso por petición del usuario | Iteraciones visuales posteriores; login conserva su composición previa |
+| Phase 2 — Groups & Membership | Implementada y validada: Prueba1 en A059P, aislamiento probado en emulador | Segunda cuenta real e iOS sin probar; gestión completa de grupos permanece en Phase 7 |
 | Phase 3–12 | No iniciadas | Desarrollo según las fases descritas más abajo |
 
 Prueba aplazada por el usuario el 2026-10-15:
@@ -34,8 +34,9 @@ Etapa visual previa a Phase 2 — Design System
 Tokens, componentes App*, fuentes locales, temas claro/oscuro y galería debug
 independiente implementados. La suite completa pasa 22 pruebas; las vistas se han
 exportado y revisado visualmente. Ver DESIGN_SYSTEM.md desde la raíz.
-Esta etapa no implementa grupos ni lógica financiera. La identidad visual v0.1
-es una propuesta pendiente de aprobación; login/home siguen sin migrar.
+Esta etapa visual inicial no implementó grupos ni lógica financiera. Después,
+el usuario pidió continuar Phase 2 usando esta base: home/grupos ya componen App*
+y AppTheme está conectado a la app; login conserva su composición anterior.
 No cambia el aplazamiento de pruebas manuales de Phase 1.
 
 Phase 0 — Foundation
@@ -104,6 +105,17 @@ Cierre:
 dos cuentas reales pueden iniciar sesión correctamente en Android.
 
 Phase 2 — Groups & Membership
+
+Estado:
+
+implementada y validada en su alcance inicial: Prueba1 aprovisionado desde terminal
+por elección del usuario, con su cuenta de la app como owner; grupo y membresía
+comprobados en A059P. Lista de grupos propios y miembros, contexto por ruta y reglas
+de acceso en tiempo real. 26 pruebas Flutter y 9 de reglas superadas; analyze sin
+incidencias y APK compilado. Índice y reglas publicados y verificados.
+La segunda cuenta real sigue aplazada; aislamiento y roles admin/member se han
+probado en emulador y con repositorios simulados. iOS sin probar.
+Ver docs/PHASE2_VALIDATION.md. No se ha adelantado CRUD de personas o dinero.
 
 Incluye:
 

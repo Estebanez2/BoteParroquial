@@ -1,8 +1,9 @@
 # BoteParroquial — Design System v0.1
 
-Implementación y galería preparadas para revisión. **Identidad pendiente de
-aprobación del usuario.** Login y home conservan su aspecto anterior. Phase 2 no
-ha empezado. Los datos de la galería son ejemplos, no información del backend.
+Implementación y galería disponibles. Base visual en uso en Phase 2 por petición
+del usuario (2026-10-15); la apariencia sigue abierta a iteraciones. Home y grupos
+usan App*; login mantiene su composición anterior con el tema común.
+Los datos de la galería son ejemplos, no información del backend.
 
 ## Identidad visual
 
@@ -36,7 +37,7 @@ seguirán en su feature y compondrán estas piezas cuando se implementen.
 Resolver con `AppColors.of(context)` y `AppTypography.of(context)`. AppColors es
 una ThemeExtension con `copyWith`, `lerp` y paletas light/dark. AppTheme configura
 la implementación Material de inputs, calendario, diálogos, paneles y tipografía.
-Por ahora AppTheme solo se conecta a la galería; la migración requiere aprobación.
+AppTheme se conecta tanto a la galería como a la app desde Phase 2.
 
 ### Color
 
@@ -182,9 +183,9 @@ Para volver a la app: `flutter run --debug -t lib/main.dart`. Ambos entrypoints
 usan el mismo identificador Android: ejecutar uno sustituye temporalmente el
 binario instalado. No hace falta desinstalar para alternarlos.
 
-Login y home no se han rediseñado ni conectado al tema nuevo. Su apariencia
+Home y las nuevas pantallas de grupos usan el tema y componentes comunes desde
+Phase 2. Login conserva su composición anterior con AppTheme; esa composición
 provisional es una excepción documentada, no un patrón para nuevas pantallas.
-Después de aprobar el estilo se migrarán en una tarea explícita.
 
 ## Librerías evaluadas
 
@@ -210,7 +211,7 @@ Referencias: [tokens shadcn/ui](https://ui.shadcn.com/docs/theming),
 [Manrope](https://github.com/google/fonts/tree/main/ofl/manrope) y
 [Newsreader](https://github.com/google/fonts/tree/main/ofl/newsreader).
 
-## Validación y revisión
+## Validación inicial de la etapa visual
 
 - Suite completa: 22 pruebas superadas; exportación visual optativa omitida por
   defecto. Las ocho pruebas de auth/base siguen pasando.
@@ -232,6 +233,6 @@ Las vistas se escriben en `.dart_tool/design_system_preview/`, fuera de Git. La
 exportación carga las fuentes reales y MaterialIcons. Las pruebas ordinarias no
 escriben artefactos ni dependen de un golden de plataforma.
 
-Revisar identidad, densidad, tipografía, modos y controles con el usuario antes
-de migrar. Las pruebas manuales de autenticación aplazadas siguen pendientes y
-no se reanudan aquí. iOS requiere Mac/Xcode para validación nativa.
+La validación anterior registra la etapa visual inicial. Ver docs/PHASE2_VALIDATION.md
+para las pantallas que ya usan esta base. Las pruebas manuales de autenticación
+aplazadas siguen pendientes. iOS requiere Mac/Xcode para validación nativa.

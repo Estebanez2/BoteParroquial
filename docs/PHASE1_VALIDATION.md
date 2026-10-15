@@ -3,7 +3,9 @@
 Estado de referencia: 2026-10-15. Implementación terminada; validación parcial en
 dispositivo. La prueba con segunda cuenta está aplazada por petición del usuario:
 no dispone de otra cuenta actualmente. No hay pruebas manuales en curso.
-No se implementan grupos, membresías, personas ni dinero.
+Este documento registra únicamente Phase 1; el avance posterior de grupos y
+membresías se registra en docs/PHASE2_VALIDATION.md. Los pendientes de auth
+descritos aquí se mantienen hasta una comprobación explícita.
 
 ## Implementación
 

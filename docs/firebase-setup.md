@@ -108,7 +108,16 @@ pruebas en el emulador local. Release cloud.firestore usa el ruleset
 Solo permiten get/create/update del propio users/{uid}, validan campos y tipos,
 exigen timestamps de servidor y conservan createdAt. Se prohíben list/delete,
 roles en perfiles y todas las operaciones de grupos/personas/movimientos.
-Las reglas de Groups se incorporarán en Phase 2.
+Este párrafo registra el despliegue histórico de Phase 1.
+
+Phase 2 (2026-10-15): reglas actualizadas y publicadas tras nueve pruebas de
+emulador. Ruleset dd2fe98e-7d08-4003-996e-ebf411ed4672. Se permite descubrir
+membresías propias filtrando uid y leer grupo/miembros con membresía activa y
+grupo activo. Todas las escrituras cliente de grupos/membresías siguen denegadas;
+personas y dinero permanecen cerrados. Índice collection-group members.uid en
+firestore.indexes.json. No había índices personalizados anteriores.
+Prueba1 creado mediante commit atómico de grupo y owner con timestamps de servidor.
+Detalle, herramienta de aprovisionamiento y validación: docs/PHASE2_VALIDATION.md.
 
 No crear otra base simplemente porque estos datos todavía no estén documentados.
 

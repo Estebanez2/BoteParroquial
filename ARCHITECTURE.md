@@ -229,5 +229,16 @@ lib/main_showcase.dart, sin Firebase ni rutas de producción. Los valores que mu
 son ejemplos de presentación y no implementan Groups, Persons, Movements o Dashboard.
 
 Ver DESIGN_SYSTEM.md para APIs, reglas de uso y evaluación de dependencias.
-La identidad visual todavía requiere aprobación. La UI actual de autenticación
-permanece sin migrar; no se cambia su lógica durante esta fase visual.
+En Phase 2 se conecta AppTheme a la app por petición del usuario; home y grupos
+usan App*. Login mantiene su composición anterior con el tema común.
+
+Groups & Membership
+
+Modelos Group y GroupMember en models; GroupRepository usa GroupService y su
+adaptador FirestoreGroupService. La consulta de membresías propias filtra uid
+en collectionGroup('members'); las lecturas de grupo/miembros reciben groupId.
+El contexto del grupo es el parámetro de ruta /groups/:groupId, sin singleton
+ni ID de grupo hardcodeado. Los providers vuelven a comprobar membresía al cambiar
+sesión o acceso. La UI no muestra los datos anteriores durante carga o error.
+Las reglas son la autoridad de permisos; el guard de UI solo mejora la navegación.
+Las escrituras cliente de grupos/membresías siguen cerradas hasta Phase 7.

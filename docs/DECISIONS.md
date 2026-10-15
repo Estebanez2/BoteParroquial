@@ -263,10 +263,41 @@ La propuesta se revisa mediante lib/main_showcase.dart, solo debug y sin Firebas
 La aprobación de identidad visual y la migración de pantallas son pasos separados.
 No se ha rediseñado el login existente ni alterado su lógica.
 
+Decisiones de Phase 2
+
+D032 — Descubrimiento de grupos y miembros (2026-10-15)
+
+El usuario elige uid y displayName en members. Consultar únicamente las
+membresías propias por uid con collectionGroup; obtener groupId de la ruta.
+El nombre de membresía es una copia al aprovisionar, no un perfil público global.
+
+D033 — Alcance controlado de Phase 2 (2026-10-15)
+
+El usuario elige seguir el roadmap: aprovisionar Prueba1 desde terminal con su
+cuenta de la app como owner. Creación desde UI, invitaciones, cambios de roles y
+transferencia siguen en Phase 7. No asignar una segunda cuenta inventada.
+Las reglas deniegan todas las escrituras cliente de grupos y membresías.
+El operador crea grupo y owner atómicamente con fecha de servidor; no se crea
+persona interna hasta la fase correspondiente. Moneda EUR y zona Europe/Madrid.
+
+D034 — Uso del sistema visual en Phase 2 (2026-10-15)
+
+El usuario pide avanzar usando los componentes y solicita UI distintiva con
+animaciones cuando encajen. Conectar AppTheme claro/oscuro a la app y utilizar
+App* en home y grupos, con titulares editoriales y AppReveal que respeta el
+movimiento reducido. La apariencia puede iterarse; no se reanudan pruebas
+manuales aplazadas de auth. Login conserva su composición previa con el tema común.
+
+D035 — Consultar alternativas (2026-10-15)
+
+Petición explícita: no dar decisiones por entendidas; cuando haya varias formas
+de hacer algo, explicar alternativas, recomendar una y preguntar antes de elegir.
+No volver a consultar decisiones ya acordadas ni interpretar silencio como respuesta.
+
 Decisiones todavía pendientes
 
-Diseño visual definitivo: v0.1 implementada y documentada en DESIGN_SYSTEM.md,
-pendiente de aprobación del usuario. No dar por aprobada la propuesta por compilar.
+Diseño visual definitivo: base v0.1 en uso por petición del usuario en Phase 2;
+la apariencia puede seguir iterándose con él.
 
 Política concreta de generación de exportaciones grandes.
 

@@ -94,6 +94,8 @@ groups/{groupId}/members/{uid}
 
 Campos:
 
+uid: string
+displayName: string
 role: owner | admin | member
 status: active | inactive
 joinedAt: timestamp
@@ -103,6 +105,21 @@ personId: string?
 personId representa la futura vinculación entre usuario autenticado y persona interna.
 
 Una cuenta puede tener roles distintos en grupos diferentes.
+
+Ampliación acordada en Phase 2: uid debe coincidir con el ID del documento.
+Permite descubrir las membresías propias mediante collectionGroup('members')
+filtrada por uid, sin listar grupos ajenos. Índice de ámbito COLLECTION_GROUP
+en firestore.indexes.json. No se duplica groupId: se obtiene de la ruta.
+displayName es una copia del nombre visible en el momento del aprovisionamiento;
+no se sincroniza automáticamente con el perfil global en esta fase. Permite
+mostrar miembros sin abrir la lectura de sus perfiles privados users/{uid}.
+Las membresías propias inactivas pueden descubrirse, pero no dan acceso al grupo.
+
+En Phase 2 todos los roles activos pueden leer el grupo activo y sus membresías.
+Ningún cliente puede crear, modificar ni borrar grupos o membresías; el primer
+grupo se aprovisiona desde terminal con credenciales del operador y escritura
+atómica. Solo se crea un owner, sin persona interna todavía (Phase 3).
+No se habilita CRUD de personas ni operaciones económicas en esta fase.
 
 groups/{groupId}/persons/{personId}
 

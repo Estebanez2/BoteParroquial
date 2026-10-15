@@ -31,6 +31,12 @@ pruebas aplazadas. No reanudar una prueba manual aplazada sin que el usuario lo 
 
 Las instrucciones explícitas del usuario tienen prioridad.
 
+Preferencia explícita del usuario (2026-10-15): no dar decisiones por entendidas.
+Cuando algo admita varias formas de hacerse, preguntar cuál prefiere antes de
+elegir o implementar la alternativa. Explicar brevemente las diferencias y
+recomendar una opción. No interpretar el silencio como respuesta. Consultar las
+decisiones ya acordadas para no volver a preguntar lo que el usuario ha resuelto.
+
 Si algo no está decidido, no inventar comportamiento. Documentarlo como pendiente o preguntar cuando sea necesario.
 
 Proyecto
@@ -260,6 +266,9 @@ Los componentes no calculan reglas financieras ni permisos y no llaman a Firebas
 Respetar modo oscuro, texto ampliado y movimiento reducido.
 
 La galería se ejecuta mediante lib/main_showcase.dart, solo en debug y sin Firebase.
-No incorporarla a la navegación de producción. La identidad v0.1 está pendiente
-de aprobación del usuario. Login/home actuales se migrarán después de esa aprobación;
-su apariencia provisional no debe copiarse al crear nuevas pantallas.
+No incorporarla a la navegación de producción. En Phase 2 el usuario solicita
+avanzar usando esta base: AppTheme está conectado y home/grupos componen App*.
+Login conserva su composición previa con el tema común; no copiar esa composición
+provisional al crear pantallas nuevas. La apariencia puede seguir iterándose.
+Petición del usuario: UI distintiva y animaciones siempre que encajen, con propósito
+y respetando movimiento reducido; no animar por animar ni sacrificar accesibilidad.

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import '../design_system/design_system.dart';
 
 import 'router.dart';
 
@@ -10,10 +12,11 @@ class BoteParroquialApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
     title: 'BoteParroquial',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF245C47)),
-      useMaterial3: true,
-    ),
+    theme: AppTheme.light,
+    darkTheme: AppTheme.dark,
+    locale: const Locale('es'),
+    supportedLocales: const [Locale('es')],
+    localizationsDelegates: GlobalMaterialLocalizations.delegates,
     routerConfig: ref.watch(routerProvider),
   );
 }

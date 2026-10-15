@@ -9,6 +9,7 @@ import 'package:bote_parroquial/models/auth_user.dart';
 import 'package:bote_parroquial/models/user_profile.dart';
 import 'package:bote_parroquial/repositories/auth_repository.dart';
 import 'package:bote_parroquial/repositories/user_profile_repository.dart';
+import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,6 +87,7 @@ ProviderContainer containerFor(
     firebaseStartupProvider.overrideWithValue(FirebaseStartup.ready(FakeApp())),
     authRepositoryProvider.overrideWithValue(auth),
     userProfileRepositoryProvider.overrideWithValue(profiles),
+    membershipsProvider.overrideWith((ref) => Stream.value(const [])),
   ],
 );
 

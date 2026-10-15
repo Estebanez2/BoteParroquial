@@ -94,9 +94,10 @@ Firestore ha sido creado.
 Base `(default)`, edición Standard, región `europe-southwest1` (Madrid).
 Metadatos comprobados con Firebase CLI el 2026-10-15.
 
-Reglas de Phase 1 verificadas y desplegadas en Firestore: cada cuenta solo puede
-crear, leer y actualizar su perfil users/{uid}. No puede listar perfiles, borrar
-su perfil, añadir roles ni acceder a grupos o datos económicos en esta fase.
+Reglas de Phase 2 publicadas: cada cuenta mantiene privado su perfil users/{uid}.
+Puede descubrir sus membresías por uid y leer grupos activos y miembros si tiene
+membresía activa. No puede asignarse roles ni escribir grupos/membresías.
+Personas y datos económicos siguen cerrados. Ver docs/PHASE2_VALIDATION.md.
 
 Login con Google y perfil guardado comprobados con una primera cuenta real en
 A059P (Android 16, API 36). El cierre de sesión también está confirmado en registros.
@@ -117,19 +118,25 @@ No se ha realizado una reorganización global de las demás features.
 Detalle de verificaciones y comprobaciones pendientes:
 docs/PHASE1_VALIDATION.md.
 
-No existe todavía CRUD funcional de grupos, personas o movimientos.
+Phase 2 implementa lista de grupos propios, contexto por ruta, roles y lectura
+de miembros en tiempo real. Prueba1 está aprovisionado con la cuenta de la app
+confirmada por el usuario como propietaria. La creación desde UI y gestión de
+membresías siguen en Phase 7; no existe todavía CRUD de personas o movimientos.
 
 No existe todavía saldo ni dashboard financiero.
 
-Design System v0.1 implementado antes de Phase 2, pendiente de aprobación visual.
+Design System v0.1 en uso por petición del usuario desde Phase 2.
 Tokens y componentes en lib/design_system/; galería debug sin Firebase:
 
 flutter run --debug -t lib/main_showcase.dart
 
-La app habitual sigue en lib/main.dart y mantiene login/home con su aspecto previo.
-La suite actual pasa 22 pruebas; una exportación visual optativa está omitida por defecto.
+La app habitual sigue en lib/main.dart con AppTheme claro/oscuro. Home y grupos
+componen App* con entrada animada respetuosa con movimiento reducido; login
+mantiene su composición previa con el tema común.
 La galería muestra cifras y personas de ejemplo, sin implementar lógica financiera.
 Las pruebas de segunda cuenta y restauración real aplazadas no se han reanudado.
+
+Validación de la fase actual y aprovisionamiento: docs/PHASE2_VALIDATION.md.
 
 No asumir que una funcionalidad está implementada simplemente porque aparezca documentada.
 

@@ -25,7 +25,30 @@ service cloud.firestore {
         && request.resource.data.lastSignInAt == request.time;
       allow list, delete: if false;
     }
-    // Membership and financial operations are intentionally not enabled in Phase 1.
+    function activeMember(groupId) {
+      let membership = /databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid);
+      return request.auth != null
+        && exists(membership)
+        && get(membership).data.uid == request.auth.uid
+        && get(membership).data.status == 'active'
+        && get(membership).data.role in ['owner', 'admin', 'member']
+        && get(/databases/$(database)/documents/groups/$(groupId)).data.isActive == true;
+    }
+    // Discovery is restricted to one's own membership records, never group data.
+    // The uid filter in the collection-group query is mandatory.
+    match /{path=**}/members/{memberId} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+    match /groups/{groupId} {
+      allow get: if activeMember(groupId);
+      allow list, create, update, delete: if false;
+      match /members/{uid} {
+        allow read: if activeMember(groupId);
+        // Controlled provisioning only in Phase 2. No client can grant roles.
+        allow write: if false;
+      }
+    }
+    // Persons, money and future collections remain closed until their phases.
     match /{document=**} {
       allow read, write: if false;
     }
