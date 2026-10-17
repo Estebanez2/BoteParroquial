@@ -4,6 +4,7 @@ abstract final class AppMotion {
   static const durationFast = Duration(milliseconds: 140);
   static const durationNormal = Duration(milliseconds: 220);
   static const durationSlow = Duration(milliseconds: 320);
+  static const statusNoticeDelay = Duration(seconds: 2);
   static const curveStandard = Curves.easeOutCubic;
   static const curveEmphasized = Curves.easeInOutCubic;
   static Duration duration(BuildContext context, Duration value) =>

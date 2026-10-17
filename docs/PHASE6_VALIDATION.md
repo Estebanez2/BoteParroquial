@@ -80,3 +80,19 @@ Referencias de implementación: [metadata y caché de Firestore](https://firebas
 [Timestamp.date en Rules](https://firebase.google.com/docs/reference/rules/rules.Timestamp_?hl=en),
 [path_provider](https://pub.dev/packages/path_provider) y [timezone](https://pub.dev/packages/timezone).
 Registro general: [ROADMAP.md](ROADMAP.md).
+
+## Actualización del 2026-10-16: aviso transitorio y foto actual
+
+El aviso de GroupSyncNotice deja de mostrarse durante AsyncLoading y espera dos
+segundos si los datos siguen sin confirmación. Se retira al recibir confirmación.
+Mensaje «Actualización pendiente», sin afirmar que no hay Internet. No se modifica
+GroupSyncService ni las condiciones de operaciones económicas de servidor.
+Prueba dirigida superada: carga inicial, caché breve seguida de confirmación,
+pendiente sostenido, retirada inmediata y cancelación del temporizador al desmontar.
+
+También pasa el flujo dirigido de editar la foto guardada, cancelar sin cambios,
+guardar explícitamente y retirar la imagen. Detalle en docs/SUPABASE_SETUP.md.
+No se instala/ejecuta la app: lo hará el usuario. La validación física de esta tanda
+sigue pendiente; no se amplía la evidencia anterior ni se cierran otras pruebas.
+
+Análisis final: flutter analyze --no-pub sin incidencias. Dos pruebas dirigidas superadas.

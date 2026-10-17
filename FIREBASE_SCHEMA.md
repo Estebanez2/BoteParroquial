@@ -1,5 +1,13 @@
 Esquema de Firestore
 
+Actualización de fotos (2026-10-15): se prepara Supabase Storage para archivos,
+manteniendo este contrato de Firestore sin cambios. No hay campos ni reglas nuevos.
+Bucket y función de fotos desplegados. Autorización: Edge Function con consultas
+Firestore REST bajo Security Rules del usuario, sin replicar roles ni campos:
+docs/SUPABASE_SETUP.md. El aplazamiento de Storage del rediseño es histórico.
+Foto de cuenta por defecto cuando falta una foto de miembro; se resuelve en la
+función tras autorizar grupo, sin campos nuevos ni copiar documentos/perfiles.
+
 Este archivo es la fuente principal de verdad del modelo persistido.
 
 No duplicar el esquema completo en otros documentos.

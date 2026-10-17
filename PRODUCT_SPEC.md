@@ -158,6 +158,22 @@ y confirmar. «Hoy» se determina por la zona del grupo, no por la zona del móv
 
 Presentación del MVP
 
+2026-10-16: editar la foto actual desde su imagen guardada, sin elegirla de nuevo;
+cancelar conserva la anterior, guardar confirma los cambios. Aviso de actualización
+sin confirmar oculto durante comprobaciones iniciales breves, sin afirmar que no
+hay Internet cuando únicamente se están leyendo datos de caché.
+
+Actualización posterior (2026-10-15): el usuario autoriza preparar fotos con
+Supabase Storage, sin Firebase Storage/Blaze. Función remota y UI de fotos
+integradas: cámara/galería, vista previa, guardado explícito y retirada confirmada.
+Fotos privadas, personas internas independientes, permisos de D053/D055.
+Usuario confirma fotos de personas/cuenta. Foto de cuenta predeterminada en los
+grupos sin personalización, con permisos de cambio locales al grupo. Se añaden
+caché privada sin parpadeo y recorte/zoom/rotación. El usuario confirma la corrección
+en A059P; los permisos con otros roles siguen pendientes. Decisiones D057/D058.
+Este acuerdo sustituye el aplazamiento de almacenamiento citado a continuación.
+Permisos D053 conservados; detalles y pendientes en docs/SUPABASE_SETUP.md.
+
 Ajuste visual acordado el 2026-10-15: rediseñar las funciones actuales según las
 referencias del usuario. Iniciales para cuentas, personas y grupos sin imagen;
 subidas de fotos expresamente aplazadas. Los permisos futuros de edición de fotos

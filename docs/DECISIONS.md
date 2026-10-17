@@ -442,6 +442,70 @@ Es un acuerdo de producto para la implementación posterior, no permisos despleg
 Antes de habilitar fotos de personas internas, concretar su relación con la foto
 de membresía y los vínculos usuario/persona. No inventar sincronización entre ellas.
 
+D054 — Supabase para fotos (2026-10-15)
+
+El usuario elige Supabase Storage para evitar activar facturación Firebase,
+crea el proyecto, confirma la integración Firebase Auth y proporciona URL y clave
+publishable. Firebase mantiene Google Sign-In y Firestore. Se prepara el SDK y
+conexión diferida sin segundo login. Sustituye el aplazamiento de almacenamiento
+de D052; las subidas aún no están implementadas. D053 mantiene los permisos de
+producto. Falta elegir cómo autorizar contra los roles de Firestore; ninguna
+política debe confiar en roles elegidos por el cliente. Ver docs/SUPABASE_SETUP.md.
+
+D055 — Edge Function y privacidad de fotos (2026-10-15)
+
+El usuario elige la función en Supabase para comprobar permisos actuales en
+Firestore, sin replicar roles. Confirma que cada cuenta ve su foto y, dentro del
+grupo, las fotos de los demás y la portada. Fotos privadas a través de la función.
+Confirma foto independiente de persona interna, gestionable por owner/admin
+autorizado, sin sincronización con cuenta/membresía. Completa D053 y resuelve
+la elección de autorización pendiente de D054. Implementación local y pruebas
+dirigidas disponibles. Actualización posterior: login autorizado, bucket y función
+desplegados e integración UI realizada; validación física aún parcial.
+
+D056 — Selección y tratamiento de fotos (2026-10-15)
+
+El usuario elige galería y cámara. Ofrecer vista previa antes de guardar, iniciales
+sin foto y retirada confirmada de la imagen, sin tocar historial financiero. La
+foto de una persona se añade tras guardar su identidad. Preparar JPEG sin EXIF/GPS
+y tamaño máximo 512 KiB. Fotos en memoria; al reanudar/volver se vuelven a leer,
+sin prometer sincronización instantánea. Si Android termina el proceso del selector,
+descartar el resultado sin contexto y volver a elegir, sin asignarlo a otra cuenta.
+
+D057 — Foto de cuenta predeterminada y excepción por grupo (2026-10-15)
+
+El usuario confirma fotos de personas y de cuenta, pero espera ver la propia en
+Miembros. Elige usar la foto de cuenta por defecto con una foto alternativa por
+grupo que admin/owner pueden cambiar según D053. La foto global continúa editable
+solo por su dueño. El fallback se resuelve en servidor tras autorizar grupo y
+membresía; no expone perfiles globales ni copia imágenes a todos los grupos.
+Completa D055: otras cuentas del grupo pueden ver esa foto a través del contexto
+del grupo, no por la ruta privada de cuenta. Personas internas siguen independientes.
+
+D058 — Caché privada y edición antes de guardar (2026-10-15)
+
+El usuario pide evitar la aparición provisional de iniciales y permite elegir
+la implementación adecuada. Se añade caché privada por cuenta con límites,
+presentación inmediata en memoria y revalidación de versión en segundo plano.
+Se conserva la foto durante actualizaciones; una primera carga sin caché muestra
+un espacio neutro. Limpieza por sesión/acceso y descarte de descargas tardías.
+También solicita zoom, rotación y edición básica: editor nativo de recorte cuadrado
+antes de la vista previa, con confirmación de guardado separada. No implica edición
+destructiva de una foto existente hasta pulsar Guardar foto.
+
+D059 — Edición de foto guardada y aviso sin parpadeo (2026-10-16)
+
+Petición explícita del usuario: añadir «Editar foto actual» para abrir la imagen
+guardada en el editor existente sin borrarla ni volver a seleccionarla. Mantener
+cancelación segura, vista previa y guardado explícito, con permisos sin cambios.
+
+El aviso de datos sin confirmar no debe aparecer durante la breve lectura inicial
+de caché cuando hay conexión. Ocultar mientras carga y conceder dos segundos a la
+confirmación; mostrar solo si sigue pendiente, y ocultar inmediatamente al confirmar.
+El texto describe una actualización pendiente, sin inferir que no hay Internet
+solo por metadata de Firestore. No relajar confirmaciones económicas de servidor.
+El usuario asume la ejecución de la app para validar estos cambios.
+
 Decisiones todavía pendientes
 
 Aprobación visual del rediseño v0.2 según las referencias del usuario; la apariencia

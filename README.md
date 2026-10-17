@@ -63,7 +63,31 @@ docs/firebase-setup.md
 
 Estado actual
 
-Fecha de referencia: 2026-10-15.
+Actualización de fotos (2026-10-15): el usuario elige Supabase Storage y ha creado
+el proyecto y vinculado Firebase Auth. SDK, función remota y UI de fotos integrados;
+el usuario confirma las fotos de personas y su foto de cuenta. Las pruebas de permisos
+con otros roles reales siguen pendientes;
+las menciones siguientes al aplazamiento describen el rediseño anterior.
+Ver docs/SUPABASE_SETUP.md. Firebase sigue siendo el backend de acceso y datos.
+La autorización se implementa mediante Edge Function de Supabase, elegida por el
+usuario. Función y bucket privado desplegados, rechazo anónimo comprobado y UI
+con cámara/galería, vista previa, guardar y quitar. Cinco pruebas backend y doce
+casos Flutter dirigidos superados, análisis limpio y APK instalado en A059P.
+Actualización posterior: foto de cuenta por defecto en Miembros, personalización
+por grupo, caché privada para evitar parpadeos y recorte/zoom/rotación antes de guardar.
+APK actualizado instalado y backend versión 3 desplegado; siete pruebas de fotos,
+un flujo de grupos y seis de backend superados. El usuario confirma en A059P foto
+en Miembros, sin parpadeo y editor funcionando. Otros roles e iOS siguen pendientes.
+No se repitió la suite completa.
+
+Fecha de referencia: 2026-10-16.
+
+Mejoras del 2026-10-16: «Editar foto actual» reutiliza la imagen guardada y permite
+ajustarla sin buscarla de nuevo; cancelar conserva la anterior y guardar es explícito.
+El aviso de actualización se oculta durante la carga inicial y solo aparece tras
+dos segundos sin confirmación; desaparece al confirmar el servidor. No interpreta
+la caché inicial como falta de Internet. Dos pruebas dirigidas superadas;
+validación física pendiente, el usuario ejecutará la app.
 
 Actualmente:
 

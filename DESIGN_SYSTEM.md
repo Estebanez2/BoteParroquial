@@ -6,6 +6,19 @@ formularios, historial y login usan App*. Oscuro predeterminado y variante clara
 conservada para compatibilidad y revisión; no hay selector de tema implementado.
 Los datos de la galería son ejemplos, no información del backend.
 
+Fotos (ampliación posterior): AppAvatar y AppCover siguen recibiendo ImageProvider
+sin SDK ni reglas. Las wrappers de photos/presentation consultan providers y usan
+la caché privada por providers; editor con App*, animación de entrada y movimiento reducido. AppAvatarMenu
+añade callback opcional de foto sin conocer Firebase/Supabase. Sin imagen o ante
+error sin imagen, se conservan las iniciales. Durante primera carga se usa un
+espacio neutro; las revalidaciones mantienen la foto sin volver a iniciales.
+AppImageCropper envuelve recorte/zoom/rotación nativos con tokens claro/oscuro.
+Detalles en docs/SUPABASE_SETUP.md.
+AppDelayedVisibility añade un margen de presentación para avisos transitorios,
+con retirada inmediata al resolverlos. El token statusNoticeDelay es de dos
+segundos; no es una animación y no depende de movimiento reducido. No reserva
+espacio mientras el aviso está oculto ni contiene lógica de conectividad.
+
 ## Identidad visual
 
 Verde casi negro, menta luminosa y coral en retiradas. Degradados suaves, contornos

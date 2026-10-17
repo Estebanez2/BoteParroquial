@@ -39,6 +39,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Permite hacer una foto para tu cuenta, tu grupo o una persona del grupo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Permite elegir una imagen para tu cuenta, tu grupo o una persona del grupo.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

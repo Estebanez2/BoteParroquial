@@ -5,17 +5,19 @@ import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 
-/// A group cover; the caller can supply a photo when uploads become available.
+/// A group cover with an optional image and initials fallback.
 class AppCover extends StatelessWidget {
   const AppCover({
     super.key,
     required this.name,
     this.image,
     this.large = false,
+    this.loading = false,
   });
   final String name;
   final ImageProvider? image;
   final bool large;
+  final bool loading;
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
@@ -51,7 +53,7 @@ class AppCover extends StatelessWidget {
           border: Border.all(color: c.outline.withValues(alpha: .5)),
         ),
         child: image == null
-            ? fallback
+            ? (loading ? ColoredBox(color: c.surfaceVariant) : fallback)
             : Image(
                 image: image!,
                 fit: BoxFit.cover,

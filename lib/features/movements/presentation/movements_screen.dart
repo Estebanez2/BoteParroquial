@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../models/photo_target.dart';
+import '../../photos/presentation/photo_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/errors/app_failure.dart';
@@ -175,7 +177,12 @@ class _MovementRow extends ConsumerWidget {
     return AppReveal(
       child: AppExpandableRow(
         expanded: expanded,
-        leading: AppAvatar(name: person),
+        leading: movement.input.personId == null
+            ? AppAvatar(name: person)
+            : PhotoAvatar(
+                target: PhotoTarget.person(groupId, movement.input.personId!),
+                name: person,
+              ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

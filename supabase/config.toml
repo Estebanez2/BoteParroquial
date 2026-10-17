@@ -1,0 +1,8 @@
+project_id = "BoteParroquial"
+
+# Firebase JWTs are verified inside the handler against Google's signing keys.
+# The legacy Supabase JWT check does not authenticate these tokens.
+[functions.photo-access]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/photo-access/index.ts"

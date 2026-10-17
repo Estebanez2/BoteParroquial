@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/person.dart';
+import '../../../models/photo_target.dart';
+import '../../photos/presentation/photo_view.dart';
 import '../providers/person_providers.dart';
 
 Future<void> showPersonEditor(
@@ -117,15 +119,27 @@ class _PersonEditorState extends ConsumerState<PersonEditor> {
                   Center(
                     child: ValueListenableBuilder<TextEditingValue>(
                       valueListenable: _name,
-                      builder: (context, value, child) => AppAvatar(
-                        name: value.text,
-                        size: AppAvatarSize.editor,
-                      ),
+                      builder: (context, value, child) => widget.person == null
+                          ? AppAvatar(
+                              name: value.text,
+                              size: AppAvatarSize.editor,
+                            )
+                          : PhotoAvatar(
+                              target: PhotoTarget.person(
+                                groupId,
+                                widget.person!.id,
+                              ),
+                              name: value.text,
+                              size: AppAvatarSize.editor,
+                              interactive: true,
+                            ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Sus iniciales ayudan a identificarla en el grupo.',
+                    widget.person == null
+                        ? 'Guarda la persona para poder añadir su foto. Mientras tanto, usaremos sus iniciales.'
+                        : 'Toca la imagen para consultar o cambiar su foto.',
                     textAlign: TextAlign.center,
                     style: AppTypography.of(context).bodySmall,
                   ),

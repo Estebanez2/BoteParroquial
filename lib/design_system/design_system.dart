@@ -8,6 +8,7 @@ export 'theme/app_spacing.dart';
 export 'theme/app_radius.dart';
 export 'theme/app_shadows.dart';
 export 'theme/app_motion.dart';
+export 'components/feedback/app_delayed_visibility.dart';
 export 'components/buttons/app_button.dart';
 export 'components/buttons/app_icon_button.dart';
 export 'components/buttons/app_action_menu.dart';

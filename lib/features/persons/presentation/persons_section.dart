@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/person.dart';
+import '../../../models/photo_target.dart';
+import '../../photos/presentation/photo_view.dart';
 import '../providers/person_providers.dart';
 import 'person_editor.dart';
 
@@ -132,7 +134,12 @@ class _PersonCard extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppAvatar(name: person.displayName, size: AppAvatarSize.large),
+              PhotoAvatar(
+                target: PhotoTarget.person(groupId, person.id),
+                name: person.displayName,
+                size: AppAvatarSize.large,
+                interactive: true,
+              ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(

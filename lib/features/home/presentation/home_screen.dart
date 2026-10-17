@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/group_member.dart';
+import '../../../models/photo_target.dart';
+import '../../photos/presentation/photo_view.dart';
+import '../../photos/presentation/photo_editor_screen.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../groups/providers/group_providers.dart';
 import '../../groups/presentation/group_widgets.dart';
@@ -31,13 +34,28 @@ class HomeScreen extends ConsumerWidget {
         editorial: true,
         leading: const Icon(Icons.groups_outlined),
         actions: [
-          AppAvatarMenu(
-            accountId: user?.uid,
-            name: ownProfile?.displayName ?? user?.displayName ?? 'Tu cuenta',
-            email: ownProfile?.email ?? user?.email,
-            enabled: !action.isLoading,
-            onSignOut: () =>
-                ref.read(authControllerProvider.notifier).signOut(),
+          PhotoView(
+            target: PhotoTarget.account(user?.uid ?? ''),
+            builder: (context, image, loading) => AppAvatarMenu(
+              accountId: user?.uid,
+              name: ownProfile?.displayName ?? user?.displayName ?? 'Tu cuenta',
+              email: ownProfile?.email ?? user?.email,
+              enabled: !action.isLoading,
+              image: image,
+              loading: loading,
+              onPhoto: user == null
+                  ? null
+                  : () => showPhotoEditor(
+                      context,
+                      target: PhotoTarget.account(user.uid),
+                      name:
+                          ownProfile?.displayName ??
+                          user.displayName ??
+                          'Tu cuenta',
+                    ),
+              onSignOut: () =>
+                  ref.read(authControllerProvider.notifier).signOut(),
+            ),
           ),
         ],
       ),
@@ -204,7 +222,7 @@ class _GroupTile extends ConsumerWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          AppCover(name: group.name),
+                          PhotoCover(groupId: groupId, name: group.name),
                           const SizedBox(height: AppSpacing.lg),
                           details,
                         ],
@@ -213,7 +231,7 @@ class _GroupTile extends ConsumerWidget {
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AppCover(name: group.name),
+                        PhotoCover(groupId: groupId, name: group.name),
                         const SizedBox(width: AppSpacing.lg),
                         Expanded(child: details),
                       ],

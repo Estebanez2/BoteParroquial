@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/group_member.dart';
+import '../../../models/photo_target.dart';
+import '../../photos/presentation/photo_view.dart';
 import '../providers/group_providers.dart';
 import 'group_access_body.dart';
 import 'group_widgets.dart';
@@ -70,7 +72,9 @@ class GroupMembersScreen extends ConsumerWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AppAvatar(
+                            PhotoAvatar(
+                              target: PhotoTarget.member(groupId, member.uid),
+                              interactive: true,
                               name: member.displayName,
                               size: AppAvatarSize.large,
                             ),

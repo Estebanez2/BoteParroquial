@@ -13,12 +13,14 @@ class AppAvatar extends StatelessWidget {
     this.size = AppAvatarSize.medium,
     this.showIndicator = false,
     this.indicatorLabel = 'Activo',
+    this.loading = false,
   });
   final String name;
   final ImageProvider? image;
   final AppAvatarSize size;
   final bool showIndicator;
   final String indicatorLabel;
+  final bool loading;
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
@@ -36,6 +38,22 @@ class AppAvatar extends StatelessWidget {
     final initials = words.isEmpty
         ? '?'
         : words.map((word) => word.characters.first).join().toUpperCase();
+    final initialsWidget = words.isEmpty
+        ? Icon(Icons.person_outline_rounded, size: diameter / 2)
+        : Padding(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            child: FittedBox(
+              child: Text(
+                initials,
+                style:
+                    size == AppAvatarSize.large || size == AppAvatarSize.editor
+                    ? AppTypography.of(context).headingSmall
+                    : AppTypography.of(
+                        context,
+                      ).labelMedium.copyWith(color: c.primary),
+              ),
+            ),
+          );
     return Semantics(
       label: showIndicator ? '$name, $indicatorLabel' : name,
       excludeSemantics: true,
@@ -48,27 +66,19 @@ class AppAvatar extends StatelessWidget {
               radius: diameter / 2,
               backgroundColor: c.primaryContainer,
               foregroundColor: c.primary,
-              foregroundImage: image,
-              onForegroundImageError: image == null
-                  ? null
-                  : (error, stackTrace) {},
-              child: words.isEmpty
-                  ? Icon(Icons.person_outline_rounded, size: diameter / 2)
-                  : Padding(
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      child: FittedBox(
-                        child: Text(
-                          initials,
-                          style:
-                              size == AppAvatarSize.large ||
-                                  size == AppAvatarSize.editor
-                              ? AppTypography.of(context).headingSmall
-                              : AppTypography.of(
-                                  context,
-                                ).labelMedium.copyWith(color: c.primary),
-                        ),
+              child: image != null
+                  ? ClipOval(
+                      child: Image(
+                        image: image!,
+                        width: diameter,
+                        height: diameter,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stack) => initialsWidget,
                       ),
-                    ),
+                    )
+                  : loading
+                  ? const SizedBox.expand()
+                  : initialsWidget,
             ),
             if (showIndicator)
               Positioned(

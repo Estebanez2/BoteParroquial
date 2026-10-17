@@ -1,5 +1,24 @@
 Arquitectura
 
+Ampliación autorizada para fotos (2026-10-15): Supabase Storage como proveedor de
+archivos; Firebase Authentication y Firestore conservan su responsabilidad.
+El flujo obligatorio se aplica también a Supabase: UI → Provider → Repository →
+Service → SDK externo. Conexión diferida en core/supabase y services; no exponer
+SupabaseClient en widgets o modelos. Autorización mediante Edge Function que
+verifica JWT Firebase y consulta Firestore REST con el token del usuario. Roles
+no duplicados; Storage privado solo accesible por backend autorizado. Función
+desplegada y UI integrada: photos/providers → PhotoRepository → servicios de SDK
+y selección/preparación de imagen. Modelos PhotoTarget/PhotoAccess independientes.
+PhotoRepository coordina caché acotada y privada por cuenta (memoria/disco temporal)
+y lecturas condicionales; widgets consumen photoPresentationProvider. Las imágenes
+se conservan durante revalidación y se purgan por sesión/acceso. AppImageCropper
+encapsula el SDK visual nativo; no aparece su API en las features. Ningún campo nuevo
+en Firestore: una ruta privada por destino en Storage. Ver docs/SUPABASE_SETUP.md.
+Editar la imagen guardada sigue Controller → Repository → PhotoPickerService.edit;
+el servicio prepara un archivo temporal privado para el mismo editor nativo.
+AppDelayedVisibility controla únicamente el tiempo de presentación de avisos;
+no transforma estados de conectividad ni autoriza operaciones económicas.
+
 Dirección de dependencias
 
 UI

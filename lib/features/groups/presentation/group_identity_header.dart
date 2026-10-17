@@ -3,6 +3,7 @@ import '../../../design_system/design_system.dart';
 import '../../../models/group.dart';
 import '../../../models/group_member.dart';
 import 'group_widgets.dart';
+import '../../photos/presentation/photo_view.dart';
 
 class GroupIdentityHeader extends StatelessWidget {
   const GroupIdentityHeader({
@@ -55,7 +56,11 @@ class GroupIdentityHeader extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppCover(name: group.name),
+                PhotoCover(
+                  groupId: group.id,
+                  name: group.name,
+                  interactive: true,
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 text,
               ],
@@ -64,7 +69,11 @@ class GroupIdentityHeader extends StatelessWidget {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppCover(name: group.name),
+              PhotoCover(
+                groupId: group.id,
+                name: group.name,
+                interactive: true,
+              ),
               const SizedBox(width: AppSpacing.lg),
               Expanded(child: text),
             ],

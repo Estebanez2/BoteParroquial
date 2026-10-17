@@ -4,7 +4,7 @@ El proyecto debe avanzar por fases pequeñas.
 
 Mantener siempre una versión compilable.
 
-Seguimiento general — actualizado el 2026-10-15
+Seguimiento general — actualizado el 2026-10-16
 
 Este archivo es el registro general de avance del proyecto. Actualizarlo al
 completar trabajo o aplazar comprobaciones. Los detalles de cada validación se
@@ -22,6 +22,31 @@ registran en su documento específico, sin cambiar los criterios de cierre.
 | Phase 6 — MVP Hardening | En curso: caché señalizada y recuperación persistente de envíos | Validación física de los cambios, revisión final y comprobaciones de cierre del MVP |
 | Rediseño por referencias, durante Phase 6 | Base visual v0.2 y pantallas actuales adaptadas; iniciales | Aprobación visual del usuario; fotos/subidas y funciones futuras aplazadas |
 | Phase 7–12 | No iniciadas | Ampliaciones posteriores al MVP |
+
+Ampliación autorizada después del rediseño (2026-10-15): fotos con Supabase Storage.
+Proyecto e integración Firebase Auth confirmados por el usuario; SDK y conexión
+diferida locales preparados. Sustituye el aplazamiento de Storage de la fila de
+rediseño. Función y UI de fotos implementadas; validación física de guardado en curso.
+No cambia el cierre de Phase 6.
+Estado y evidencia: docs/SUPABASE_SETUP.md.
+El usuario confirma Edge Function y fotos privadas/personas independientes.
+Backend de acceso/subida/lectura/retirada y bucket privado desplegados; políticas
+y rechazo anónimo comprobados. Cámara/galería y editor integrados, cinco pruebas
+Deno y doce casos Flutter dirigidos superados, análisis limpio y APK instalado
+y arrancado en A059P. El usuario confirma personas y foto de cuenta. Corrección
+posterior: foto de cuenta por defecto en grupos, excepción local, caché privada
+sin parpadeo y recorte/zoom/rotación; backend v3 desplegado y APK nuevo instalado.
+Siete casos de fotos, uno de grupos y seis de backend superados; análisis limpio.
+El usuario confirma físicamente en A059P foto en Miembros, ausencia de parpadeo y
+editor funcionando (2026-10-15). Otros roles/dispositivos e iOS siguen pendientes;
+no se reanudan pruebas aplazadas de otra cuenta. No cierra el resto de Phase 6.
+
+Mejoras de Phase 6 del 2026-10-16: botón «Editar foto actual» sin volver a la galería,
+con vista previa y guardado explícito; aviso de sincronización sin parpadeo durante
+la carga inicial (gracia de dos segundos, retirada inmediata al confirmar servidor).
+Dos pruebas dirigidas superadas, sin repetir suites ni pruebas remotas de reglas.
+Sin instalación/arranque: el usuario solicita ejecutar la app. Validación física
+de estos dos cambios pendiente; no cierra otros pendientes de Phase 6.
 
 Prueba aplazada por el usuario el 2026-10-15:
 

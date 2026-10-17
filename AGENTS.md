@@ -290,5 +290,17 @@ subidas de fotos, Storage, invitaciones, notificaciones y estadísticas avanzada
 siguen pendientes. No mostrar controles de esas funciones como si estuvieran listas.
 Permisos de futuras fotos acordados en docs/DECISIONS.md; no confundirlos con Rules
 implementadas. Estado y evidencia: docs/VISUAL_REDESIGN_VALIDATION.md.
+Actualización posterior: el usuario elige Supabase Storage y autoriza preparar la
+conexión. Sustituye el aplazamiento anterior: función y bucket privado desplegados,
+UI de cámara/galería integrada; usuario confirma fotos de personas y de cuenta.
+Actualización: foto de cuenta por defecto con excepción por grupo, caché privada
+por cuenta y editor de recorte/zoom/rotación. Ver D057/D058; no copiar fotos entre
+grupos ni permitir cambiar la foto global de otra cuenta.
+El usuario confirma en A059P la foto en Miembros, navegación sin parpadeo y editor
+funcionando; esto no acredita otros roles, otros móviles ni iOS.
+Firebase mantiene login y datos. Consultar docs/SUPABASE_SETUP.md antes de tocar
+fotos. La función comprueba JWT y roles actuales; no exponer acceso directo a Storage.
+Personas internas tienen foto independiente;
+sincronización automática prohibida. No confundir pruebas locales con red real.
 Petición del usuario: UI distintiva y animaciones siempre que encajen, con propósito
 y respetando movimiento reducido; no animar por animar ni sacrificar accesibilidad.

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../models/photo_target.dart';
+import '../../photos/presentation/photo_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/errors/app_failure.dart';
@@ -276,7 +278,13 @@ class _ActivityCard extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppAvatar(name: labels.person(event.input.personId)),
+                if (event.input.personId != null)
+                  PhotoAvatar(
+                    target: PhotoTarget.person(groupId, event.input.personId!),
+                    name: labels.person(event.input.personId),
+                  )
+                else
+                  AppAvatar(name: labels.person(null)),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
