@@ -26,8 +26,12 @@ class DashboardSummary {
     required this.activePersonsCount,
     required this.inactivePersonsCount,
     required List<DashboardActivity> recentActivity,
+    this.cashConfirmedAt,
+    this.cashCached = false,
   }) : recentActivity = List.unmodifiable(recentActivity);
   final String groupId;
+  final DateTime? cashConfirmedAt;
+  final bool cashCached;
   final int incomeCents,
       withdrawalCents,
       activePersonsCount,

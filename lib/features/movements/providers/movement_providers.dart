@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../models/movement.dart';
 import '../../../models/person.dart';
 import '../../../models/movement_day.dart';
+import '../../../models/movement_history_filter.dart';
 import '../../../repositories/movement_history_repository.dart';
 import '../../../models/pending_movement.dart';
 import '../../../repositories/movement_repository.dart';
@@ -17,11 +19,21 @@ import '../../auth/providers/auth_providers.dart';
 import '../../groups/providers/group_providers.dart';
 import '../../persons/providers/person_providers.dart';
 
-final movementRepositoryProvider = Provider<MovementRepository>(
-  (ref) => MovementRepository(
+final movementRepositoryProvider = Provider<MovementRepository>((ref) {
+  final repository = MovementRepository(
     FirestoreMovementService(ref.watch(firestoreProvider)),
-  ),
-);
+  );
+  var uid = ref.read(authStateProvider).asData?.value?.uid;
+  ref.listen(authStateProvider, (_, next) {
+    if (next.isLoading) return;
+    final current = next.asData?.value?.uid;
+    if (uid != null && uid != current) {
+      unawaited(repository.clearCashAccount(uid!));
+    }
+    uid = current;
+  });
+  return repository;
+});
 final groupCalendarRepositoryProvider = Provider<GroupCalendarRepository>(
   (ref) => GroupCalendarRepository(TimeZoneGroupClockService()),
 );
@@ -66,13 +78,82 @@ final movementsProvider = StreamProvider.autoDispose
 final canManageMovementsProvider = Provider.autoDispose.family<bool, String>(
   (ref, groupId) => ref.watch(canManagePersonsProvider(groupId)),
 );
+final quotaSourceMovementsProvider = StreamProvider.autoDispose
+    .family<List<Movement>, String>((ref, id) {
+      final group = ref.watch(groupProvider(id));
+      if (group.isLoading) return const Stream.empty();
+      if (group.hasError) return Stream.error(group.error!, group.stackTrace);
+      if (group.asData?.value == null) return Stream.value(const []);
+      return ref.watch(movementRepositoryProvider).watchQuotaSources(id);
+    }, retry: (_, _) => null);
+final movementHistoryRepositoryProvider = Provider<MovementHistoryRepository>(
+  (ref) => const MovementHistoryRepository(),
+);
+final movementFilterProvider = NotifierProvider.autoDispose
+    .family<MovementFilterController, MovementHistoryFilter, String>(
+      MovementFilterController.new,
+    );
+
+class MovementFilterController extends Notifier<MovementHistoryFilter> {
+  MovementFilterController(this.groupId);
+  final String groupId;
+  late MovementHistoryRepository _repository;
+
+  @override
+  MovementHistoryFilter build() {
+    _repository = ref.watch(movementHistoryRepositoryProvider);
+    ref.watch(
+      authStateProvider.select((session) => session.asData?.value?.uid),
+    );
+    ref.watch(
+      currentMembershipProvider(groupId).select((member) => member != null),
+    );
+    return const MovementHistoryFilter();
+  }
+
+  void search(String query) => state = state.copyWith(query: query);
+  String? validate(MovementHistoryFilter filter) =>
+      _repository.filterError(filter);
+  void apply(MovementHistoryFilter filter) {
+    final error = validate(filter);
+    if (error != null) throw AppFailure(FailureCode.invalidData, error);
+    state = filter;
+  }
+
+  void reset() => state = const MovementHistoryFilter();
+}
+
+final movementHistoryOptionsProvider = Provider.autoDispose
+    .family<MovementHistoryOptions, String>((ref, groupId) {
+      final labels = ref.watch(movementLabelsProvider(groupId));
+      final movements =
+          ref.watch(movementsProvider(groupId)).asData?.value ?? <Movement>[];
+      return ref
+          .watch(movementHistoryRepositoryProvider)
+          .options(
+            groupId,
+            movements,
+            persons: labels.persons,
+            authors: labels.authors,
+          );
+    });
+
 final movementHistoryProvider = Provider.autoDispose
     .family<AsyncValue<List<Movement>>, (String, String?)>((ref, key) {
+      final filter = ref.watch(movementFilterProvider(key.$1));
+      final labels = ref.watch(movementLabelsProvider(key.$1));
+      final repository = ref.watch(movementHistoryRepositoryProvider);
       return ref
           .watch(movementsProvider(key.$1))
           .whenData(
             (movements) => key.$2 == null
-                ? movements
+                ? repository.filter(
+                    key.$1,
+                    movements,
+                    filter,
+                    persons: labels.persons,
+                    authors: labels.authors,
+                  )
                 : movements
                       .where((movement) => movement.id == key.$2)
                       .toList(growable: false),
@@ -137,6 +218,8 @@ class MovementController extends Notifier<AsyncValue<void>> {
     return user.uid;
   }
 
+  String currentActor() => _actor();
+
   Future<T?> _perform<T>(
     Future<T> Function(MovementRepository, String) action,
   ) async {
@@ -166,7 +249,12 @@ class MovementController extends Notifier<AsyncValue<void>> {
     if (!ref.mounted) {
       throw const AppFailure(FailureCode.cancelled, 'Operación cerrada.');
     }
-    _actor();
+    if (_actor() != uid) {
+      throw const AppFailure(
+        FailureCode.cancelled,
+        'La sesión ha cambiado. Revisa la operación desde tu cuenta actual.',
+      );
+    }
     return repo.review(
       groupId,
       input,
@@ -184,8 +272,15 @@ class MovementController extends Notifier<AsyncValue<void>> {
     MovementInput input, {
     Movement? original,
     String? reason,
+    String? expectedActorUid,
   }) async =>
       await _perform((repo, uid) async {
+        if (expectedActorUid != null && uid != expectedActorUid) {
+          throw const AppFailure(
+            FailureCode.cancelled,
+            'La sesión ha cambiado; revisa la operación desde tu cuenta actual.',
+          );
+        }
         await _submit(
           PendingMovement(
             groupId: groupId,
@@ -199,8 +294,18 @@ class MovementController extends Notifier<AsyncValue<void>> {
         return true;
       }) ??
       false;
-  Future<bool> cancel(Movement movement, String reason) async =>
+  Future<bool> cancel(
+    Movement movement,
+    String reason, {
+    String? expectedActorUid,
+  }) async =>
       await _perform((repo, uid) async {
+        if (expectedActorUid != null && uid != expectedActorUid) {
+          throw const AppFailure(
+            FailureCode.cancelled,
+            'La sesión ha cambiado. Revisa la operación desde tu cuenta actual.',
+          );
+        }
         await _submit(
           PendingMovement(
             groupId: groupId,

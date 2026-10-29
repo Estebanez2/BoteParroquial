@@ -10,11 +10,13 @@ import '../../../models/group.dart';
 import '../../../models/group_member.dart';
 import '../../../models/movement.dart';
 import '../../groups/presentation/group_access_body.dart';
+import '../../groups/providers/group_management_providers.dart';
 
 import '../../movements/providers/movement_providers.dart';
 import '../../movements/presentation/pending_movement_card.dart';
 import '../../persons/providers/person_providers.dart';
 import '../providers/dashboard_providers.dart';
+import '../../reports/presentation/quota_report_section.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key, required this.groupId});
@@ -24,6 +26,13 @@ class DashboardScreen extends StatelessWidget {
     maxWidth: AppSpacing.readingMax,
     appBar: AppTopBar(
       title: 'BoteParroquial',
+      actions: [
+        AppIconButton(
+          icon: Icons.notifications_none_rounded,
+          label: 'Abrir mis avisos',
+          onPressed: () => context.push('/groups/$groupId/notifications'),
+        ),
+      ],
       leading: AppIconButton(
         icon: Icons.arrow_back_rounded,
         label: 'Volver a mis grupos',
@@ -63,6 +72,8 @@ class _Dashboard extends ConsumerWidget {
                 actionLabel: 'Reintentar resumen',
                 onAction: () {
                   ref.invalidate(movementsProvider(groupId));
+                  ref.invalidate(dashboardCashProvider(groupId));
+                  ref.invalidate(dashboardRecentProvider(groupId));
                   ref.invalidate(personsProvider(groupId));
                 },
               ),
@@ -85,11 +96,19 @@ class _SummaryBody extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        AppButton(
+          label: 'Cuotas y etapas',
+          variant: AppButtonVariant.ghost,
+          leadingIcon: Icons.calendar_month_outlined,
+          onPressed: () => context.push('/groups/$groupId/quotas'),
+        ),
         AppReveal(
           child: BalanceCard(
             balanceCents: summary.balanceCents,
             currency: group.currency,
-            caption: 'Todo el historial · Solo movimientos activos',
+            caption: summary.cashConfirmedAt == null
+                ? 'Todo el historial · Solo movimientos activos'
+                : 'Todo el historial · Solo movimientos activos\nCaja confirmada: ${MaterialLocalizations.of(context).formatShortDate(summary.cashConfirmedAt!.toLocal())} · ${TimeOfDay.fromDateTime(summary.cashConfirmedAt!.toLocal()).format(context)}',
           ),
         ),
         if (summary.isNegative) ...[
@@ -155,6 +174,38 @@ class _SummaryBody extends ConsumerWidget {
               onTap: () => context.push('/groups/$groupId/members'),
             ),
           ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        QuotaReportSection(
+          groupId: groupId,
+          currency: group.currency,
+          dashboard: true,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        if (ref.watch(canEditGroupProvider(groupId))) ...[
+          AppAdaptiveRow(
+            children: [
+              AppButton(
+                label: 'Editar grupo',
+                leadingIcon: Icons.tune_rounded,
+                variant: AppButtonVariant.ghost,
+                onPressed: () => context.push('/groups/$groupId/settings'),
+              ),
+              AppButton(
+                label: 'Historial administrativo',
+                leadingIcon: Icons.history_rounded,
+                variant: AppButtonVariant.ghost,
+                onPressed: () => context.push('/groups/$groupId/audit'),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
+        AppButton(
+          label: 'Informes del grupo',
+          leadingIcon: Icons.bar_chart_rounded,
+          variant: AppButtonVariant.outline,
+          onPressed: () => context.push('/groups/$groupId/reports'),
         ),
         const SizedBox(height: AppSpacing.lg),
         AppCard(

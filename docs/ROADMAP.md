@@ -4,11 +4,125 @@ El proyecto debe avanzar por fases pequeñas.
 
 Mantener siempre una versión compilable.
 
-Seguimiento general — actualizado el 2026-10-16
+Seguimiento general — actualizado el 2026-10-23
+
+Copias diarias locales de consulta añadidas (D110–D112): siete capturas completas
+por móvil/cuenta, datos de su ámbito, fotos según caché, Wi-Fi/datos móviles,
+cifrado privado y consulta de solo lectura con pantallas existentes. La copia usa
+un instante de servidor coherente, no el contenido parcial de caché. No hay nuevo
+servicio remoto ni copia semanal del portátil. Cinco pruebas dirigidas; ejecución
+en móviles y Keychain/iOS pendientes. Estado exacto:
+[DAILY_OFFLINE_COPIES_VALIDATION.md](DAILY_OFFLINE_COPIES_VALIDATION.md).
+
+Entrega amplia publicada: PDF/Excel/CSV, trazabilidad adicional, papelera,
+eliminación de grupo, baja propia y caja con agregados nativos (D105–D109).
+Reinicio remoto autorizado finalizado con respaldo: dos grupos DEMO, 20 personas
+visibles y 280 movimientos. No se borraron Auth ni configuración. Copia semanal/
+visor aplazados expresamente; móvil, iOS/APNs y restauración real sin validar.
+Registro de avance, evidencias y límites:
+[FULL_PRODUCT_COMPLETION_2026-10-20.md](FULL_PRODUCT_COMPLETION_2026-10-20.md).
+
+Continuación de Phase 11: consulta administrativa paginada con cursor preciso,
+botón «Cargar más» (D104), filtros/búsqueda sobre cargados y detalle antes/después.
+Mantiene los permisos y eventos existentes; sin escritura o despliegue remoto.
+Aquella entrega no cerraba auditoría de todas las operaciones, papelera o
+eliminación segura; el bloque vigente superior añade esas implementaciones.
+Pruebas dirigidas y estado exacto:
+[PHASE11_AUDIT_HISTORY_VALIDATION.md](PHASE11_AUDIT_HISTORY_VALIDATION.md).
+
+Continuación de Phase 10: comparación de mes/trimestre/año implementada sobre las
+lecturas compartidas. D103: mismo tramo transcurrido en curso, completo si terminó.
+Caja y cuotas separadas; diferencias monetarias, ratios con base válida y cambio
+de cumplimiento en puntos porcentuales. Sin nuevos datos, Rules o despliegue.
+Pruebas dirigidas y estado de compilación en
+[PHASE10_PERIOD_COMPARISONS_VALIDATION.md](PHASE10_PERIOD_COMPARISONS_VALIDATION.md).
+Usuario ejecuta; pruebas móviles previas siguen pendientes.
+
+Entrega vigente: los puntos 1–3 (recordatorios automáticos, actividad y enlaces)
+están implementados y publicados. Segundo Supabase aislado qngrmxfjckrrfiyioyzl,
+cron cada quince minutos, reservas duraderas, tres preferencias, IAM/clave
+autorizados y enlaces en Hosting. Rules verificadas y nueva copia externa.
+HTTP/cron y una bandeja DEMO comprobados; faltan recepción push y apertura física,
+iOS/APNs/AASA y firma Android release. El usuario ejecuta la app.
+[Informe completo y evidencia](PHASE9_NOTIFICATIONS_AND_LINKS_VALIDATION.md).
+Los bloques siguientes son historial de las entregas previas.
+
+2026-10-20: [guía completa para dos o tres móviles](GUIA_PRUEBAS_MOVILES.md),
+con cuentas/roles, instalación del mismo APK, cifras verificables y registro de
+resultados. Documento preparado; ninguna prueba manual reanudada o superada por
+su creación. Actualizada después para probar el servidor ahora desplegado.
+
+Después: dominio Deno del recordatorio y lector REST readOnly por grupo con
+instantánea consistente, paginación y límites; fixtures económicos compartidos
+con los cálculos reales de Flutter. D096 resuelve cuentas que salieron (resumen
+para gestores) y recuperación durante el mismo día desde las 10:00. Sin cambios
+remotos, worker desplegado, reservas persistentes o cron. Evidencia y siguientes
+pasos: [PHASE9_REMINDER_SERVER_CALCULATION.md](PHASE9_REMINDER_SERVER_CALCULATION.md).
+
+Continuación de Phase 9: registro/rotación/retirada de dispositivos con botón,
+preferencia por grupo y bandeja privada con marcado leído. Retirada confirmada
+antes de logout; fallos/reinicios conservan la intención sin reactivar. App y
+navegación consumen providers/repositorios, sin acceso Firebase en widgets.
+Pruebas dirigidas y APK, sin ejecución física. Estado remoto y respaldo:
+[PHASE9_NOTIFICATION_CLIENT_VALIDATION.md](PHASE9_NOTIFICATION_CLIENT_VALIDATION.md).
+Rules publicadas tras la nueva copia autorizada, hash remoto/local coincidente;
+índice de bandeja confirmado READY.
+En esa entrega faltaban worker/cron; ya desplegados según el informe vigente.
+APNs y validación física permanecen pendientes.
+Supabase + FCM, 10:00 y privacidad ya acordados; la
+[base anterior](PHASE9_NOTIFICATIONS_FOUNDATION.md) conserva su evidencia.
+
+Bloque anterior por elección del usuario: dashboard e informes de cuotas antes de
+notificaciones. Resumen acumulado hasta el mes actual, cifras del mes y cumplimiento
+por mes/trimestre/año/persona; futuro separado como previsión. Estado actualizado
+con pagos/devoluciones posteriores. Consultas de grupo compartidas, sin nuevas
+reglas, escrituras, dependencias o servicio remoto. Validación y pendientes:
+[PHASE10_QUOTA_REPORTS_VALIDATION.md](PHASE10_QUOTA_REPORTS_VALIDATION.md).
+Las entregas de Phase 8 siguientes conservan su evidencia anterior.
+
+Entrega anterior: devoluciones parciales por ingreso con selección de hasta
+cuatro meses y crédito sin asignar, corrección revisada y anulación con
+restauración conjunta. Primer mes opcional al crear personas. No se reparten ni
+reescriben datos anteriores. Análisis y comprobaciones dirigidas, sin ejecutar
+en móvil. Publicación, nuevo respaldo y pendientes exactos:
+[PHASE8_REFUNDS_VALIDATION.md](PHASE8_REFUNDS_VALIDATION.md).
+El bloque de asignaciones siguiente registra la entrega anterior.
+
+Phase 8 parcial: cuotas versionadas, periodos y asignaciones de ingresos a meses
+integrados. Ficha con deuda por mes, pagos parciales, sobrepagos, adelantos y crédito
+sin asignar. Propuesta hasta doce meses futuros, confirmación por mes y reajustes
+con auditoría. Anular/corregir invalida el cómputo del reparto original sin borrarlo;
+el sustituto no lo hereda. Repartos antiguos no se inventan ni migran.
+Rules publicadas/verificadas, siete casos Flutter y ocho de Rules dirigidos
+superados, análisis limpio y APK generado. El usuario ejecuta la app. Evidencia:
+[PHASE8_ALLOCATIONS_VALIDATION.md](PHASE8_ALLOCATIONS_VALIDATION.md).
+D077/D078 conservan las políticas de cuotas/periodos. Sus informes y la
+[base inicial](PHASE8_FOUNDATION_VALIDATION.md) describen entregas anteriores.
+
+Respaldo de permisos (2026-10-17): copia verificada del ruleset activo de Phase 6
+guardada fuera del repositorio, con hash y comando de restauración. Ver
+[FIRESTORE_RULES_BACKUP.md](FIRESTORE_RULES_BACKUP.md). Posteriormente el usuario
+autoriza publicar las Rules nuevas; publicadas y verificadas. La copia externa
+anterior se conserva y no sustituye una copia de datos.
 
 Este archivo es el registro general de avance del proyecto. Actualizarlo al
 completar trabajo o aplazar comprobaciones. Los detalles de cada validación se
 registran en su documento específico, sin cambiar los criterios de cierre.
+
+Entrega del 2026-10-18: vínculo recíproco único usuario/persona, cambio y
+desvinculación por gestión autorizada, lista de miembros sin vínculo y personas
+inactivas con advertencia. Se conservan vínculos al salir hasta quitarlos
+expresamente. Admin pierde role al desvincular, asignar persona inactiva o
+inactivar su persona; reactivar no devuelve admin. Promociones y transferencia
+no se adelantaron en esa entrega. Estado remoto, preparación de datos y evidencia exacta:
+[PHASE7_LINKS_VALIDATION.md](PHASE7_LINKS_VALIDATION.md).
+
+Entrega posterior del mismo día: promociones/degradaciones auditadas y transferencia
+de propiedad por owner, con nombre exacto y nueva verificación Google. Owner anterior
+pasa a miembro y conserva su vínculo/historia. Rules publicadas/verificadas; análisis
+limpio, pruebas dirigidas y APK debug compilado. Usuario ejecutará la app, sin
+reanudar segunda cuenta aplazada. Informe:
+[PHASE7_ROLES_TRANSFER_VALIDATION.md](PHASE7_ROLES_TRANSFER_VALIDATION.md).
 
 | Fase | Estado actual | Pendiente |
 | --- | --- | --- |
@@ -18,10 +132,62 @@ registran en su documento específico, sin cambiar los criterios de cierre.
 | Phase 2 — Groups & Membership | Implementada y validada: Prueba1 en A059P, aislamiento probado en emulador | Segunda cuenta real e iOS sin probar; gestión completa de grupos permanece en Phase 7 |
 | Phase 3 — Persons | Implementada; usuario confirma que funciona en móvil | Sincronización entre móviles sin comprobar |
 | Phase 4 — Movements | Implementada; reglas, flujo visual y operaciones nativas verificadas | Hardening y pruebas con varios móviles en fases posteriores |
-| Phase 5 — Dashboard | Implementada; cálculos y flujos dirigidos comprobados; usuario confirma funcionamiento en móvil | Estado compartido entre dos administradores sin comprobar |
+| Phase 5 — Dashboard | MVP implementado y confirmado en móvil; ampliación de cuotas en Phase 10 | Estado compartido entre dos administradores y ampliación reciente sin validación física |
 | Phase 6 — MVP Hardening | En curso: caché señalizada y recuperación persistente de envíos | Validación física de los cambios, revisión final y comprobaciones de cierre del MVP |
 | Rediseño por referencias, durante Phase 6 | Base visual v0.2 y pantallas actuales adaptadas; iniciales | Aprobación visual del usuario; fotos/subidas y funciones futuras aplazadas |
-| Phase 7–12 | No iniciadas | Ampliaciones posteriores al MVP |
+| Phase 7 — Full groups | Creación/identidad, códigos, solicitudes, bajas/readmisión, vínculos, roles, transferencia y enlaces HTTPS publicados | Apertura física Android; iOS/AASA y validación multiusuario de las ampliaciones |
+| Phase 8 — Monthly quotas | Cuotas, periodos, asignaciones, propuestas, pagos parciales/atrasados/adelantados, devoluciones y primer mes opcional al crear persona | Validación física; reparto conjunto de la propuesta y ampliaciones fuera del límite inicial de devolución, si se solicitan |
+| Phase 9 — Notifications | Cliente y worker publicados: recordatorios, actividad, tres preferencias, bandeja/reservas y cron cada quince minutos; HTTP y DEMO verificados | Push real, pruebas móviles/calendario, APNs/iOS y ampliación para volumen |
+| Phase 10 — Reports | Informes económicos/cuotas, detalle individual, dashboard y comparaciones; caja agregada exacta y actividad acotada | Validación física; cuotas/informes explícitos todavía crecen con la historia |
+| Phase 11 — Audit & recovery | Auditoría ampliada a personas/movimientos/perfil/fotos, consulta paginada, papelera de diez días, purga explícita, eliminación de grupo y baja propia publicadas | Validación física con cuentas reales, interrupciones y fotos; purga no automática |
+| Phase 12 — Export | PDF multipágina, Excel XLSX de cuatro hojas y CSV por periodo, con autorización y compartir nativo | Abrir/compartir en móviles reales; generación masiva futura |
+| Adelanto acotado del historial completo (2026-10-17) | Búsqueda y filtros implementados sobre los datos actuales | Validación móvil pendiente; no cierra Phase 6 |
+
+Continuación autorizada del producto completo (2026-10-17): creación y edición
+de grupos, persona del propietario opcional y activada por defecto, historial
+administrativo específico de grupo, informes económicos con gráficas, ficha de
+persona, nombre de cuenta editable y CSV con menú nativo de compartir.
+Las fases 7/10/11/12 solo están implementadas parcialmente; el avance acotado
+anterior se conserva como histórico. No se cierran los pendientes físicos del MVP.
+Informe: [FULL_PRODUCT_PROGRESS_2026-10-17.md](FULL_PRODUCT_PROGRESS_2026-10-17.md).
+La revisión automática rechazó inicialmente publicar Rules sin autorización
+explícita. El usuario la concede después del respaldo: publicación realizada y
+verificada; creación/edición de grupos y edición de nombre habilitadas en Rules.
+Informes, fichas y CSV reutilizan permisos de lectura.
+Validación: cuatro casos Flutter y doce de Rules dirigidos superados; análisis
+sin incidencias y APK Android generado. Sin suite completa ni pruebas físicas.
+
+Segundo bloque de Phase 7 del mismo día: códigos privados por grupo, vista previa
+limitada, activar/desactivar/regenerar y elegir aprobación o entrada automática.
+Solicitudes aceptadas/rechazadas por gestión autorizada, siempre con rol member
+y persona sin vincular. Salida/expulsión conserva historial y protege al owner.
+Cambios y auditoría atómicos; nuevas Rules publicadas y hash remoto coincidente.
+Tres casos Flutter dirigidos, once casos distintos de Rules (cuatro nuevos y
+siete regresiones afectadas), análisis limpio y APK compilado. Solo se repiten
+casos afectados por ajustes; no la suite completa. Sin ejecución en dispositivo.
+Datos de prueba: 14 documentos nuevos en demo7-invitations-20261017; cuentas de
+miembros/solicitudes ficticias, sin crear usuarios Auth ni modificar Prueba1.
+Inicialmente se cerraron readmisiones esperando respuesta. El usuario elige
+solicitud con aprobación obligatoria y se incorpora después con conservación de
+vínculo/antigüedad y rol member: [PHASE7_READMISSION_VALIDATION.md](PHASE7_READMISSION_VALIDATION.md).
+Enlaces, roles generales y transferencia no estaban implementados en esa entrega;
+roles y transferencia se incorporan después en el bloque del 2026-10-18.
+Detalle: [PHASE7_INVITATIONS_VALIDATION.md](PHASE7_INVITATIONS_VALIDATION.md).
+
+Readmisión posterior comprobada: un flujo Flutter ampliado y cinco casos de Rules
+dirigidos superados, análisis limpio y APK debug actualizado. Reglas publicadas y hash remoto coincidente;
+sin escrituras de documentos reales ni pruebas físicas nuevas. La decisión ya
+no está pendiente de respuesta; el informe de readmisión registra la versión.
+
+Revisión del 2026-10-17: el código de las funciones del MVP está implementado,
+pero los criterios físicos pendientes siguen abiertos. El usuario indica que no
+hay móvil conectado y autoriza escoger una ampliación acotada de FULL_PRODUCT_SPEC.
+Se implementan los apartados 56, 85 y 86 relativos a búsqueda/filtros del historial,
+sin adelantar cambios de permisos, cuotas o creación de grupos. Es una excepción
+acotada al orden de ampliaciones; Phase 7–12 siguen sin completar.
+Informe de trabajo, evidencia y pendientes: [WORK_REPORT_2026-10-17.md](WORK_REPORT_2026-10-17.md).
+Análisis estático sin incidencias y cinco pruebas dirigidas superadas (tres de historial, dos de Dashboard), sin
+repetir suites completas ni usar el móvil. No se modifican reglas o datos remotos.
 
 Ampliación autorizada después del rediseño (2026-10-15): fotos con Supabase Storage.
 Proyecto e integración Firebase Auth confirmados por el usuario; SDK y conexión
@@ -403,7 +569,8 @@ cambios de roles;
 
 movimientos asociados.
 
-Aquí se evaluará Cloud Functions y Cloud Scheduler.
+Decisión D091/D100: Supabase aislado + cron + FCM dentro del alcance gratuito;
+sin activar Cloud Functions, Cloud Scheduler o Blaze.
 
 Phase 10 — Reports
 

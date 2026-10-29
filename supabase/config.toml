@@ -6,3 +6,16 @@ project_id = "BoteParroquial"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/photo-access/index.ts"
+
+# Deploy this function explicitly to the separate notifications project only.
+# Its bootstrap refuses the photos project. Never use an unqualified deploy-all.
+[functions.notification-worker]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/notification-worker/index.ts"
+
+# User-JWT authorization only. Deploy explicitly to the photos project.
+[functions.lifecycle-cleanup]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/lifecycle-cleanup/index.ts"

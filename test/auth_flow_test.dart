@@ -35,6 +35,17 @@ class FakeAuthRepository implements AuthRepository {
   int signInCalls = 0;
   int signOutCalls = 0;
   Future<AuthUser> Function()? signInAction;
+  Future<void> Function(String)? reauthenticateAction;
+  int reauthenticateCalls = 0;
+  @override
+  Future<void> reauthenticateWithGoogle(String expectedUid) async {
+    reauthenticateCalls++;
+    if (current?.uid != expectedUid) {
+      throw const AppFailure(FailureCode.permissionDenied, 'Sesión distinta.');
+    }
+    await reauthenticateAction?.call(expectedUid);
+  }
+
   @override
   Stream<AuthUser?> authStateChanges() async* {
     yield current;

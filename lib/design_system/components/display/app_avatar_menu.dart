@@ -12,6 +12,7 @@ class AppAvatarMenu extends StatefulWidget {
     this.enabled = true,
     this.accountId,
     this.onPhoto,
+    this.onProfile,
     this.loading = false,
   });
   final String name;
@@ -21,6 +22,7 @@ class AppAvatarMenu extends StatefulWidget {
   final bool enabled;
   final String? accountId;
   final VoidCallback? onPhoto;
+  final VoidCallback? onProfile;
   final bool loading;
   @override
   State<AppAvatarMenu> createState() => _AppAvatarMenuState();
@@ -51,6 +53,8 @@ class _AppAvatarMenuState extends State<AppAvatarMenu> {
       _open = false;
       if (value == 'photo') {
         widget.onPhoto?.call();
+      } else if (value == 'profile') {
+        widget.onProfile?.call();
       } else {
         widget.onSignOut();
       }
@@ -63,6 +67,8 @@ class _AppAvatarMenuState extends State<AppAvatarMenu> {
       if (widget.email != null)
         PopupMenuItem<String>(enabled: false, child: Text(widget.email!)),
       const PopupMenuDivider(),
+      if (widget.onProfile != null)
+        const PopupMenuItem(value: 'profile', child: Text('Mi perfil')),
       if (widget.onPhoto != null)
         const PopupMenuItem(value: 'photo', child: Text('Mi foto de cuenta')),
       const PopupMenuItem(value: 'sign-out', child: Text('Cerrar sesión')),

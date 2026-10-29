@@ -18,7 +18,10 @@ class FirestoreUserProfileService implements UserProfileService {
       await _firestore.runTransaction((transaction) async {
         final existing = await transaction.get(reference);
         final fields = <String, Object?>{
-          'displayName': user.displayName ?? user.email ?? 'Usuario',
+          // The saved name belongs to the app; signing in must not undo an edit.
+          'displayName': existing.data()?['displayName'] is String
+              ? existing.data()!['displayName'] as String
+              : user.displayName ?? user.email ?? 'Usuario',
           'email': user.email,
           'photoUrl': user.photoUrl,
           'updatedAt': FieldValue.serverTimestamp(),

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../design_system/design_system.dart';
 import '../providers/group_sync_providers.dart';
+import '../../../core/offline/offline_mode.dart';
+import '../../offline/presentation/daily_copies_screen.dart';
 
 class GroupSyncNotice extends ConsumerWidget {
   const GroupSyncNotice({super.key, required this.groupId});
   final String groupId;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (ref.watch(offlineReadOnlyProvider)) return const SizedBox.shrink();
     final state = ref.watch(groupServerConfirmedProvider(groupId));
     final unconfirmed =
         !state.isLoading && (state.hasError || state.asData?.value == false);
@@ -37,6 +40,7 @@ class GroupSyncNotice extends ConsumerWidget {
                   onPressed: () =>
                       ref.invalidate(groupServerConfirmedProvider(groupId)),
                 ),
+              const DailyCopyEntryButton(),
             ],
           ),
         ),

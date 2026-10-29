@@ -197,10 +197,13 @@ void main() {
       final router = container.read(routerProvider);
       router.go('/groups/a');
       await tester.pumpAndSettle();
-      expect(find.text('Actualización sin confirmar'), findsOneWidget);
+      expect(find.text('Actualización pendiente'), findsNothing);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      expect(find.text('Actualización pendiente'), findsOneWidget);
       confirmation.add(true);
       await tester.pumpAndSettle();
-      expect(find.text('Actualización sin confirmar'), findsNothing);
+      expect(find.text('Actualización pendiente'), findsNothing);
       expect(
         tester.widget<BalanceCard>(find.byType(BalanceCard)).balanceCents,
         1000,

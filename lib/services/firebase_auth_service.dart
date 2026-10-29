@@ -84,6 +84,56 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
+  Future<void> reauthenticateWithGoogle(String expectedUid) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || user.uid != expectedUid) throw _sessionChanged;
+      await _initializeGoogle();
+      final account = await _google.authenticate();
+      final token = account.authentication.idToken;
+      if (_auth.currentUser?.uid != expectedUid) throw _sessionChanged;
+      if (token == null) {
+        throw const AppFailure(
+          FailureCode.configuration,
+          'Google no ha devuelto una credencial válida.',
+        );
+      }
+      // Reauthenticate the existing Firebase user; never replace their session.
+      final result = await user.reauthenticateWithCredential(
+        GoogleAuthProvider.credential(idToken: token),
+      );
+      if (result.user?.uid != expectedUid ||
+          _auth.currentUser?.uid != expectedUid) {
+        throw _sessionChanged;
+      }
+      await user.getIdToken(true);
+      if (_auth.currentUser?.uid != expectedUid) throw _sessionChanged;
+    } on GoogleSignInException catch (error) {
+      throw AppFailure(
+        error.code == GoogleSignInExceptionCode.canceled
+            ? FailureCode.cancelled
+            : FailureCode.unknown,
+        error.code == GoogleSignInExceptionCode.canceled
+            ? 'Verificación cancelada. No se ha iniciado la operación.'
+            : 'No se pudo verificar Google. Comprueba tu conexión y vuelve a intentarlo.',
+      );
+    } on FirebaseAuthException catch (error) {
+      if (error.code == 'user-mismatch') {
+        throw const AppFailure(
+          FailureCode.permissionDenied,
+          'Elige la misma cuenta de Google con la que estás usando la app.',
+        );
+      }
+      throw _firebaseFailure(error);
+    }
+  }
+
+  static const _sessionChanged = AppFailure(
+    FailureCode.permissionDenied,
+    'Tu sesión ha cambiado. Abre de nuevo la operación.',
+  );
+
+  @override
   Future<void> signOut() async {
     try {
       // Revoke the local Firebase session even if Google cleanup fails.

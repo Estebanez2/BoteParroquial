@@ -11,6 +11,8 @@ import '../../auth/providers/auth_providers.dart';
 import '../../groups/providers/group_providers.dart';
 import '../../groups/presentation/group_widgets.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
+import 'pending_lifecycle_panel.dart';
+import '../../offline/presentation/daily_copies_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -55,6 +57,7 @@ class HomeScreen extends ConsumerWidget {
                     ),
               onSignOut: () =>
                   ref.read(authControllerProvider.notifier).signOut(),
+              onProfile: () => context.push('/profile'),
             ),
           ),
         ],
@@ -63,6 +66,8 @@ class HomeScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (action.hasError) Text(failureMessage(action.error!)),
+          const PendingLifecyclePanel(),
+          const DailyCopyEntryButton(),
           profile.when(
             skipLoadingOnRefresh: false,
             skipLoadingOnReload: false,
@@ -79,11 +84,23 @@ class HomeScreen extends ConsumerWidget {
             data: (user) => const SizedBox.shrink(),
           ),
           const SizedBox(height: AppSpacing.xl),
-          const GroupOpening(
+          GroupOpening(
             eyebrow: 'JUNTOS HACEMOS MÁS',
             title: 'Gestiona el bote\nde tu parroquia.',
             description:
                 'Una forma sencilla y transparente de organizar los fondos de tu comunidad para actividades y proyectos.',
+            footer: AppButton(
+              label: 'Crear un nuevo grupo',
+              leadingIcon: Icons.add_rounded,
+              onPressed: () => context.push('/groups/new'),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: 'Entrar con código',
+            leadingIcon: Icons.key_outlined,
+            variant: AppButtonVariant.outline,
+            onPressed: () => context.push('/join'),
           ),
           const SizedBox(height: AppSpacing.section),
           Text('Tus espacios', style: type.editorialTitle),
@@ -116,7 +133,7 @@ class _GroupList extends ConsumerWidget {
                 icon: Icons.door_front_door_outlined,
                 title: 'Tu próximo espacio empieza aquí',
                 description:
-                    'Todavía no tienes grupos asignados. Cuando se active tu acceso, lo encontrarás aquí.',
+                    'Crea tu primer grupo o entra con un código de invitación. Tus espacios aparecerán aquí.',
               )
             : Column(
                 children: [

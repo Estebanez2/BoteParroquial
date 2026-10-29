@@ -1,10 +1,18 @@
 import '../core/errors/app_failure.dart';
 import '../models/person.dart';
+import '../models/year_month.dart';
 import '../services/person_service.dart';
 
 class PersonRepository {
   const PersonRepository(this._service);
   final PersonService _service;
+  String newId(String groupId) => _service.newId(groupId);
+  static String? firstMonthError(
+    YearMonth? firstMonth,
+    YearMonth currentMonth,
+  ) => firstMonth != null && firstMonth.isAfter(currentMonth)
+      ? 'El primer mes debe ser el actual o uno anterior.'
+      : null;
   Stream<List<Person>> watchPersons(String groupId) =>
       _service.watchPersons(groupId);
   static String? nameError(String? value) {
@@ -40,10 +48,30 @@ class PersonRepository {
     String groupId,
     String actorUid,
     String name,
-    String? notes,
-  ) {
+    String? notes, {
+    String? id,
+    YearMonth? firstMonth,
+    YearMonth? currentMonth,
+  }) {
     _validate(name, notes);
-    return _service.create(groupId, actorUid, name.trim(), _notes(notes));
+    if (firstMonth != null) {
+      if (currentMonth == null || id == null || id.isEmpty) {
+        throw const AppFailure(
+          FailureCode.invalidData,
+          'Reabre el alta para comprobar el mes y su identificador.',
+        );
+      }
+      final error = firstMonthError(firstMonth, currentMonth);
+      if (error != null) throw AppFailure(FailureCode.invalidData, error);
+    }
+    return _service.create(
+      groupId,
+      actorUid,
+      name.trim(),
+      _notes(notes),
+      id: id,
+      firstMonth: firstMonth,
+    );
   }
 
   Future<void> edit(

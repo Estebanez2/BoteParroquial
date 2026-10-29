@@ -10,6 +10,14 @@ type Fields = Record<string, { stringValue?: string; booleanValue?: boolean }>;
 type Dependencies = {
   verifyToken: (token: string) => Promise<string>;
   fetchDocument: (path: string, token: string) => Promise<Fields>;
+  audit?: (
+    actorUid: string,
+    target: PhotoTarget,
+    token: string,
+    mode: "upload" | "remove",
+    image: Uint8Array | undefined,
+    download: (path: string) => Promise<Response>,
+  ) => Promise<() => Promise<void>>;
   storage: {
     upload: (
       path: string,
@@ -74,6 +82,7 @@ export async function canEditPhoto(
   target: PhotoTarget,
   token: string,
   read: Dependencies["fetchDocument"],
+  allowTrashed = false,
 ): Promise<boolean> {
   const part = encodeURIComponent;
   if (target.kind === "account") {
@@ -89,7 +98,11 @@ export async function canEditPhoto(
   const actorRole = memberRole(actor, actorUid);
   if (target.kind === "group") return actorRole === "owner";
   if (target.kind === "person") {
-    await read(`${base}/persons/${part(target.personId)}`, token);
+    const targetPerson = await read(
+      `${base}/persons/${part(target.personId)}`,
+      token,
+    );
+    if (!allowTrashed && "trashedAt" in targetPerson) return false;
     if (actorRole === "owner") return true;
     if (actorRole !== "admin") return false;
     const personId = actor.personId?.stringValue;
@@ -294,12 +307,24 @@ export function createHandler(deps: Dependencies) {
         });
       }
       if (!canEdit) throw new AccessError(403);
+      const image = action === "upload"
+        ? decodeImage(data.imageBase64)
+        : undefined;
+      const complete = await deps.audit?.(
+        actorUid,
+        target,
+        token,
+        action === "remove" ? "remove" : "upload",
+        image?.bytes,
+        (key) => deps.storage.download(key),
+      );
       if (action === "remove") {
         await deps.storage.remove(path);
       } else {
-        const image = decodeImage(data.imageBase64);
+        if (!image) throw new AccessError(400);
         await deps.storage.upload(path, image.bytes, image.contentType);
       }
+      await complete?.();
       return reply(200, { saved: true });
     } catch (error) {
       const status = error instanceof AccessError ? error.status : 503;

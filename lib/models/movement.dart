@@ -1,3 +1,5 @@
+import 'refund_plan.dart';
+
 enum MovementType { income, withdrawal }
 
 enum MovementStatus { active, cancelled, corrected }
@@ -9,12 +11,14 @@ class MovementInput {
     required this.occurredAt,
     required this.description,
     this.personId,
+    this.refund,
   });
   final MovementType type;
   final int amountCents;
   final DateTime occurredAt;
   final String description;
   final String? personId;
+  final RefundPlan? refund;
   int get signedCents =>
       type == MovementType.income ? amountCents : -amountCents;
 }

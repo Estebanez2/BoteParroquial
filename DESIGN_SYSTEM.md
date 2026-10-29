@@ -21,6 +21,51 @@ espacio mientras el aviso está oculto ni contiene lógica de conectividad.
 
 ## Identidad visual
 
+Copias locales (23/10/2026): catálogo con AppTopBar/AppCard/AppReveal y AppButton;
+entrada disponible desde Inicio y GroupSyncNotice. El visor conserva AppTheme y
+pantallas existentes, con aviso fijo AppBadge/AppCard de fecha y solo lectura y
+salida explícita. No confundirlo con aviso transitorio de conexión: su banner no
+desaparece al recuperar Internet. Fotos no interactivas en copia. Sin nuevos tokens
+visuales ni estilos paralelos. Validación física pendiente.
+
+Entrega 2026-10-20: exportación mediante AppDropdown/AppButton; papelera y bajas
+componen AppTopBar, AppHeroPanel/AppCard, AppDialog y AppReveal existentes.
+Pendientes de borrado se presentan desde Inicio con AppButton. Caja conserva
+BalanceCard y fecha de confirmación; los widgets reciben cifras/permisos preparados,
+sin Firebase ni cálculos financieros. No hay nuevos colores, fuentes o biblioteca
+visual. La validación en móvil de estas pantallas queda para el usuario.
+
+Auditoría (2026-10-20): cabecera AppHeroPanel, fichas AppCard/AppReveal, búsqueda
+y filtros AppTextField/AppDropdown; detalle antes/después en AppBottomSheet con
+AppAdaptiveRow. Sin estilos paralelos. Caché pendiente usa AppDelayedVisibility
+para evitar avisos fugaces; consulta vacía sin confirmar no anuncia un final.
+Claro/oscuro, texto 160 % y movimiento reducido comprobados con datos simulados.
+Ver docs/PHASE11_AUDIT_HISTORY_VALIDATION.md.
+
+Comparaciones (2026-10-20): bloque desplegable en Informes con AppExpandableRow,
+AppReveal, AppHeroPanel y AppCard. Importes/diferencias en filas adaptables;
+sin colores arbitrarios para calificar subidas/bajadas. Claro/oscuro, texto al
+160 % y movimiento reducido revisados en el flujo simulado. Evidencia y revisión
+móvil pendiente: docs/PHASE10_PERIOD_COMPARISONS_VALIDATION.md.
+
+Notificaciones: bandeja/perfil componen AppReveal, AppCard, AppBadge,
+AppChoiceBar, AppButton y AppTopBar; sin componentes paralelos o tokens nuevos.
+Oscuro/claro, texto al 160 % y movimiento reducido comprobados en flujo simulado.
+No se considera validación visual en móvil; ver docs/PHASE9_NOTIFICATION_CLIENT_VALIDATION.md.
+
+Cuotas (2026-10-19): AppMonthField compone AppDropdown/AppAdaptiveRow para mes y
+año, sin modelos o permisos. intl 0.20.2 se declara directa, conservando la versión
+existente, para etiquetas localizadas. Pantallas y editor de participación usan
+AppHeroPanel/AppCard/AppReveal/AppBottomSheet/AppDialog y heredan temas/movimiento.
+Evidencia: docs/PHASE8_QUOTAS_PERIODS_VALIDATION.md.
+
+Asignaciones: editor por ingreso y resumen individual reutilizan AppHeroPanel,
+AppMonthField, AppMoneyField, AppDialog y AppReveal. Los paneles nuevos usan
+onHero en texto/cifras también en tema claro. Se conservan texto ampliado y
+movimiento reducido. Los cálculos y advertencias financieras vienen de providers;
+no se añade lógica a MoneyText/StatusChip. Validación:
+docs/PHASE8_ALLOCATIONS_VALIDATION.md.
+
 Verde casi negro, menta luminosa y coral en retiradas. Degradados suaves, contornos
 verdes, paneles con anillos y jerarquía fuerte para las cifras. El modo claro mantiene
 marfil y verdes. La marca
@@ -117,6 +162,11 @@ AppReveal y LoadingIndicator respetan movimiento reducido; el loader usa un
 icono estático accesible cuando ese ajuste está activo.
 
 ## Componentes implementados
+
+Ampliación del 2026-10-17: AppPairedBars presenta pares de series con etiquetas y
+valores ya proporcionados, color semántico, escala visual y animación reducida
+según AppMotion. No calcula saldos ni periodos. AppAvatarMenu admite onProfile
+sin conocer el dominio. Nuevas pantallas reutilizan formularios, cards y App*.
 
 | Componente | Variantes y capacidad |
 | --- | --- |
@@ -263,3 +313,21 @@ para las pantallas que ya usan esta base. Las pruebas manuales de autenticación
 aplazadas siguen pendientes. iOS requiere Mac/Xcode para validación nativa.
 
 Validación actual de v0.2, capturas y límites: docs/VISUAL_REDESIGN_VALIDATION.md.
+
+Continuación Phase 8: RefundEditorScreen compone AppHeroPanel, AppCard,
+AppDropdown, AppMoneyField, AppDateField y AppDialog; no añade tokens ni una
+segunda paleta. AppReveal respeta movimiento reducido. Parte del ingreso y
+separa meses de crédito sin asignar. La corrección empieza con reparto vacío,
+con explicación y confirmación expresa. Los importes disponibles derivan de
+providers/repositorios. El historial muestra badge Devolución y acceso al origen.
+La creación de persona incorpora AppChoiceBar/AppMonthField para primer mes
+opcional. Validaciones dirigidas y pendientes: docs/PHASE8_REFUNDS_VALIDATION.md.
+
+Informes de cuotas: QuotaReportSection es específico de reports y compone
+AppHeroPanel, AppCard, StatisticCard, AppBadge, AppExpandableRow, AppPairedBars y
+PhotoAvatar existente. Dashboard separa acumulado/mes; informes separan caja,
+cuotas y previsión. No se añaden tokens ni APIs externas. Los badges conservan
+etiquetas de estado y los gráficos incorporan textos accesibles e incompletitud.
+Detalle mensual/persona se despliega para limitar la densidad inicial; AppReveal
+y barras respetan movimiento reducido. Evidencia de ambos temas, texto 160 % y
+360 px: docs/PHASE10_QUOTA_REPORTS_VALIDATION.md. Sin aprobación visual física.

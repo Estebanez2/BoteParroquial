@@ -1,5 +1,30 @@
 Reglas de código
 
+Copias locales: solo lectura del ámbito de cuenta, readTime consistente, int64 y
+timestamps originales. No publicar capturas parciales, mezclar caché/servidor/copia,
+ni permitir escrituras porque la membresía archivada tenía rol admin. Separar el
+contenedor de consulta y denegar SDKs/operaciones, además de ocultar acciones.
+El reloj de cálculo se congela al instante del archivo. Clave por UID en almacenamiento
+seguro, nunca junto al contenido; JSON/cifrado fuera de UI mediante isolate. Limpiar
+por sesión con generación y verificar el destino antes de borrado recursivo.
+
+Ampliación 2026-10-20: agregados REST de dinero deben aceptar exclusivamente
+`integerValue` int64 y detectar desbordamiento; no convertir `sum()` flotante a
+céntimos mediante redondeo. Mantener un readTime coherente entre sumas y mostrar
+fecha de confirmación; caché temporal por cuenta, purgada al salir, no respaldo.
+No presentar caché como confirmación actual ni leer todo el historial para la caja.
+
+Exportaciones: revalidar sesión/rol antes de compartir; datos inmutables al generar
+en isolate. Escapar XML, neutralizar fórmulas CSV y usar texto exacto para enteros
+que Excel no puede representar sin pérdida. No truncar filas/celdas silenciosamente.
+
+Ciclo de vida: no usar borrado ordinario para historia económica. Papelera solo
+para personas protegidas y sin historia, periodos ni vínculo; plazo validado por
+servidor. Borrar grupo es excepción irreversible y explícita con Google/nombre.
+Conservar progreso ante interrupciones y ampliar su registro de subcolecciones al
+añadir datos. Baja propia conserva la historia de otros grupos. Intención de foto
+y confirmación son eventos distintos; no fingir atomicidad Storage/Firestore.
+
 Idioma
 
 Código:
@@ -36,6 +61,11 @@ Dart
 
 Mantener null safety.
 
+Cuotas: YearMonth para meses civiles de dominio y ordinal entero solo en la
+adaptación Firestore documentada. No inferir periodos de createdAt/isActive ni
+pagos de ingresos sin allocations. monthlyFeeCents admite cero según D077;
+los importes de movimientos siguen positivos. Configuración desconocida no es cero.
+
 Preferir:
 
 final
@@ -62,7 +92,38 @@ Persistir:
 
 int amountCents
 
-El importe siempre es positivo.
+El importe de un movimiento siempre es positivo.
+
+Las asignaciones mensuales usan amountCents >= 0: 0 libera el reparto sin borrar
+historia. No son movimientos y nunca cambian el saldo del bote. Una asignación
+solo paga meses mientras su ingreso fuente esté active. Ajustes absolutos,
+versionados y transaccionales, nunca incrementos implícitos que dupliquen al reintentar.
+Deuda de configuración incompleta es desconocida, no cero.
+
+Las devoluciones son withdrawals positivos con RefundPlan explícito. Nunca
+inferir devolución de la descripción ni alterar cuotas por una retirada normal.
+Conservar reparto bruto y descontar solo devoluciones active al proyectar pagos.
+Crédito libre = ingreso - reparto bruto - devuelto total + devuelto de cuotas.
+No liberar el importe de cuotas ya devuelto para repartirlo otra vez. Confirmar
+reparto y movimiento juntos mediante servicio y Rules, con auditoría inmutable.
+Al anular se restaura el cómputo; al corregir se revisa el sustituto, sin copiarlo
+automáticamente. Hasta cuatro meses distintos entre original y sustituto.
+Conservar en el journal el plan completo de ambos, con ID/actor y versión 2.
+
+Informes de cuotas: separar cobros por fecha efectiva de pagos por mes asignado.
+El pendiente del periodo llega como máximo al mes actual del grupo; futuro es
+previsión. Porcentaje de cumplimiento suma cobertura limitada a cada cuota de
+cada persona/mes, no divide sin más todo lo ingresado entre lo esperado. Un
+sobrepago no compensa otra obligación. Sin configuración o con esperado cero,
+no inventar un porcentaje. Ratios enteros, con BigInt para evitar desbordamientos
+intermedios; no usar double para calcular importes. El estado mostrado incorpora
+pagos/devoluciones posteriores, sin afirmar cierre contable inmutable.
+
+Comparaciones (D103): periodo en curso contra el mismo tramo civil del anterior,
+con corte diario para caja y meses completos para cuotas. Periodos terminados
+completos. Mostrar fechas; ajustar al último día cuando el mes previo sea más
+corto. Diferencia de cumplimiento en puntos porcentuales, no crecimiento relativo.
+No dividir por bases cero/desconocidas ni calcular reglas financieras en widgets.
 
 El tipo indica el signo lógico:
 
@@ -159,6 +220,12 @@ Limpiar el intento local solo por confirmación coincidente o descarte explícit
 Después de un await, comprobar context.mounted antes de utilizar un BuildContext.
 
 Persistencia
+
+Paginación de auditoría: cursor con segundos/nanosegundos e ID ligado al grupo;
+no convertir a DateTime antes de guardar la posición. Validar orden, duplicados
+y alcance de cada página. No mezclar una cabecera móvil con páginas antiguas ni
+presentar caché incompleta como final del historial. Revisar UID/permisos después
+de cada await y descartar respuestas de una consulta anterior.
 
 No cambiar nombres de campos Firestore sin plan de migración.
 

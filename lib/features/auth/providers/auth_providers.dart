@@ -10,10 +10,12 @@ import '../../../repositories/auth_repository.dart';
 import '../../../repositories/user_profile_repository.dart';
 import '../../../services/firebase_auth_service.dart';
 import '../../../services/firestore_user_profile_service.dart';
+import '../../notifications/providers/push_device_providers.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => DefaultAuthRepository(
     FirebaseAuthService(ref.watch(firebaseAuthProvider), GoogleSignIn.instance),
+    ref.watch(pushDeviceRepositoryProvider),
   ),
 );
 

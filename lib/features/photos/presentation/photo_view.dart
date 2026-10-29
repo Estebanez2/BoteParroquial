@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/photo_target.dart';
 import '../providers/photo_providers.dart';
+import '../../../core/offline/offline_mode.dart';
 import 'photo_editor_screen.dart';
 
 /// Authenticated image through the account-scoped private cache and providers.
@@ -47,7 +48,7 @@ class _PhotoViewState extends ConsumerState<PhotoView>
   }
 }
 
-class PhotoAvatar extends StatelessWidget {
+class PhotoAvatar extends ConsumerWidget {
   const PhotoAvatar({
     super.key,
     required this.target,
@@ -60,30 +61,33 @@ class PhotoAvatar extends StatelessWidget {
   final AppAvatarSize size;
   final bool interactive;
   @override
-  Widget build(BuildContext context) => PhotoView(
-    target: target,
-    builder: (context, image, loading) {
-      final avatar = AppAvatar(
-        name: name,
-        size: size,
-        image: image,
-        loading: loading,
-      );
-      if (!interactive) return avatar;
-      return Semantics(
-        button: true,
-        label: 'Foto de $name',
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          onTap: () => showPhotoEditor(context, target: target, name: name),
-          child: avatar,
-        ),
-      );
-    },
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final readOnly = ref.watch(offlineReadOnlyProvider);
+    return PhotoView(
+      target: target,
+      builder: (context, image, loading) {
+        final avatar = AppAvatar(
+          name: name,
+          size: size,
+          image: image,
+          loading: loading,
+        );
+        if (!interactive || readOnly) return avatar;
+        return Semantics(
+          button: true,
+          label: 'Foto de $name',
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            onTap: () => showPhotoEditor(context, target: target, name: name),
+            child: avatar,
+          ),
+        );
+      },
+    );
+  }
 }
 
-class PhotoCover extends StatelessWidget {
+class PhotoCover extends ConsumerWidget {
   const PhotoCover({
     super.key,
     required this.groupId,
@@ -93,24 +97,27 @@ class PhotoCover extends StatelessWidget {
   final String groupId, name;
   final bool interactive;
   @override
-  Widget build(BuildContext context) => PhotoView(
-    target: PhotoTarget.group(groupId),
-    builder: (context, image, loading) {
-      final cover = AppCover(name: name, image: image, loading: loading);
-      if (!interactive) return cover;
-      return Semantics(
-        button: true,
-        label: 'Imagen del grupo $name',
-        child: InkWell(
-          borderRadius: AppRadius.card,
-          onTap: () => showPhotoEditor(
-            context,
-            target: PhotoTarget.group(groupId),
-            name: name,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final readOnly = ref.watch(offlineReadOnlyProvider);
+    return PhotoView(
+      target: PhotoTarget.group(groupId),
+      builder: (context, image, loading) {
+        final cover = AppCover(name: name, image: image, loading: loading);
+        if (!interactive || readOnly) return cover;
+        return Semantics(
+          button: true,
+          label: 'Imagen del grupo $name',
+          child: InkWell(
+            borderRadius: AppRadius.card,
+            onTap: () => showPhotoEditor(
+              context,
+              target: PhotoTarget.group(groupId),
+              name: name,
+            ),
+            child: cover,
           ),
-          child: cover,
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
+  }
 }

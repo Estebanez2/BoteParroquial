@@ -24,6 +24,7 @@ class MovementSubmissionRepository {
       a.amountCents == b.amountCents &&
       a.personId == b.personId &&
       a.description.trim() == b.description.trim() &&
+      (a.refund == null ? b.refund == null : a.refund!.sameAs(b.refund)) &&
       a.occurredAt.year == b.occurredAt.year &&
       a.occurredAt.month == b.occurredAt.month &&
       a.occurredAt.day == b.occurredAt.day;

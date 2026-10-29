@@ -56,7 +56,7 @@ class FirestoreGroupService implements GroupService {
     return value as String?;
   }
 
-  static GroupMember _member(DocumentSnapshot<Map<String, dynamic>> doc) {
+  static GroupMember parseMember(DocumentSnapshot<Map<String, dynamic>> doc) {
     final path = doc.reference.path.split('/');
     final data = doc.data();
     if (data == null ||
@@ -90,39 +90,53 @@ class FirestoreGroupService implements GroupService {
     _firestore
         .collectionGroup('members')
         .where('uid', isEqualTo: uid)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map(_member).toList(growable: false)),
+        .snapshots(includeMetadataChanges: true)
+        .map(
+          (snapshot) => snapshot.docs
+              .where((doc) => !doc.metadata.hasPendingWrites)
+              .map(parseMember)
+              .toList(growable: false),
+        ),
   );
   @override
   Stream<List<GroupMember>> watchMembers(String groupId) => _guard(
-    _firestore.collection(FirestorePaths.members(groupId)).snapshots().map((
-      snapshot,
-    ) {
-      final members = snapshot.docs.map(_member).toList();
-      members.sort(
-        (a, b) =>
-            a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
-      );
-      return List.unmodifiable(members);
-    }),
+    _firestore
+        .collection(FirestorePaths.members(groupId))
+        .snapshots(includeMetadataChanges: true)
+        .map((snapshot) {
+          final members = snapshot.docs
+              .where((doc) => !doc.metadata.hasPendingWrites)
+              .map(parseMember)
+              .toList();
+          members.sort(
+            (a, b) => a.displayName.toLowerCase().compareTo(
+              b.displayName.toLowerCase(),
+            ),
+          );
+          return List.unmodifiable(members);
+        }),
   );
   @override
   Stream<Group?> watchGroup(String groupId) => _guard(
-    _firestore.doc(FirestorePaths.group(groupId)).snapshots().map((doc) {
-      final data = doc.data();
-      if (data == null) return null;
-      if (data['isActive'] is! bool) throw _invalid;
-      return Group(
-        id: doc.id,
-        name: _text(data, 'name'),
-        description: _optional(data, 'description'),
-        currency: _text(data, 'currency'),
-        timeZone: _text(data, 'timeZone'),
-        isActive: data['isActive'] as bool,
-        createdBy: _text(data, 'createdBy'),
-        createdAt: _date(data, 'createdAt'),
-        updatedAt: _date(data, 'updatedAt'),
-      );
-    }),
+    _firestore
+        .doc(FirestorePaths.group(groupId))
+        .snapshots(includeMetadataChanges: true)
+        .where((doc) => !doc.metadata.hasPendingWrites)
+        .map((doc) {
+          final data = doc.data();
+          if (data == null) return null;
+          if (data['isActive'] is! bool) throw _invalid;
+          return Group(
+            id: doc.id,
+            name: _text(data, 'name'),
+            description: _optional(data, 'description'),
+            currency: _text(data, 'currency'),
+            timeZone: _text(data, 'timeZone'),
+            isActive: data['isActive'] as bool,
+            createdBy: _text(data, 'createdBy'),
+            createdAt: _date(data, 'createdAt'),
+            updatedAt: _date(data, 'updatedAt'),
+          );
+        }),
   );
 }

@@ -172,6 +172,7 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
     if (error != null) return;
     setState(() => _submitting = true);
     try {
+      final actor = controller.currentActor();
       final review = await controller.review(
         widget.cancel ? null : input,
         original: _original,
@@ -182,24 +183,52 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
       if (!mounted || review == null) return;
       final confirmed = await confirmMovementReview(context, review, currency);
       if (!mounted || !confirmed) return;
+      if (!widget.cancel && _original?.input.type == MovementType.income) {
+        final reviewed = await AppDialog.show(
+          context,
+          title: 'Revisar el reparto tras corregir',
+          description:
+              'Si el original tenía meses asignados, dejarán de contar como pagos y se conservarán en su historial. El ingreso sustituto empezará sin reparto; tendrás que revisar sus meses expresamente.',
+          confirmLabel: 'Continuar con la corrección',
+          variant: AppDialogVariant.warning,
+        );
+        if (!mounted || !reviewed) return;
+      }
       if (widget.cancel) {
         final confirmedCancel = await AppDialog.show(
           context,
           title: '¿Anular este movimiento?',
-          description:
-              'Se conservará el original con su motivo de anulación y dejará de contar en el saldo.',
+          description: _original?.input.refund != null
+              ? 'La retirada dejará de contar en el saldo y se restaurarán conjuntamente las cuotas y el crédito de esta devolución. El historial se conserva.'
+              : 'Se conservará el original con su motivo de anulación y dejará de contar en el saldo. Sus asignaciones a meses también dejarán de contar como pagos; se conservará su historial.',
           confirmLabel: 'Anular movimiento',
           variant: AppDialogVariant.warning,
         );
         if (!mounted || !confirmedCancel) return;
       }
+      if (!widget.cancel && _original?.input.refund != null) {
+        final confirmed = await AppDialog.show(
+          context,
+          title: 'Convertir en movimiento normal',
+          description:
+              'Esta corrección restaurará las cuotas y el crédito devueltos por el original. El movimiento sustituto contará en el bote sin modificar cuotas automáticamente.',
+          confirmLabel: 'Confirmar conversión',
+          variant: AppDialogVariant.warning,
+        );
+        if (!mounted || !confirmed) return;
+      }
       final saved = widget.cancel
-          ? await controller.cancel(_original!, _reason.text)
+          ? await controller.cancel(
+              _original!,
+              _reason.text,
+              expectedActorUid: actor,
+            )
           : await controller.save(
               _draftId,
               input,
               original: _original,
               reason: _original == null ? null : _reason.text,
+              expectedActorUid: actor,
             );
       if (!mounted || !saved) return;
       context.go('/groups/${widget.groupId}/movements');

@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.bote_parroquial",
+      "sha256_cert_fingerprints": ["FC:0D:85:72:2E:C4:62:C1:CB:D6:8B:8E:0E:66:BB:52:01:0E:61:6D:E3:2A:E5:87:BA:EA:4A:EB:79:59:D9:E7"]
+    }
+  }
+]

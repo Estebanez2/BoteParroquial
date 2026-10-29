@@ -1,5 +1,127 @@
 Arquitectura
 
+Copias diarias locales (2026-10-23)
+
+App/lifecycle → DailyCopyController → DailySnapshotRepository →
+FirestoreSnapshotService/SnapshotRestTransport (solo JWT del usuario) y
+FileSnapshotStorage (AES-GCM + almacenamiento seguro de clave del dispositivo).
+Se comprueban accesos antes/después y se capturan consultas paginadas bajo el mismo
+readTime. No usar caché como descarga completa ni claves privilegiadas. JSON/cifrado
+en isolate; I/O serializada y publicación tras relectura autenticada. Podar a siete
+capturas satisfactorias después de guardar; conservar anteriores ante fallos.
+
+DailyCopiesScreen → controller → repositorio/archivo privado. SnapshotBrowserScreen
+abre un ProviderContainer independiente, nunca hijo del contenedor en vivo.
+SnapshotDataRepository decodifica modelos puros; SnapshotMovementService y
+SnapshotQuotaService alimentan los providers/cálculos existentes. SDKs bloqueados,
+adaptador económico rechaza escrituras, edición no enrutada y permisos de gestión
+desactivados. No montar el pipeline de avisos ni el journal de movimientos dentro
+del visor. Calendario de grupo y selección de informes usan el instante copiado.
+
+Copias solo de ámbitos autorizados de la cuenta y fotos según caché existente;
+sin dispositivos/tokens/estado privado del worker. Al confirmar pérdida/cambio de
+acceso se retira el grupo de archivos y vista; sin red la revocación es desconocida.
+Cerrar sesión invalida descargas tardías y limpia ese UID. La clave no va en JSON,
+Git o Flutter config. No se instala un cron ni se reactiva la copia semanal aplazada.
+Evidencia: docs/DAILY_OFFLINE_COPIES_VALIDATION.md.
+
+Consulta de auditoría, 2026-10-20: GroupAuditScreen/controles/detalle →
+audit_history_providers → AuditHistoryRepository → AuditHistoryService →
+FirestoreAuditHistoryService. Modelo separado de GroupInput; crear/editar grupos
+ya no incorpora el contrato de lectura de auditoría. Sin alterar escrituras.
+Cursor de timestamp completo e ID, ligado al grupo. Cabecera reactiva hasta
+paginar; después conserva frontera y anuncia novedades para actualizar. Filtros
+solo sobre cargados. Estado y respuestas pendientes aislados por UID/acceso;
+detalle abierto no conserva valores al revocar. Evidencia y límites:
+docs/PHASE11_AUDIT_HISTORY_VALIDATION.md.
+
+Comparaciones de informes, 2026-10-20: UI → reportComparisonProvider →
+ReportComparisonRepository → repositorios económicos/cuotas puros sobre los datos
+ya compartidos por servicios/providers. Sin consultas adicionales ni persistencia.
+Cortes civiles desde el calendario del grupo; dinero en enteros y ratios BigInt.
+El bloque desplegable solo monta el consumidor al abrirse. Dominio de pagos y
+devoluciones reutilizado; widgets presentan valores/fechas, sin recalcular reglas.
+Ver docs/PHASE10_PERIOD_COMPARISONS_VALIDATION.md y D103.
+
+Servidor vigente 2026-10-20: cron → endpoint autenticado → dominio de cuotas o
+actividad → adaptador REST de Firestore → bandeja/reserva → FCM. Recalcula desde
+datos y permisos actuales; Flutter no autoriza destinatarios ni envíos. Lectura de
+cuotas coherente y escritura condicional limitada en código a avisos, entregas,
+cuarentena y estado técnico. IAM tiene mayor alcance por limitaciones de Firestore;
+la identidad dedicada y sus secretos están exclusivamente en un segundo Supabase,
+qngrmxfjckrrfiyioyzl, separado de photo-access. Sin claves de servidor en cliente.
+El router preserva solo códigos válidos del host HTTPS acordado durante login.
+Despliegue, reservas, límites y validación real:
+[informe](docs/PHASE9_NOTIFICATIONS_AND_LINKS_VALIDATION.md).
+Las preparaciones descritas a continuación son históricas; ahora hay worker/cron.
+
+Preparación de servidor de recordatorios (2026-10-20): módulos Deno privados
+`_shared/quota_reminders.ts` (dominio puro) y `reminder_reader.ts` (adaptador REST
+de solo lectura). El lector obtiene un snapshot readOnly coherente por grupo;
+el dominio proyecta cuotas actuales y resuelve candidatos/destinatarios sin SDK.
+Fixtures compartidos contrastan ese resultado con los informes reales de Dart.
+Sin endpoint, envío, credenciales, persistencia de reservas o cron todavía.
+No se incorporan a photo-access. El futuro worker debe releer permisos/datos antes
+de entregar y no aceptar destinatarios/importes enviados por el cliente.
+Ver docs/PHASE9_REMINDER_SERVER_CALCULATION.md.
+
+Cliente de notificaciones (2026-10-19): perfil/bandeja → providers →
+PushDeviceRepository o NotificationRepository → FirebasePushMessagingService /
+FirestoreNotificationService / FilePushRegistrationService. El token de entrega
+no aparece en widgets o modelos de UI. El journal privado solo guarda UID,
+huellas e intención; se escribe antes de registrar/retirar y permite resolver
+resultados inciertos. Cola por repositorio serializa alta, refresh y retirada.
+AuthRepository coordina retirada antes del SDK de logout, sin dependencia de
+widgets. Sin registro no invoca Messaging para cerrar sesión.
+
+La app mantiene la restauración consentida y las escuchas de token/tap. Las
+aperturas solo aceptan groupId/recipientUid, nunca una ruta arbitraria; verifican
+la cuenta actual y membresía, y la pantalla vuelve a aplicar GroupAccessBody.
+Los providers retiran avisos al perder cuenta/grupo. La bandeja consulta solo el
+UID propio y los últimos 50 por createdAt; marcar leído usa transacción online,
+sin alterar el contenido. Preferencias solo de la membresía propia. La generación
+pertenece al futuro servidor; el cliente no crea avisos ni calcula sus destinatarios.
+Ver docs/PHASE9_NOTIFICATION_CLIENT_VALIDATION.md para despliegue y límites.
+
+Preparación de notificaciones (2026-10-19): QuotaReminderRepository consume un
+QuotaReport mensual actual ya calculado y devuelve únicamente candidatos de
+obligación, sin resolver destinatarios ni enviar. Modelos puros; exige groupId,
+calendario civil del grupo e informe del mismo mes/grupo. No crea providers,
+pantallas o servicios vacíos. No está conectado a un flujo visible todavía.
+El futuro servidor debe recalcular y autorizar con datos actuales; una proyección
+del cliente nunca es una orden de envío ni prueba de permisos. El cálculo Dart
+no se ejecuta automáticamente en Supabase: faltan su adaptación y validación allí.
+
+supabase/functions/_shared/fcm.ts es un adaptador de servidor sin endpoint público.
+Intercambia una credencial de servicio por OAuth de alcance firebase.messaging y
+encapsula FCM HTTP v1. El constructor recibe el secreto, no lo lee del cliente;
+no existe aún ninguna clave configurada. Valida por defecto, no reintenta envíos
+inciertos y no registra tokens ni cuerpos técnicos. No integra ni modifica la
+función photo-access, que sigue usando exclusivamente el JWT del usuario.
+Supabase + FCM y 10:00 elegidos en D091. Sin trabajador, cron ni despliegue aún;
+estado exacto: docs/PHASE9_NOTIFICATIONS_FOUNDATION.md.
+
+Avance del producto completo (2026-10-17):
+
+- GroupEditor → GroupManagementController → GroupManagementRepository →
+  FirestoreGroupManagementService. Separado de las lecturas de GroupRepository,
+  sin ampliar artificialmente sus dobles de pruebas. Transacciones online para
+  creación/edición y auditoría getAfter. El ID de creación se conserva por formulario.
+- Informes/ficha → providers → EconomicReportRepository puro → flujos existentes
+  de Movements/Persons. ReportSelection determina periodos civiles; los widgets
+  reciben saldos y series ya calculados. No se añade saldo persistido ni agregados.
+- Perfil → ProfileEditorController → ProfileEditorRepository →
+  FirestoreProfileEditorService. Control de UID/versión; Auth conserva nombre propio.
+- CSV → CsvExportController → CsvExportRepository → NativeFileSharingService →
+  share_plus/path_provider. La consulta de movimientos de servidor sigue pasando
+  por MovementRepository/Service. Formato y permisos de generación fuera de la UI.
+  Directorios temporales propios por hash de UID, hasta 10 envíos recientes con
+  limpieza por edad al compartir y purga propia al cambiar de cuenta. El SDK
+  puede mantener su caché de compartición; no se promete revocar copias exportadas.
+
+Estas ampliaciones no implementan roles editables ni cuotas. Las invitaciones
+se añaden en la entrega posterior descrita al final de este documento.
+
 Ampliación autorizada para fotos (2026-10-15): Supabase Storage como proveedor de
 archivos; Firebase Authentication y Firestore conservan su responsabilidad.
 El flujo obligatorio se aplica también a Supabase: UI → Provider → Repository →
@@ -261,7 +383,11 @@ El contexto del grupo es el parámetro de ruta /groups/:groupId, sin singleton
 ni ID de grupo hardcodeado. Los providers vuelven a comprobar membresía al cambiar
 sesión o acceso. La UI no muestra los datos anteriores durante carga o error.
 Las reglas son la autoridad de permisos; el guard de UI solo mejora la navegación.
-Las escrituras cliente de grupos/membresías siguen cerradas hasta Phase 7.
+En el avance parcial de Phase 7, GroupManagementRepository y su Service separado
+permiten crear grupo/membresía owner inicial/persona opcional/auditoría de forma
+atómica y editar nombre/descripción con auditoría. No se abre gestión general
+de roles. Entradas/bajas de membresías se añaden en el bloque posterior.
+Rules valida el conjunto con getAfter.
 
 Personas (Phase 3)
 
@@ -300,11 +426,10 @@ GroupAccessBody concentra el guard visual compartido, sin sustituir Security Rul
 Los listeners de personas/movimientos se seleccionan sin Ref después de await ni
 dentro de un generador diferido; esto evita accesos a providers ya cerrados.
 
-Decisión explícita del usuario para el MVP: reutilizar los datos actuales completos.
-No se escribe ningún saldo ni agregado. Con más volumen se sustituirá esta fuente
-por consultas/resúmenes acotados manteniendo el contrato del Dashboard; la prohibición
-de leer todo el historial de la especificación completa sigue siendo el objetivo
-de escalabilidad, no algo ya resuelto por esta fase.
+Decisión histórica del MVP: reutilizar los datos completos sin persistir saldos.
+D109 sustituye esa fuente de caja por sumas agregadas y actividad acotada;
+el contrato puro y la prohibición de calcular negocio en UI se conservan.
+La proyección de cuotas aún necesita sus ingresos/devoluciones, periodos y repartos.
 
 Robustez del MVP (Phase 6)
 
@@ -352,8 +477,270 @@ una proyección pura por fecha efectiva que conserva todos los estados y el grou
 Detalles, correcciones y anulaciones siguen accesibles al desplegar cada fila;
 los enlaces de actividad abren el movimiento concreto ya desplegado.
 Las tarjetas de inicio reutilizan dashboardProvider para el saldo de cada grupo:
-el MVP lee los flujos completos también allí; no son agregados ni ceros ficticios.
+en aquel MVP leían los flujos completos. Desde D109 reciben caja agregada,
+actividad acotada y personas, sin convertir una falta de datos en cero.
 
-Las fotos se aplazan explícitamente. AppAvatar/AppCover pueden recibir ImageProvider,
-pero no se implementan almacenamiento, subida ni permisos de imagen en esta tarea.
+Ampliación del historial (2026-10-17): MovementHistoryControls envía criterios a
+MovementFilterController mediante Riverpod. movementHistoryProvider combina esos
+criterios con el stream existente y las etiquetas de Personas/Miembros, y delega
+búsqueda, validación de rango, orden e aislamiento a MovementHistoryRepository.
+MovementHistoryFilter/MovementHistoryOptions son modelos puros sin Flutter/Firebase.
+El formulario mantiene solo un borrador visual hasta Aplicar. La búsqueda/filtros
+no tocan movementsProvider, operaciones financieras, Dashboard ni persistencia.
+La vista focus por ID omite los criterios; agrupación por día continúa en repository.
+Los filtros se eliminan al salir del historial, cambiar cuenta o perder membresía.
+
+El aplazamiento inicial de fotos es histórico: se implementaron con Supabase y
+wrappers de providers descritos al inicio y en docs/SUPABASE_SETUP.md.
 No se sustituyen el aislamiento por grupo ni Rules por opciones visuales.
+
+Invitaciones y accesos (Phase 7 parcial, 2026-10-17)
+
+GroupInvitationsScreen / JoinGroupScreen / acciones de GroupMembersScreen →
+providers de invitación → GroupInvitationRepository → GroupInvitationService →
+FirestoreGroupInvitationService → Firebase. Códigos, ajustes, preview y solicitudes
+son modelos puros. Clipboard/compartición de texto pasan por FileSharingService,
+cuya implementación nativa encapsula Flutter/SharePlus.
+
+Providers coordinan autenticación, permisos y acciones, bloquean doble envío y
+descartan respuestas de entrada de otra sesión. Repository valida formato,
+aislamiento y owner protegido. Service hace lecturas de servidor y transacciones
+con control de versión. Rules exige el conjunto coherente y auditoría en el mismo
+commit. Guard visual no sustituye autorización. No se crean perfiles globales
+legibles ni un índice global de grupos o permisos.
+
+La auditoría conserva compatibilidad con eventos group sin entityType. El modelo
+admite payloads planos de string/bool/null para invitaciones, solicitudes y bajas.
+No es todavía auditoría general de todas las entidades.
+La readmisión posterior sigue el mismo flujo: preview consulta membresía propia
+en servidor con UID explícito y comunica aprobación obligatoria; submit vuelve
+a comprobarla, decide reactiva la misma membresía solo por gestión autorizada.
+Conserva personId/joinedAt y fija rol member. No se habilitan roles generales ni
+transferencia. Contrato de datos y límites: FIREBASE_SCHEMA.md,
+docs/PHASE7_INVITATIONS_VALIDATION.md y docs/PHASE7_READMISSION_VALIDATION.md.
+
+Vinculación de cuentas/personas (2026-10-18)
+
+MemberLinkButton/Editor → providers de vínculos → MemberLinkRepository →
+MemberLinkService/FirestoreMemberLinkService → Firebase. Providers filtran
+ocupación, pendientes y permisos; el formulario conserva solo su borrador.
+Repository valida grupo, reserva, propietario y alcance. Service comprueba
+versiones y actualiza membresía, persona anterior/nueva y auditoría en transacción.
+Rules exige ambas direcciones y rechaza reclamaciones dobles. Person.linkedUid
+es dominio puro opcional, no otra cuenta autenticada global.
+
+FirestorePersonService inactiva la persona y, cuando corresponde, degrada su admin
+vinculado con auditoría en el mismo commit. Sin Functions/Scheduler, traslado de
+dinero ni sincronización de imágenes. La preparación de vínculos anteriores es
+una herramienta operativa separada, auditada y con precondiciones; no se ejecuta
+como reparación silenciosa al leer. Esa entrega no implementó promociones ni transferencia.
+Ver docs/PHASE7_LINKS_VALIDATION.md.
+
+Roles y transferencia (entrega posterior, 2026-10-18)
+
+MemberRoleButton / OwnershipTransferScreen → providers de roles →
+MemberRoleRepository → MemberRoleService / FirestoreMemberRoleService → Firebase.
+El repository puro determina requisitos de persona/rol y valida la confirmación;
+los providers exponen candidatos/permisos y coordinan la reautenticación mediante
+AuthRepository → AuthService → FirebaseAuthService. Los widgets solo conservan
+selección y texto del formulario. No contienen transacciones ni SDK de Google.
+
+FirebaseAuthService usa reauthenticateWithCredential sobre el usuario existente,
+comprueba UID y renueva el token. Cancelación, cuenta incorrecta o cambio de sesión
+interrumpen el envío. El provider vuelve a comprobar versiones y permisos después
+del await; Service lee grupo, ambas membresías y persona antes de escribir.
+Rules es la autoridad final: promoción exige vínculo activo recíproco y transferencia
+exige Google reciente y ambas transiciones junto a grupo/evento en el mismo commit.
+La selección por acción de auditoría evita evaluar rutas de actualización ajenas.
+No hay nuevo ownerUid mutable en groups: createdBy es histórico y owner sigue en
+members. Tampoco hay un SDK de Firebase en los modelos ni una segunda fuente de roles.
+Estado y límites: docs/PHASE7_ROLES_TRANSFER_VALIDATION.md.
+
+Base de cuotas (2026-10-19)
+
+YearMonth representa meses civiles sin convertirlos a instantes del móvil;
+QuotaRule y ParticipationPeriod son modelos inmutables sin SDK. Repository puro
+QuotaExpectationRepository valida ámbito grupo/persona y coherencia histórica,
+selecciona la regla vigente por mes y proyecta importes esperados en céntimos.
+Rechaza reglas con inicio duplicado y solapamientos interiores de periodos. D078
+permite compartir solo el mes de frontera y computarlo una vez. Copia las listas antes
+de ordenar, no modifica la historia de entrada y devuelve una lista inmutable.
+
+Se diferencia ausencia de periodos, ausencia de precio, mes no computable y mes
+con importe conocido. La suma conocida requiere consultar isComplete; no es deuda,
+saldo ni un estado de pago. No recibe movimientos ni allocations y no deduce pagos.
+Esta entrega no introduce Service/Repository vacíos, providers ni pantallas para
+una persistencia pendiente. Es la base comprobable que compondrá esa feature al
+resolver las decisiones de aplicación. Ver docs/PHASE8_FOUNDATION_VALIDATION.md.
+
+Integración posterior de cuotas y participación (2026-10-19, Rules publicadas)
+
+QuotaScreen / PersonQuotaSection / ParticipationEditor → providers de quotas →
+QuotaRepository / ParticipationRepository → QuotaService / ParticipationService →
+adaptadores Firestore. El provider proyecta importes mediante el repository puro;
+la UI no calcula obligaciones ni consulta Firebase. AppMonthField es presentación
+genérica mes/año y compone AppDropdown, sin modelos ni permisos. intl 0.20.2 pasa
+de transitiva a directa, sin cambiar su versión, para nombres de meses locales.
+
+Cada regla mensual tiene una versión vigente y versiones anteriores inmutables.
+La sustitución futura y su auditoría se validan juntas. Los periodos conservan
+etapas; Person.lastParticipationPeriodId apunta a la última. Empezar, cerrar e
+inactivar con degradación de admin cuando corresponda son transacciones online.
+FirestorePersonService impide el cambio antiguo de estado si hay un periodo
+configurado; esa UI deriva al editor mensual. Editar nombre/notas no toca periodos.
+Nuevas personas eligen su primer mes posteriormente desde la ficha; no hay alta
+programada futura en este bloque. No se deduce participación de createdAt/isActive.
+Rules calcula el mes de servidor para las seis zonas admitidas y rechaza las demás.
+No se cambia la validación anterior de fechas efectivas de movimientos.
+Estado de publicación y comprobaciones: docs/PHASE8_QUOTAS_PERIODS_VALIDATION.md.
+
+Asignaciones y pagos (continuación de Phase 8)
+
+IncomeAllocationScreen / PersonPaymentSummary → providers de allocations →
+AllocationRepository / QuotaSettlementRepository → AllocationService /
+FirestoreAllocationService. QuotaSettlementRepository es una proyección pura:
+combina periodos, reglas, ingresos y asignaciones; no consulta Firebase ni modifica
+listas. La ficha y el editor comparten ese cálculo. Propuestas, capacidad del ingreso,
+advertencias por exceso y deuda están fuera de widgets. Separa pagos hasta el mes
+actual, futuros y crédito sin asignar. Un sobrepago no compensa otro mes automáticamente.
+
+Cada ajuste mensual guarda un total absoluto ingreso/mes, con revisión y un ID
+de operación estable durante el envío. Transacción online: lee el movimiento,
+asignación, contador del ingreso, etapa y evento previo; escribe asignación,
+contador y auditoría juntos. El contador limita la suma, no representa saldo del
+bote ni un agregado de cuotas pagadas. No permite dos asignaciones independientes
+en un mismo commit usando ese contador. Se comprueban actor, versión y estado.
+La respuesta incierta conserva la misma intención/ID en pantalla; reabrir consulta
+el estado guardado. No crea otro ingreso ni aplica incrementos repetidos.
+
+Los pagos solo cuentan si el ingreso fuente está active. Anular/corregir invalida
+su cómputo sin barrer ni borrar asignaciones; el sustituto no las copia. Esta
+primera proyección evita efectos parciales sin ampliar Movement ni su saldo
+derivado; la ampliación posterior de devolución añade el plan a MovementInput.
+Los ingresos nuevos se registran primero y se reparten expresamente después.
+Una retirada ordinaria no revierte asignaciones; las devoluciones se incorporan
+en el bloque posterior descrito a continuación.
+
+La confirmación de actualización del grupo también observa cuotas, periodos y
+asignaciones; conserva la presentación diferida del aviso. No autoriza escrituras
+offline. Sigue la estrategia actual de datos completos por grupo: con volumen
+habrá que acotar lecturas y usar agregados, sin trasladar cálculos a la UI.
+Estado y comprobaciones: docs/PHASE8_ALLOCATIONS_VALIDATION.md.
+
+Devoluciones y primer mes en alta (2026-10-19)
+
+RefundEditorScreen → refund providers → RefundRepository (disponibilidad/reparto)
+y MovementRepository/MovementSubmissionRepository → FirestoreMovementService y
+FirestoreRefundMutation → Firestore. El editor conserva campos mientras se
+actualiza la fuente; preparar y guardar siempre comprueban los datos actuales.
+Actor capturado antes de confirmar, ID estable y journal persistente compartido
+con los movimientos. No se incorporan cálculos económicos a widgets.
+
+RefundPlan es dominio puro: ingreso, crédito sin asignar y hasta cuatro partes.
+La serialización usa mapa de mes ordinal a céntimos para evitar índices
+duplicados. Una corrección restaura el original y aplica el sustituto en una
+transacción; no cambia el ingreso de origen y la unión de meses es como máximo
+cuatro. Para otro ingreso o más meses, anular y registrar otra devolución.
+
+Las asignaciones conservan sus importes brutos. QuotaSettlementRepository resta
+las partes de devoluciones active al pago por mes y el crédito devuelto al
+dinero libre. El contador por ingreso registra límites de devoluciones, incluidos
+los retornos por mes; nunca es el saldo del bote. Un ajuste de reparto no puede
+bajar de lo ya devuelto ni volver a repartir dinero retornado. No anular/corregir
+el ingreso mientras haya devoluciones activas. Rules enlaza movimiento, contador
+y evento inmutable, con validaciones distribuidas entre esas escrituras
+obligatorias para cumplir el presupuesto de evaluación. No hay operaciones
+parciales ni acceso privilegiado desde la app.
+
+FilePendingMovementService escribe versión 2 cuando hay planes de devolución,
+incluido el original de una corrección/anulación; sigue leyendo versión 1.
+La recuperación compara el reparto completo, además de importe/fecha/persona.
+Una app antigua no debe procesar un journal v2 como una retirada normal.
+
+Alta opcional: PersonRepository valida el primer mes contra el calendario del
+grupo; PersonService crea persona, etapa inicial y auditoría atómicamente con ID
+estable. Sin mes mantiene la creación sin periodo. Sin cron ni migración.
+Estado exacto y límites: docs/PHASE8_REFUNDS_VALIDATION.md.
+
+Dashboard e informes de cuotas (2026-10-19)
+
+QuotaReportSection / DashboardScreen → quota_report_providers →
+QuotaReportRepository → GroupQuotaService / FirestoreGroupQuotaService.
+Dos streams de contenido del grupo (periodos y allocations), compartidos por
+dashboard e informes. Se reutilizan personas, reglas, movimientos y reloj del
+grupo. No abrir una consulta por persona, ni leer auditEvents/allocationBalances
+para calcular pagos. La ficha individual conserva sus consultas acotadas previas.
+Las lecturas respetan la membresía actual; sin acceso devuelven conjuntos vacíos
+y GroupAccessBody retira el contenido. El selector de periodo usa un valor inerte
+durante la pérdida de acceso para evitar errores de reconstrucción, nunca como
+fecha de un informe visible o como sustituto de permisos.
+
+El repository agrupa datos por persona, valida grupo/integridad y compone
+QuotaSettlementRepository. Este admite ampliar su intervalo de proyección para
+periodos de informe anteriores al primer periodo de participación; su comportamiento
+por defecto y las operaciones de asignación/devolución no cambian. No infiere
+participación, pagos o deuda a partir de fechas de creación o dinero sin reparto.
+Una persona inactiva permanece en el cálculo según sus periodos históricos.
+
+Modelos puros QuotaReport/QuotaTotals separan periodo transcurrido, previsión
+futura y acumulado hasta el mes actual. El informe usa el estado actual de los
+pagos/devoluciones, no una foto del cierre. Cobertura es la suma de mínimos de
+cuota/pago por persona y mes: un exceso no tapa otra obligación. Pendiente y
+porcentaje son desconocidos si falta configuración en ese tramo; importe esperado
+cero no tiene porcentaje. Ratio entero en puntos básicos, producto intermedio
+con BigInt; sumas agregadas comprueban desbordamiento en lugar de mostrar importes
+envueltos. No se persisten porcentajes, contadores de informe ni snapshots.
+
+En aquella entrega, el dinero del mes reutilizaba EconomicReportRepository por fecha
+efectiva; D109, descrito abajo, lo sustituye en el dashboard por agregados.
+No lo equipara al pago de cuotas de ese mes. Crédito sin asignar/futuro
+se presenta como estado actual de todo el grupo, no flujo del periodo seleccionado.
+App* presenta cifras/estados preparados por providers, sin cálculos financieros
+en widgets. Comparaciones se añadieron después en D103 y agregados de caja en D109;
+la optimización completa de cuotas para gran volumen sigue abierta.
+Evidencia: docs/PHASE10_QUOTA_REPORTS_VALIDATION.md.
+
+Entrega 2026-10-20: exportaciones, ciclo de vida y caja agregada
+
+EconomicReportScreen → export providers → ReportExportRepository →
+ReportFileService/NativeReportFileService y NativeFileSharingService. La selección,
+roles y scope se autorizan antes de capturar un snapshot inmutable; se vuelven a
+comprobar cuenta/permisos antes de compartir. PDF y XLSX se generan en isolate,
+con fuentes locales, sin SDK de Firebase en el codificador. CsvExportRepository
+prepara el mismo conjunto económico. XLSX es OOXML de escritura, sin fórmulas ni
+vínculos externos y con enteros largos preservados como texto; no usa automatización
+de Excel ni sube informes a un servidor. No exporta tokens, cuentas o secretos.
+
+PersonTrashScreen/GroupDeletionScreen/AccountDeletionScreen → providers →
+repositories de ciclo de vida → services Firebase/Supabase. Las transacciones y
+Rules garantizan elegibilidad, auditoría y transiciones. La UI muestra confirmaciones
+y progreso, no decide permisos ni integridad. Papelera de diez días solo sin
+historial/participación/vínculo y con marcador de protección; purga explícita.
+Borrado de grupo con nueva autenticación Google/nombre exacto, bloqueo irreversible,
+tarea privada reanudable y limpieza de subcolecciones antes de la raíz. Mantener el
+registro de colecciones al ampliar el esquema. Baja propia retira accesos, barrera
+de nuevas entradas y segunda consulta antes de limpiar identidad; historia de otros
+grupos conservada. Mantener marcadores mínimos ante resultado incierto.
+
+`lifecycle-cleanup`, solo proyecto Supabase de fotos: JWT Firebase del usuario y
+Rules actuales, nunca clave Firebase privilegiada. Clave Supabase interna solo para
+limpiar prefijos autorizados del bucket privado. Fotos y Firestore no forman una
+transacción distribuida: auditoría distingue intención y confirmación. El worker
+aislado lee la raíz en su transacción de escritura; no recrea grupos bloqueados.
+
+Dashboard/Home → dashboard providers → MovementRepository → capacidad opcional
+MovementDashboardSource de FirestoreMovementService → FirestoreCashAggregateService.
+Cuatro sumas REST de caja comparten un readTime, se decodifican como int64 y se
+actualizan al cambiar la escucha acotada de movimientos. Los agregados nativos no
+tienen escucha/caché propios. FileCashCache mantiene la última confirmación privada
+por UID/grupo/mes, la elimina al salir y evita escrituras tardías de la sesión previa;
+es temporal, puede desalojarse y no constituye respaldo. UI usa resultados preparados.
+
+Actividad reciente limitada a veinte movimientos y pares necesarios de correcciones;
+el resumen muestra cinco cambios. Cuotas comparten fuentes de ingresos/devoluciones,
+periodos y asignaciones, sin cargar retiradas ordinarias. La sincronización de snapshots
+es del SDK, no una instantánea de cierre de informe. La proyección sigue creciendo con
+esos documentos; informes/exportaciones explícitos aún solicitan historial. No afirmar
+que todas las pantallas tienen coste constante ni introducir saldos como nueva verdad.
+
+Estado, pruebas y limitaciones: docs/FULL_PRODUCT_COMPLETION_2026-10-20.md.

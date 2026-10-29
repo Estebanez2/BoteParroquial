@@ -7,8 +7,14 @@ import '../../../models/group_member.dart';
 import '../../../models/photo_target.dart';
 import '../../photos/presentation/photo_view.dart';
 import '../providers/group_providers.dart';
+import '../providers/group_invitation_providers.dart';
+import '../providers/member_link_providers.dart';
 import 'group_access_body.dart';
 import 'group_widgets.dart';
+import 'member_link_editor.dart';
+import 'member_role_button.dart';
+import '../providers/member_role_providers.dart';
+import '../../../core/offline/offline_mode.dart';
 
 class GroupMembersScreen extends ConsumerWidget {
   const GroupMembersScreen({super.key, required this.groupId});
@@ -52,7 +58,7 @@ class GroupMembersScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        '${members.length}',
+                        '${members.where((member) => member.isActive).length}',
                         style: AppTypography.of(context).moneyHero,
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -64,7 +70,53 @@ class GroupMembersScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                for (final member in members)
+                if (!ref.watch(offlineReadOnlyProvider))
+                  AppButton(
+                    label: 'Invitaciones y solicitudes',
+                    leadingIcon: Icons.person_add_alt_outlined,
+                    onPressed: () =>
+                        context.push('/groups/$groupId/invitations'),
+                  ),
+                const SizedBox(height: AppSpacing.lg),
+                if (ref.watch(invitationControllerProvider(groupId)).hasError)
+                  Text(
+                    failureMessage(
+                      ref.watch(invitationControllerProvider(groupId)).error!,
+                    ),
+                  ),
+                if (ref.watch(memberRoleControllerProvider(groupId)).hasError)
+                  Text(
+                    failureMessage(
+                      ref.watch(memberRoleControllerProvider(groupId)).error!,
+                    ),
+                  ),
+                if (ref.watch(canTransferOwnershipProvider(groupId)))
+                  AppButton(
+                    label: 'Transferir la propiedad',
+                    variant: AppButtonVariant.outline,
+                    leadingIcon: Icons.workspace_premium_outlined,
+                    onPressed: () => context.push('/groups/$groupId/transfer'),
+                  ),
+                const SizedBox(height: AppSpacing.lg),
+                AppChoiceBar<bool>(
+                  options: const {false: 'Todos', true: 'Sin vínculo'},
+                  value: ref.watch(memberListFilterProvider(groupId)),
+                  onChanged: ref
+                      .read(memberListFilterProvider(groupId).notifier)
+                      .select,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                if (ref.watch(memberListFilterProvider(groupId)) &&
+                    ref.watch(unlinkedMembersProvider(groupId)).isEmpty)
+                  const EmptyState(
+                    icon: Icons.link_rounded,
+                    title: 'Todos tienen su vínculo',
+                    description:
+                        'No hay miembros activos pendientes de vincular.',
+                  ),
+                for (final member in ref.watch(
+                  visibleGroupMembersProvider(groupId),
+                ))
                   Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                     child: AppReveal(
@@ -121,6 +173,34 @@ class GroupMembersScreen extends ConsumerWidget {
                                     'En el grupo desde ${MaterialLocalizations.of(context).formatMediumDate(member.joinedAt.toLocal())}',
                                     style: AppTypography.of(context).bodySmall,
                                   ),
+                                  const SizedBox(height: AppSpacing.sm),
+                                  MemberLinkButton(member: member),
+                                  MemberRoleButton(member: member),
+                                  if (ref.watch(
+                                    canRemoveMemberProvider((groupId, member)),
+                                  ))
+                                    AppButton(
+                                      label: member.uid == membership.uid
+                                          ? 'Salir del grupo'
+                                          : 'Retirar acceso',
+                                      variant: AppButtonVariant.ghost,
+                                      leadingIcon: Icons.logout_rounded,
+                                      onPressed:
+                                          ref
+                                              .watch(
+                                                invitationControllerProvider(
+                                                  groupId,
+                                                ),
+                                              )
+                                              .isLoading
+                                          ? null
+                                          : () => _remove(
+                                              context,
+                                              ref,
+                                              member,
+                                              member.uid == membership.uid,
+                                            ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -134,4 +214,27 @@ class GroupMembersScreen extends ConsumerWidget {
           ),
     ),
   );
+
+  Future<void> _remove(
+    BuildContext context,
+    WidgetRef ref,
+    GroupMember member,
+    bool own,
+  ) async {
+    final confirmed = await AppDialog.show(
+      context,
+      title: own
+          ? '¿Salir de este grupo?'
+          : '¿Retirar el acceso de ${member.displayName}?',
+      description:
+          'Perderá el acceso a este espacio. Su persona interna, sus fotos y su historial económico se conservan. Una futura entrada no recupera permisos de administrador.',
+      confirmLabel: own ? 'Salir del grupo' : 'Retirar acceso',
+    );
+    if (!confirmed || !context.mounted) return;
+    final router = GoRouter.of(context);
+    final removed = await ref
+        .read(invitationControllerProvider(groupId).notifier)
+        .remove(member);
+    if (removed && own) router.go('/');
+  }
 }

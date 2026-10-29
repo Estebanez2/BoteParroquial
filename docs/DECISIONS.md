@@ -506,7 +506,502 @@ El texto describe una actualización pendiente, sin inferir que no hay Internet
 solo por metadata de Firestore. No relajar confirmaciones económicas de servidor.
 El usuario asume la ejecución de la app para validar estos cambios.
 
+D060 — Ampliación acotada del historial (2026-10-17)
+
+El usuario solicita revisar el MVP y avanzar con una parte elegida de la
+especificación completa, sin móvil y con pruebas mínimas. Se escoge búsqueda y
+filtros del historial (apartados 56, 85 y 86), sin declarar cerradas las pruebas
+físicas pendientes del MVP ni iniciar gestión completa de grupos.
+
+Búsqueda por palabras en nombres de persona/creador, concepto y motivos de
+anulación/corrección, ignorando mayúsculas, acentos y espacios sobrantes. Criterios
+combinados por fecha efectiva inclusiva, persona (también inactiva), grupo sin
+persona, tipo, estado y creador. Sin criterios se conservan todos los estados.
+Aplicar confirma el formulario; cancelar lo descarta. Los filtros son temporales
+por grupo/sesión, no se persisten y nunca cambian los totales del Dashboard.
+El acceso directo a un movimiento por ID ignora filtros para poder seguir cadenas
+de corrección. Se reutiliza el flujo actual del MVP, sin consultas nuevas, índices
+ni reglas; paginación/búsqueda de servidor quedan pendientes para mayor volumen.
+
+D061 — Creación y edición segura de grupos (2026-10-17)
+
+El usuario autoriza continuar todo lo posible del producto completo. La creación
+desde la app guarda grupo, owner inicial propio, persona opcional y evento de
+auditoría en una transacción. El usuario elige crear por defecto la persona del
+propietario con opción de omitirla. No se abre promoción de roles en grupos existentes.
+Owner/admin autorizado edita nombre/descripción con versión y auditoría atómica;
+moneda y zona se conservan. El alcance de creación aún no incluye cuota inicial
+ni configuración de invitaciones. Grupos anteriores continúan siendo legibles.
+
+D062 — Informes económicos y ficha individual iniciales (2026-10-17)
+
+Se implementa el subconjunto económico mensual/trimestral/anual sobre los flujos
+existentes del MVP: fechas efectivas, movimientos activos, saldo inicial y final,
+serie mensual y desglose por persona. La ficha conserva todos los estados en su
+historial. No son cierres contables inmutables ni estadísticas de cuotas/deuda.
+Se mantiene el aplazamiento de agregados/consultas acotadas de D044.
+
+D063 — Nombre de cuenta propio (2026-10-17)
+
+Se habilita editar el nombre global propio, con validación y versión. El acceso
+Google conserva el nombre de aplicación guardado. No se sincronizan automáticamente
+nombres de miembros o personas ya existentes ni se modifica la cuenta Google.
+
+D064 — Devoluciones y futuras asignaciones (2026-10-17)
+
+El usuario elige que una devolución asociada a una persona pueda seleccionar qué
+allocations se revierten; una retirada general no altera cuotas. Es una decisión
+para Phase 8, todavía sin implementación de cuotas/allocations. No reinterpretar
+retiradas históricas ni dar por deshechas asignaciones inexistentes.
+
+D065 — Exportación CSV inicial por periodo (2026-10-17)
+
+CSV con BOM UTF-8, separador punto y coma, campos entre comillas, importes enteros
+en céntimos y todos los estados del periodo. Efecto de anulados/corregidos igual a
+cero; conservar referencias de corrección y motivos. Neutralizar fórmulas en texto.
+Desde la app solo owner/admin autorizado puede generarlo; consulta financiera de
+servidor antes de compartir, tras comprobar sesión/acceso. Compartición nativa
+encapsulada en Service mediante share_plus. El usuario elige destino en el móvil;
+el agente no envía archivos a nadie. PDF/Excel siguen pendientes. La lectura de
+datos económicos por miembros sigue permitida: esta restricción de la acción de
+exportar no impide que un lector autorizado copie datos por otros medios.
+
+D066 — Publicación autorizada y respaldo externo (2026-10-17)
+
+El usuario pide expresamente publicar y usar las nuevas Rules tras guardar una
+copia de las anteriores fuera de Git. Despliegues realizados y hashes comparados
+con la fuente local. Restaurar Git no modifica el backend; volver a la copia de
+Rules no revierte datos ni fotos. Evidencia de versión en
+docs/PHASE7_INVITATIONS_VALIDATION.md; respaldo en docs/FIRESTORE_RULES_BACKUP.md.
+
+D067 — Primera entrega de invitaciones y aprobación (2026-10-17)
+
+Se implementa el subconjunto de códigos de los apartados 12/13 del producto:
+activación, regeneración, aprobación o entrada automática configurables por
+gestión autorizada. Miembros activos pueden compartir. Códigos de 192 bits,
+formato groupId.secret, sin inventar dominios; vista previa mínima autenticada
+para quien conoce el código, sin acceso anticipado al grupo. Entrada siempre
+como member, personId=null. Ajustes, decisión/membresía y auditoría se validan
+atómicamente. No se autoactivan invitaciones de grupos nuevos. Solicitudes ya
+recibidas se conservan al cambiar código o desactivar; notificaciones/enlaces
+permanecen en sus fases. La readmisión se concreta posteriormente en D069.
+
+D068 — Salida y retirada de acceso conservan historia (2026-10-17)
+
+Siguiendo los apartados 42/43/45: usuario no owner puede salir; owner/admin
+autorizado retira acceso de no owner. Membresía inactiva y rol member, con
+personId y joinedAt conservados y evento que guarda el rol anterior. No se borran
+personas, movimientos ni fotos. Owner protegido; transferencia aún no disponible.
+No se implementan promociones/degradaciones generales como efecto secundario.
+Los ejemplos de esta entrega se aíslan en un grupo DEMO con precondición de
+creación; sus UID ficticios no se presentan como pruebas de cuentas reales.
+
+D069 — Readmisión con aprobación obligatoria (2026-10-17)
+
+El usuario responde «Permitir solicitud con aprobación obligatoria». Quien salió
+o fue expulsado puede solicitar volver usando un código vigente habilitado.
+Debe aprobar owner/admin autorizado aunque requiresApproval=false para cuentas
+nuevas. El solicitante no puede aprobarse ni recuperar el rol de administrador.
+Se reactiva la misma membresía como member conservando personId y joinedAt;
+no se crea otra persona ni se cambian su actividad o movimientos históricos.
+La preview propia informa de la aprobación y la transacción vuelve a comprobar
+la membresía/configuración actual. Auditoría y control de versión existentes.
+Sustituye el bloqueo provisional de la entrega inicial de invitaciones.
+Evidencia: docs/PHASE7_READMISSION_VALIDATION.md.
+
+D070 — Vinculación con personas inactivas y reserva histórica (2026-10-18)
+
+El usuario elige permitir vincular personas inactivas con advertencia, sin
+reactivarlas ni permitir admin mientras estén inactivas. Reafirma conservar el
+vínculo de quienes salen o son expulsados hasta que un gestor lo quite expresamente.
+
+D071 — Vínculo recíproco, único y auditado (2026-10-18)
+
+members.personId y persons.linkedUid cambian juntos, en transacción con auditoría
+y control de versión. linkedUid es opcional en personas antiguas/sin vínculo.
+Cambiar no traslada movimientos, nombres ni fotos. Owner/admin autorizado gestiona
+vínculos; solo owner cambia el suyo. Para una cuenta inactiva se habilita quitar
+el vínculo reservado; asignar uno nuevo requiere antes readmisión. «Sin vínculo»
+lista miembros activos. La preparación anterior detecta duplicados/huérfanos y
+se detiene si los hay; no vincula por coincidencia de nombre.
+
+D072 — Pérdida automática de administración (2026-10-18)
+
+Se aplica 10.4: desvincular admin, vincularlo a persona inactiva o inactivar su
+persona degrada role a member en el mismo commit con auditoría. Reactivar no
+devuelve admin. Owner mantiene su protección y puede existir sin persona.
+No se habilitan promociones ni gestión general de roles. No se depende de tareas
+en segundo plano para quitar permisos. Ver docs/PHASE7_LINKS_VALIDATION.md.
+
+D073 — Gestión general de administradores (2026-10-18)
+
+Continuación autorizada del producto: se implementan 9.2 y 10.2–10.4. Owner y admin
+autorizado pueden ascender miembros y degradar admins, incluida la degradación
+propia; nunca modificar owner. Promoción exige cuenta activa y persona activa
+vinculada de forma recíproca. Solo role/metadatos y auditoría atómica; no cambia
+el vínculo ni se recuperan roles automáticamente. Amplía D072 sin sustituir su
+degradación automática. No se implementan notificaciones de cambios de rol.
+
+D074 — Transferir propiedad conserva historia y deja al anterior como miembro (2026-10-18)
+
+El usuario elige «Pasar a miembro» y «Verificar Google y escribir el nombre».
+Solo owner entrega el control a otro miembro activo con persona activa vinculada.
+Se conserva personId/joinedAt e historial de ambas cuentas. Ambas membresías,
+metadatos del grupo y un evento inmutable cambian juntos. No usar createdBy como
+owner actual ni modificarlo al transferir; no añadir una segunda fuente de roles.
+El antiguo propietario pierde gestión y puede salir posteriormente como miembro.
+
+D075 — Verificación de la misma cuenta y rechazo de cambios concurrentes (2026-10-18)
+
+La app reautentica el usuario Firebase existente mediante Google, comprueba UID,
+fuerza token renovado y exige nombre exacto del grupo. No inicia sesión como otra
+cuenta. Cancelar/cambiar sesión no envía. Provider y transacción vuelven a comprobar
+versiones y elegibilidad. Rules exige proveedor Google, auth_time no futuro de los
+últimos cinco minutos y las dos transiciones; no basta ocultar botones. La confirmación
+humana pertenece a UI; Rules valida nombre y credencial, no puede demostrar que
+el texto se tecleó manualmente. Reintentar requiere revisar el resultado; no hay
+reenvío automático. Evidencia: docs/PHASE7_ROLES_TRANSFER_VALIDATION.md.
+
+D076 — Base de cuotas sin inferir deuda de datos incompletos (2026-10-19)
+
+Se comienza Phase 8 mediante modelos de meses/reglas/periodos y proyección pura.
+Los importes son enteros; precios temporales y periodos explícitos determinan cada
+mes. Falta de configuración de participación o de precio se conserva como estado
+incompleto. No confundir importe esperado con cuota pagada, deuda, crédito o saldo.
+No se infieren periodos a partir de createdAt/isActive ni pagos a partir de ingresos.
+Es preparación técnica del producto especificado, sin nueva política de aplicación,
+documentos remotos o reglas publicadas. Evidencia: docs/PHASE8_FOUNDATION_VALIDATION.md.
+
+D077 — Aplicación temporal de cuotas y participación (2026-10-19)
+
+El usuario responde expresamente: cambios de cuota desde el mes siguiente; primer
+mes de cada persona elegido expresamente; último mes computable al inactivar
+elegido expresamente, con propuesta del actual. La primera cuota del grupo permite
+elegir su inicio. No se asignan periodos automáticamente a personas anteriores.
+
+En preguntas posteriores elige permitir cuota 0 como suspensión temporal para el
+grupo y sustituir cuotas futuras conservando las versiones anteriores. Nunca
+modificar meses actuales/pasados ni borrar versiones. Implementación local de
+reglas por mes, versiones inmutables, periodos y auditoría en transacción.
+Evidencia y estado remoto: docs/PHASE8_QUOTAS_PERIODS_VALIDATION.md.
+
+D078 — Baja y vuelta en el mismo mes cuentan una sola vez (2026-10-19)
+
+El usuario elige contar el mes una sola vez, aunque aparezca al cerrar la etapa
+anterior y abrir la nueva. Puede reactivarse inmediatamente. Se permite igualdad
+entre último mes anterior y primer mes nuevo; se rechazan solapamientos interiores.
+La proyección emite una única obligación por mes. Ordena una etapa cerrada antes
+de la abierta si comparten inicio, sin depender del orden de llegada. Sustituye
+la restricción más estricta de la base inicial. No reescribe las etapas anteriores.
+
+D079 — Reparto tras anular o corregir un ingreso (2026-10-19)
+
+El usuario elige revisar expresamente el reparto del sustituto. Las asignaciones
+del ingreso original permanecen registradas, pero solo pagan meses si su ingreso
+sigue active. Anular/corregir deja de contarlas; no se copian al sustituto aunque
+coincidan persona e importe. No se borran ni reescriben asignaciones históricas.
+
+D080 — Propuesta revisable y hasta doce meses futuros (2026-10-19)
+
+El usuario elige hasta doce meses futuros después de los pendientes anteriores y
+el mes actual. El sobrante es crédito sin asignar. La propuesta no supera lo
+pendiente de cada mes y usa solo el dinero aún libre de ese ingreso. Una cuota
+desconocida impide adivinar el reparto; periodos ausentes no son deuda cero.
+Esta entrega confirma un mes cada vez y recalcula después; no aplica todos en
+segundo plano ni introduce un límite de doce meses a la asignación manual.
+
+D081 — Sobrepago manual y ajuste del reparto sin tocar el bote (2026-10-19)
+
+El usuario acepta sobrepago manual con advertencia. Se muestra por separado y no
+compensa otros meses automáticamente. La diferencia global asignado-esperado no
+sustituye la suma de meses pendientes. Un ingreso puede pagar varios meses y un
+mes recibir varios ingresos. Nunca repartir más que el importe del ingreso.
+El ajuste indica el total de ese ingreso para ese mes, no un incremento implícito;
+0 libera el importe manteniendo registro y auditoría. Nuevas asignaciones exigen
+mes incluido en una etapa; pueden liberarse las que queden fuera tras una baja.
+Precio desconocido se advierte y no acredita cumplimiento. Las transacciones
+online acoplan reparto, contador de límite por ingreso y evento inmutable.
+En aquella entrega seguían pendientes las devoluciones de D064; se incorporan
+posteriormente en D082–D084. Una retirada ordinaria no modifica cuotas.
+Ver docs/PHASE8_ALLOCATIONS_VALIDATION.md como evidencia de ese bloque anterior.
+
+D082 — Devoluciones parciales de cuotas y crédito (2026-10-19)
+
+El usuario elige combinar asignaciones seleccionadas y crédito sin asignar de una
+persona en una devolución, también parcialmente. El ingreso de origen permanece
+intacto y active; la retirada tiene importe positivo y conserva el reparto de lo
+devuelto. Una retirada ordinaria no altera cuotas. Las asignaciones brutas se
+conservan y los pagos netos descuentan solo devoluciones active. El contador por
+ingreso impide duplicar dinero o repartir lo ya retornado. Amplía D064 y D081.
+
+D083 — Anular y corregir devoluciones conjuntamente (2026-10-19)
+
+El usuario elige restaurar cuotas/crédito al anular y revisar expresamente el
+reparto del sustituto al corregir. La corrección empieza vacía y requiere
+confirmación. Conserva original, sustituto y evento inmutable; restaura/aplica
+en una transacción. Conflictos de disponibilidad o versión bloquean todo el
+commit. No anular/corregir el ingreso mientras tenga devoluciones activas.
+Convertir la devolución en movimiento normal también exige confirmar la
+restauración; el sustituto normal no afecta cuotas automáticamente.
+
+D084 — Primera devolución por ingreso y hasta cuatro meses (2026-10-19)
+
+El usuario elige un ingreso de origen y hasta cuatro meses seleccionados más su
+crédito sin asignar por operación. La corrección conserva origen y la unión de
+meses original/sustituto también debe caber en cuatro; para cambiar más o cambiar
+origen, anular y registrar otra devolución. Fecha desde la del ingreso hasta hoy
+del grupo. No se incorpora backend privilegiado ni se permite saltar límites de
+Rules; se distribuyen validaciones entre testigos obligatorios del mismo commit.
+
+D085 — Primer mes opcional durante el alta de persona (2026-10-19)
+
+Se incorpora el alta opcional prevista por el producto y D077. Por defecto se
+elige más adelante; si se selecciona ahora, se confirma el mes y se crean persona,
+periodo y auditoría juntos. No deducirlo de createdAt ni asignarlo a las personas
+existentes. Solo hasta el mes actual del grupo; sin altas futuras programadas.
+La persona inicial opcional de un grupo continúa eligiéndolo desde su ficha.
+
+D086 — Nuevo punto de recuperación antes de devoluciones (2026-10-19)
+
+Tras el rechazo de revisión automática, el usuario pide una copia nueva del
+estado actual y autoriza expresamente incorporar/publicar las reglas y validarlas.
+Se conserva copia remota de reglas activas de asignaciones, ZIP de archivos
+locales incluidos cambios sin commit y APK previo, fuera de Git. No se sustituye
+el respaldo del MVP. Es copia de código/permisos, no de documentos o fotos.
+El ZIP incluye el trabajo local en curso, distinto de las reglas remotas; dejarlo
+explícito al restaurar. Evidencia/hashes: docs/PHASE8_REFUNDS_VALIDATION.md.
+
+D087 — Priorizar dashboard e informes de cuotas (2026-10-19)
+
+El usuario elige completar estos resúmenes antes de Phase 9. Se reutilizan datos
+y permisos actuales, sin incorporar otro servicio ni notificaciones. La opción de
+Supabase/FCM para avisos se explicó, pero no queda elegida ni configurada por esta
+respuesta. Comparaciones y agregados para volumen continúan en otro bloque.
+
+D088 — Informes de cuotas con estado actualizado (2026-10-19)
+
+El usuario elige estado actualizado hasta hoy, igual que la ficha individual.
+Un pago posterior asignado a un mes pasado lo salda en ese mes y una devolución
+activa reduce su pago. No reconstruye cómo estaba al cierre ni guarda snapshots
+contables. Caja mantiene fecha efectiva; pago de cuota mantiene mes asignado.
+Personas inactivas conservan los meses de sus periodos históricos.
+
+D089 — Pendiente hasta el mes actual y previsión separada (2026-10-19)
+
+El usuario elige que un periodo en curso solo acumule pendiente hasta el mes actual
+del grupo. Meses posteriores del periodo se muestran como previsión, con su cuota
+y pagos adelantados, sin sumarlos al pendiente actual. Un periodo totalmente futuro
+no tiene deuda actual; su obligación prevista aparece en el bloque futuro.
+El dashboard distingue acumulado histórico, cuotas del mes y caja del mes.
+
+D090 — Cobertura por obligación y configuración incompleta (2026-10-19)
+
+Aplicación de D077/D081: cobertura suma el menor de pago neto/cuota de cada persona
+y mes, sin compensar con excesos otras obligaciones. Porcentaje entero en puntos
+básicos (0..10000), sin desbordamiento intermedio; representación a una décima.
+Si falta participación/precio en ese tramo, pendiente y porcentaje son desconocidos.
+Si esperado es cero, no hay porcentaje ni se etiqueta como persona pagada por esa
+ausencia de cuota. Se muestran estados sin cuota computable y sin configurar.
+El crédito sin asignar no acredita pagos; su resumen global actual se diferencia
+del periodo seleccionado. No se añade una regla de compensación automática.
+
+D091 — Supabase + FCM y hora de los recordatorios (2026-10-19)
+
+Tras preguntar por costes/diferencias, el usuario elige Supabase para el proceso
+programado y Firebase Cloud Messaging para entregar push, condicionado al uso
+gratuito. FCM figura sin coste; Supabase Free incluye 500.000 invocaciones de
+Edge Functions, con otros límites de recursos/transferencia. No equivale a uso
+ilimitado ni permite activar un plan de pago o Blaze sin nueva autorización.
+Mantener Firebase Authentication y Firestore; no crear otra sesión de usuario.
+El usuario elige las 10:00 en la zona horaria de cada grupo para los avisos de
+7 días y 1 día antes del último día del mes, según la especificación.
+La hora/backend están elegidos, pero el servidor/cron y el cliente push todavía
+no están implementados ni configurados. Las consultas de preparación confirmaron
+FCM habilitado y permisos disponibles de la sesión CLI; no asignaron permisos ni
+crearon claves. Contrato, fuentes y pendientes: PHASE9_NOTIFICATIONS_FOUNDATION.md.
+
+D092 — Push discreto y resumen de personas sin cuenta (2026-10-19)
+
+El usuario elige push con texto discreto, sin cantidades de cuota, pagado ni
+pendiente. El detalle económico se consulta dentro de la app autorizada. Para
+personas sin usuario vinculado, los gestores reciben un resumen por grupo, no
+un aviso separado por persona. El agrupado no permite revelar cuotas de otros
+grupos ni duplicar avisos a un mismo gestor. Son requisitos del futuro worker;
+la entrega actual no genera aún mensajes, agregación de destinatarios o bandeja.
+Preferencias/categorías y demás destinatarios de §53 siguen por concretar.
+
+D093 — Consentimiento explícito y preferencias por grupo (2026-10-19)
+
+El usuario elige el botón «Activar avisos en este móvil», no pedir permiso al
+entrar. Auto-init desactivado hasta ese consentimiento. Permite desactivar push
+de recordatorios para un grupo y conservar los demás; la bandeja conserva sus
+avisos. Implementación inicial: una preferencia ausente permite recordatorios,
+pero el servidor no puede entregar nada sin un dispositivo registrado previamente
+por elección expresa. Esta preferencia no decide otras categorías futuras de §53.
+
+D094 — Confirmar retirada antes de cerrar sesión (2026-10-19)
+
+El usuario elige esperar a tener conexión y confirmar la retirada cuando este
+móvil estaba registrado. Sin registro, logout mantiene su flujo anterior. Un
+error de retirada no cierra la sesión. Journal privado guarda UID, huellas de
+tokens e intención enabled/retirar antes de operaciones remotas; no guarda el
+token de entrega. Al reiniciar se termina una retirada, nunca se convierte en
+un alta automática. Se confirma servidor, se invalida token nativo y se limpia
+journal antes de salir. No afecta a otros móviles. Un cambio externo inesperado
+de cuenta invalida el token local antes de permitir su uso con otra cuenta.
+No revoca mensajes que FCM ya hubiera aceptado/entregado antes de la retirada.
+
+D095 — Publicación de permisos de la bandeja con nueva copia (2026-10-19)
+
+La revisión automática rechaza inicialmente publicar los nuevos permisos por
+considerar que la autorización anterior cubría devoluciones. Se prepara un
+candidato concreto y se explica el bloqueo en PHASE9_NOTIFICATION_RULES_REVIEW.md.
+El usuario autoriza después: «haz como antes, una copia de lo que ya funciona
+y después ya las publicas». Guardar nuevas reglas activas, proyecto local y APK
+antes de publicar; distinguir el código ya preparado en local de los permisos
+remotos todavía anteriores. No sobrescribir copias previas ni llamar a esto
+un respaldo de documentos/usuarios/fotos. Estado final y evidencia:
+PHASE9_NOTIFICATION_CLIENT_VALIDATION.md.
+
+D096 — Antiguos miembros y recuperación del recordatorio (2026-10-20)
+
+El usuario elige incluir en el resumen de gestores las personas activas con cuota
+pendiente cuyo usuario vinculado salió o fue expulsado. Ese usuario no recibe el
+aviso ni recupera acceso por conservar el vínculo. El cálculo comprueba membresía
+y vínculo recíproco; no libera ni reasigna la relación histórica.
+
+Si el programador no consigue ejecutarse a las 10:00, se recupera durante el resto
+del mismo día local del grupo, sin duplicados. No se arrastra al día siguiente.
+La identidad lógica conserva grupo/mes/etapa/categoría/destinatario al reejecutar.
+En esta entrega se comprueba cálculo y lectura consistente; faltan persistencia
+de reservas, conexión del worker, credenciales, cron y entrega real. La decisión
+de evitar duplicados no equivale a que FCM garantice exactamente una entrega.
+Evidencia: PHASE9_REMINDER_SERVER_CALCULATION.md.
+
+D097 — Actividad nueva y entregas inciertas (2026-10-20)
+
+El usuario elige empezar desde la activación, sin notificar el historial de
+pruebas. Activación real: 2026-10-20T09:39:44.515Z. Los recordatorios consultan
+cuotas actuales. Prefiere perder un push incierto a duplicarlo: reserva duradera
+antes del envío, sin repetir esa reserva tras caída/timeout; bandeja conservada.
+FCM no garantiza exactamente una entrega. Implementación y evidencia en
+PHASE9_NOTIFICATIONS_AND_LINKS_VALIDATION.md.
+
+D098 — Destinatarios y categorías de actividad (2026-10-20)
+
+Distribución aceptada: solicitudes/entradas y falta de vínculo a gestores;
+aceptación, vínculo y rol al afectado; movimientos a cuenta vinculada; cuota a
+miembros; transferencia a gestores y afectados; código regenerado a gestores.
+Sin autoavisos al autor salvo cambios de su acceso/vínculo/rol. Acceso y contexto
+vigentes se releen. Preferencias push independientes: recordatorios, económico
+e informativo por grupo; todas conservan bandeja. Textos discretos sin importes.
+
+D099 — Dominio gratuito de invitaciones (2026-10-20)
+
+El usuario elige Firebase Hosting gratuito. Dominio existente comprobado:
+https://boteparroquial.web.app. Enlace /join/{código}; Android App Links con huella
+debug real y página de ayuda si no abre la app. Conserva código durante login,
+no URLs de retorno arbitrarias. Abrir no concede membresía. Firma release/Play,
+iOS Team ID/AASA y prueba física pendientes; no inventar valores.
+
+D100 — Separación de secretos en dos Supabase (2026-10-20)
+
+Tras explicar que Edge Functions de un proyecto comparten acceso potencial a
+secretos, el usuario elige otro proyecto Free para notificaciones. Lo crea
+manualmente: BoteParroquialNotificaciones, qngrmxfjckrrfiyioyzl, eu-west-1. Fotos
+permanece en ietnizafvtovelyuxbvk, sin credencial privilegiada Firebase. No activar
+Blaze ni planes de pago; gratis sujeto a cuotas vigentes, no uso ilimitado.
+Desplegar cada función nombrada al ref correcto; no ejecutar deploy indiscriminado.
+
+D101 — Comprobación de actividad cada quince minutos (2026-10-20)
+
+El usuario elige quince minutos tras aclarar que es frecuencia de consulta, no
+frecuencia de avisos repetidos. Cron */15 * * * * activo. Actividad puede tardar
+aproximadamente ese intervalo; recordatorios mantienen las 10:00 del grupo y
+recuperación durante su mismo día (D096), no al siguiente.
+
+D102 — IAM y transferencia de credencial autorizados (2026-10-20)
+
+Dos rechazos automáticos se resolvieron mediante autorizaciones expresas distintas:
+crear identidad/rol, y crear/transferir su clave solo al segundo Supabase. Rol
+dedicado con seis permisos de lectura/creación/actualización Firestore y envío
+FCM, sin borrado ni administración Auth/Rules/IAM. IAM no limita por documento;
+el usuario fue informado del alcance y el adaptador restringe rutas en código.
+Credencial solo en NOTIFICATION_FIREBASE_CREDENTIALS del proyecto nuevo; temporales
+eliminados, ID de clave en registro externo. Nueva copia previa conserva Rules,
+proyecto/APK, referencia Hosting y políticas IAM; no documentos ni fotos.
+Ver PHASE9_NOTIFICATIONS_AND_LINKS_VALIDATION.md y no reprovisionar a ciegas.
+
+D103 — Comparar el mismo tramo transcurrido (2026-10-20)
+
+El usuario elige mismo tramo transcurrido para mes/trimestre/año en curso, en
+lugar de compararlo con el periodo anterior completo. Caja llega hasta hoy civil
+del grupo, incluido; el lado anterior se corta en el mismo mes relativo y día,
+ajustando al último día si ese mes es más corto. Periodos terminados comparan
+ambos completos. Fechas explícitas y sin comparación de hechos para futuros.
+Cuotas conserva D088–D090: meses computables completos hasta cada corte, estado
+actualizado de pagos/devoluciones hasta hoy, sin prorrateo diario o reconstrucción
+histórica. Diferencia de cumplimiento en puntos porcentuales; porcentaje relativo
+solo con base anterior positiva y conocida. Evidencia de la implementación:
+PHASE10_PERIOD_COMPARISONS_VALIDATION.md.
+
+D104 — Consultar auditoría antigua mediante botón (2026-10-20)
+
+El usuario elige «Cargar más» frente a carga automática al desplazarse, para
+controlar las lecturas. Se consultan cincuenta eventos y un testigo de continuidad
+por página, sin limitar la vista a cien eventos. Búsqueda/filtros sobre los ya
+cargados, con alcance explícito; no descarga automática de todo el historial.
+La cabecera se mantiene reactiva hasta empezar a paginar; después anuncia cambios
+nuevos para actualizar sin mezclar fronteras. Cursor ligado al grupo, timestamp
+completo e ID; antes/después y permisos actuales también en el detalle abierto.
+No cambia qué operaciones escriben auditoría ni habilita papelera/eliminación.
+Evidencia: PHASE11_AUDIT_HISTORY_VALIDATION.md.
+
+D105 — Reinicio de demostración y copia puntual (2026-10-20)
+
+El usuario autoriza al final de esta continuación borrar documentos Firestore y
+fotos Supabase, conservando cuentas Authentication y configuración. Antes se
+guardará una copia puntual recuperable. Dos grupos DEMO pertenecen a
+ale.manu.cristi@gmail.com. Aplaza expresamente la copia semanal local y el visor;
+no se configura ninguna tarea periódica. Registro: FULL_PRODUCT_COMPLETION_2026-10-20.md.
+
+D106 — Papelera solo sin historial ni vínculo (2026-10-20)
+
+Elegido por el usuario: solo personas sin movimientos, asignaciones, periodos de
+cuota ni cuenta vinculada; restauración durante diez días. Quienes tienen historia
+se inactivan. La elegibilidad debe resistir operaciones concurrentes, sin confiar
+en comprobar una lista vacía en el cliente. No migrar garantías de historia a
+personas antiguas sin comprobar sus referencias.
+
+D107 — Eliminación definitiva de grupo con Google y nombre exacto (2026-10-20)
+
+Elegido por el usuario: nueva verificación de la misma cuenta Google y nombre
+exacto. Antes mostrar saldo, personas, miembros y movimientos, recomendando
+exportar. Solo el propietario actual; bloquear operaciones y accesos antes de
+limpiar, conservar progreso ante interrupción. Es la excepción expresa de grupo
+completo a la prohibición habitual de borrar movimientos individualmente.
+
+D108 — Baja de cuenta preservando historia (2026-10-20)
+
+Elegido por el usuario: transferir o eliminar primero sus grupos propios; después
+retirar accesos, dispositivos y fotos propias. No eliminar personas internas ni
+historia económica de otros grupos. No confundir esta baja con borrar Google.
+Conservar un testigo mínimo ante un resultado incierto para poder reanudar.
+
+D109 — Mantener cifras actuales mediante consultas agregadas (2026-10-20)
+
+El usuario elige consultas agregadas de Firestore para caja y optimizar las
+lecturas compartidas de cuotas, en vez de servir resúmenes de servidor que pueden
+retrasarse quince minutos. Las consultas de suma no tienen escucha ni caché propias:
+una escucha acotada de cambios dispara su actualización; se conserva una última
+confirmación privada por cuenta para consulta offline. Mantener enteros exactos,
+misma instantánea entre sumas y fecha de confirmación visible. No inferir que la
+proyección de cuotas o todos los informes pasan a ser agregados persistidos.
+
 Decisiones todavía pendientes
+
+Las decisiones D110–D112 añadidas al final resuelven la nueva petición de copias
+diarias en el móvil. No reactivan la copia semanal del portátil aplazada en D105.
 
 Aprobación visual del rediseño v0.2 según las referencias del usuario; la apariencia
 puede iterarse tras revisar la instalación. No afirmar coincidencia exacta sin revisión.
@@ -520,8 +1015,39 @@ Estrategia definitiva para agregados de estadísticas.
 Caché y confirmación económica del MVP decididas en D046; reevaluar la política
 si una fase futura introduce escrituras económicas offline.
 
-Reglas exactas para una futura baja completa de cuenta de usuario.
+Los criterios de baja de cuenta quedan resueltos en D108.
 
 Añadir nuevas decisiones con ID y motivo.
 
 No eliminar decisiones anteriores sin dejar constancia del cambio.
+
+D110 — Siete copias diarias de consulta en cada móvil (2026-10-23)
+
+El usuario elige las últimas siete copias diarias completas, una por día de
+apertura/reanudación con conexión. Si no abrió la app un día, conservar la última
+disponible con su fecha real; no fabricar una copia de ayer. Son siete días de
+capturas satisfactorias, no trabajo programado con la app cerrada. Cada móvil
+mantiene su archivo por cuenta. Solo datos consultables de sus grupos, sin cuentas
+ajenas, secretos o registros privados de dispositivos. La copia se abre expresamente
+en solo lectura, separada de caché/servidor y con fecha visible. No es restauración.
+
+La implementación usa el readTime del servidor y calendario Europe/Madrid para el
+día de archivo; el calendario de cada grupo sigue gobernando sus cálculos, congelado
+en el instante copiado. La primera copia completa del día no se sobrescribe por
+otra apertura. Fallos o descargas parciales conservan la anterior. Al confirmar
+revocación/cambio de acceso se retira ese grupo de archivos y visor; sin conexión
+no se puede descubrir una revocación nueva. Limpieza al salir/cambiar de cuenta.
+
+D111 — Copia de datos, fotos según caché (2026-10-23)
+
+El usuario elige datos Firestore completos de su ámbito y fotos disponibles en la
+caché privada existente. No descargar todos los binarios ni prometer imágenes
+históricas del mismo instante. Avisarlo en el catálogo y en el modo copia.
+
+D112 — Descargar copias con Wi-Fi o datos móviles (2026-10-23)
+
+El usuario permite ambas conexiones. La copia automática necesita Internet y
+consume lecturas/tráfico según la cantidad de información. No activar facturación,
+cron, servidor nuevo ni permisos privilegiados. UI normal sigue usando sus flujos
+actuales; el fichero completo se obtiene de servidor con fecha coherente, no de
+una caché que puede estar incompleta. Evidencia: DAILY_OFFLINE_COPIES_VALIDATION.md.

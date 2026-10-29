@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Una invitación · BoteParroquial</title>
+  <link rel="stylesheet" href="/invitation.css">
+  <script src="/invitation.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">BoteParroquial</p>
+    <h1>Hay un sitio<br>para ti.</h1>
+    <p id="message">Abre la invitación en la app para consultar el grupo y decidir si quieres entrar.</p>
+    <section id="invitation" hidden>
+      <a id="open" class="button" hidden>Abrir la app en Android <span aria-hidden="true">↗</span></a>
+      <button id="copy" type="button">Copiar código de invitación</button>
+      <p id="feedback" role="status" aria-live="polite"></p>
+      <details><summary>¿Todavía no tienes la app?</summary>
+        <p>BoteParroquial está en pruebas. Pide el APK al administrador del grupo e instálalo en Android. Después vuelve a abrir este enlace o pega el código en «Entrar en un grupo».</p>
+        <p>Necesitas iniciar sesión con Google. Abrir este enlace no concede permisos de administrador ni confirma tu entrada.</p>
+      </details>
+    </section>
+    <p class="footnote">Un fondo compartido. Cada persona, con sus propios permisos.</p>
+  </main>
+</body>
+</html>

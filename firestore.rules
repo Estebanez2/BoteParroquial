@@ -4,26 +4,158 @@ service cloud.firestore {
     function ownsProfile(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
+    function accountClosing(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid)/accountLifecycle/current);
+    }
     function validProfile(data) {
       return data.keys().hasAll(['displayName', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['displayName', 'email', 'photoUrl', 'createdAt', 'updatedAt', 'lastSignInAt'])
+        && data.keys().hasOnly(['displayName', 'email', 'photoUrl', 'createdAt', 'updatedAt', 'lastSignInAt','lastAuditEventId'])
         && data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 256
+        && data.displayName.matches('.*\\S.*')
         && (!('email' in data) || data.email == null || (data.email is string && data.email.size() <= 320))
         && (!('photoUrl' in data) || data.photoUrl == null || (data.photoUrl is string && data.photoUrl.size() <= 2048))
         && data.createdAt is timestamp && data.updatedAt is timestamp
-        && (!('lastSignInAt' in data) || data.lastSignInAt == null || data.lastSignInAt is timestamp);
+        && (!('lastSignInAt' in data) || data.lastSignInAt == null || data.lastSignInAt is timestamp)
+        && (!('lastAuditEventId' in data) || data.lastAuditEventId is string);
     }
     match /users/{uid} {
-      allow get: if ownsProfile(uid);
-      allow create: if ownsProfile(uid) && validProfile(request.resource.data)
+      allow get: if ownsProfile(uid) && !accountClosing(uid);
+      allow create: if ownsProfile(uid) && !accountClosing(uid) && validProfile(request.resource.data)
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
         && request.resource.data.lastSignInAt == request.time;
-      allow update: if ownsProfile(uid) && validProfile(request.resource.data)
+      allow update: if ownsProfile(uid) && !accountClosing(uid) && validProfile(request.resource.data)
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time
-        && request.resource.data.lastSignInAt == request.time;
+        && (request.resource.data.displayName == resource.data.displayName
+          ? request.resource.data.get('lastAuditEventId',null) == resource.data.get('lastAuditEventId',null)
+          : profileRename(uid,request.resource.data,resource.data))
+        && (request.resource.data.get('lastSignInAt',null) == request.time
+          || request.resource.data.get('lastSignInAt',null) == resource.data.get('lastSignInAt',null));
+      allow delete: if ownsProfile(uid) && recentAuthentication() && accountClosing(uid);
+      allow list: if false;
+    }
+    function profileRename(uid,data,before) {
+      let path = /databases/$(database)/documents/users/$(uid)/auditEvents/$(data.lastAuditEventId);
+      let event = getAfter(path).data;
+      return !exists(path) && event.action == 'profile.renamed' && event.entityType == 'profile'
+        && event.entityId == uid && event.actorUid == uid && event.createdAt == request.time
+        && event.before == {'displayName':before.displayName} && event.after == {'displayName':data.displayName};
+    }
+    function validPhotoAudit(eventId,data) {
+      let after = data.after;
+      return data.keys().hasAll(['action','entityType','entityId','actorUid','createdAt','before','after'])
+        && data.keys().hasOnly(['action','entityType','entityId','actorUid','createdAt','before','after'])
+        && data.entityType == 'photo' && data.actorUid == request.auth.uid && data.createdAt == request.time
+        && data.entityId == after.targetId && after.targetId is string && after.targetId.size()>0 && after.targetId.size()<=128
+        && after.keys().hasAll(['operationId','mode','targetKind','targetId','fingerprint'])
+        && after.keys().hasOnly(['operationId','mode','targetKind','targetId','fingerprint'])
+        && after.operationId.matches('^[a-f0-9]{32}$') && after.mode in ['upload','remove']
+        && after.targetKind in ['account','group','member','person']
+        && (after.mode=='remove'?after.fingerprint==null:after.fingerprint.matches('^[a-f0-9]{64}$'))
+        && data.before.keys().hasAll(['fingerprint']) && data.before.keys().hasOnly(['fingerprint'])
+        && (data.before.fingerprint==null||data.before.fingerprint.matches('^[a-f0-9]{64}$'))
+        && ((eventId=='photo-request-'+after.operationId && data.action=='photo.changeRequested')
+          || (eventId=='photo-complete-'+after.operationId && data.action=='photo.changeCompleted'));
+    }
+    function photoCompletionMatches(path,data) {
+      let requestEvent = get(path).data;
+      return requestEvent.action=='photo.changeRequested' && requestEvent.actorUid==request.auth.uid
+        && requestEvent.before==data.before && requestEvent.after==data.after;
+    }
+    function groupPhotoAllowed(groupId,kind,id) {
+      let actor=get(memberPath(groupId,request.auth.uid)).data;
+      return activeMember(groupId) && (kind=='group' && id==groupId && actor.role=='owner'
+        || kind=='person' && managesPersons(groupId) && get(personPath(groupId,id)).data.get('trashedAt',null)==null
+        || kind=='member' && get(memberPath(groupId,id)).data.status=='active'
+          && (id==request.auth.uid || actor.role=='owner' || managesPersons(groupId) && get(memberPath(groupId,id)).data.role=='member'));
+    }
+    match /users/{uid}/auditEvents/{eventId} {
+      allow read: if ownsProfile(uid);
+      allow create: if ownsProfile(uid) && !accountClosing(uid)
+        && ((request.resource.data.action=='profile.renamed'
+          && request.resource.data.keys().hasAll(['action','entityType','entityId','actorUid','createdAt','before','after'])
+          && request.resource.data.keys().hasOnly(['action','entityType','entityId','actorUid','createdAt','before','after'])
+          && request.resource.data.entityType=='profile' && request.resource.data.entityId==uid
+          && request.resource.data.actorUid==uid && request.resource.data.createdAt==request.time
+          && getAfter(/databases/$(database)/documents/users/$(uid)).data.lastAuditEventId==eventId
+          && getAfter(/databases/$(database)/documents/users/$(uid)).data.updatedAt==request.time
+          && getAfter(/databases/$(database)/documents/users/$(uid)).data.displayName!=get(/databases/$(database)/documents/users/$(uid)).data.displayName
+          && request.resource.data.before=={'displayName':get(/databases/$(database)/documents/users/$(uid)).data.displayName}
+          && request.resource.data.after=={'displayName':getAfter(/databases/$(database)/documents/users/$(uid)).data.displayName})
+        || (validPhotoAudit(eventId,request.resource.data) && request.resource.data.after.targetKind=='account'
+          && request.resource.data.after.targetId==uid && (request.resource.data.action=='photo.changeRequested'
+            || photoCompletionMatches(/databases/$(database)/documents/users/$(uid)/auditEvents/$(('photo-request-'+request.resource.data.after.operationId)),request.resource.data))));
+      allow delete: if ownsProfile(uid) && recentAuthentication() && accountClosing(uid);
+      allow update: if false;
+    }
+    match /users/{uid}/accountLifecycle/{id} {
+      allow get: if ownsProfile(uid) && id == 'current';
+      allow create: if ownsProfile(uid) && id == 'current' && recentAuthentication()
+        && request.resource.data.keys().hasAll(['groupIds','createdAt','status'])
+        && request.resource.data.keys().hasOnly(['groupIds','createdAt','status'])
+        && request.resource.data.groupIds is list && request.resource.data.groupIds.size() <= 1000
+        && request.resource.data.status == 'preparing' && request.resource.data.createdAt == request.time;
+      allow update: if ownsProfile(uid) && id == 'current' && recentAuthentication()
+        && resource.data.status == 'preparing' && request.resource.data.status == 'closing'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','groupIds','closingAt'])
+        && request.resource.data.closingAt == request.time && request.resource.data.groupIds is list
+        && request.resource.data.groupIds.size() <= 1000;
+      allow delete: if ownsProfile(uid) && id == 'current' && recentAuthentication() && resource.data.status == 'preparing';
+      allow list: if false;
+    }
+    match /users/{uid}/groupDeletionTasks/{groupId} {
+      allow get, list: if ownsProfile(uid);
+      allow create: if ownsProfile(uid) && recentAuthentication()
+        && request.resource.data.keys().hasAll(['groupName','createdAt','status'])
+        && request.resource.data.keys().hasOnly(['groupName','createdAt','status'])
+        && request.resource.data.status == 'deleting' && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/groups/$(groupId)).data.deletionBy == uid
+        && getAfter(/databases/$(database)/documents/groups/$(groupId)).data.deletionStartedAt == request.time
+        && request.resource.data.groupName == getAfter(/databases/$(database)/documents/groups/$(groupId)).data.name;
+      allow update: if ownsProfile(uid) && deletingGroup(groupId)
+        && resource.data.status == 'deleting' && request.resource.data.status == 'done'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && !existsAfter(/databases/$(database)/documents/groups/$(groupId));
+      allow delete: if false;
+    }
+    match /users/{uid}/pushDevices/{deviceId} {
+      function validDevice() {
+        let data = request.resource.data;
+        return deviceId.matches('^[a-f0-9]{64}$')
+          && data.keys().hasAll(['token','platform','createdAt','updatedAt'])
+          && data.keys().hasOnly(['token','platform','createdAt','updatedAt'])
+          && data.token is string && data.token.size() >= 16 && data.token.size() <= 4096
+          && data.platform in ['android','ios']
+          && data.createdAt is timestamp && data.updatedAt == request.time;
+      }
+      allow get, list, delete: if ownsProfile(uid);
+      allow create: if ownsProfile(uid) && !accountClosing(uid) && validDevice() && request.resource.data.createdAt == request.time;
+      allow update: if ownsProfile(uid) && !accountClosing(uid) && validDevice()
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+    match /groups/{groupId}/members/{uid}/notificationPreferences/{preferenceId} {
+      allow get: if preferenceId in ['reminders','economic','informative'] && ownsProfile(uid) && activeMember(groupId);
+      allow create, update: if preferenceId == 'reminders' && ownsProfile(uid) && activeMember(groupId)
+        && request.resource.data.keys().hasAll(['quotaPushEnabled','updatedAt'])
+        && request.resource.data.keys().hasOnly(['quotaPushEnabled','updatedAt'])
+        && request.resource.data.quotaPushEnabled is bool
+        && request.resource.data.updatedAt == request.time;
+      allow create, update: if preferenceId in ['economic','informative'] && ownsProfile(uid) && activeMember(groupId)
+        && request.resource.data.keys().hasAll(['pushEnabled','updatedAt'])
+        && request.resource.data.keys().hasOnly(['pushEnabled','updatedAt'])
+        && request.resource.data.pushEnabled is bool
+        && request.resource.data.updatedAt == request.time;
       allow list, delete: if false;
+    }
+    match /groups/{groupId}/notifications/{notificationId} {
+      allow get: if activeMember(groupId) && resource.data.recipientUid == request.auth.uid;
+      allow list: if activeMember(groupId) && resource.data.recipientUid == request.auth.uid
+        && request.query.limit <= 50;
+      allow update: if activeMember(groupId) && resource.data.recipientUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt'])
+        && resource.data.readAt == null && request.resource.data.readAt == request.time;
+      allow create, delete: if false;
     }
     function activeMember(groupId) {
       let membership = /databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid);
@@ -41,14 +173,120 @@ service cloud.firestore {
         || (member.role == 'admin' && member.personId is string
           && get(/databases/$(database)/documents/groups/$(groupId)/persons/$(member.personId)).data.isActive == true));
     }
+    function newOwnGroup(groupId) {
+      let path = /databases/$(database)/documents/groups/$(groupId);
+      return request.auth != null && !exists(path)
+        && getAfter(path).data.createdBy == request.auth.uid
+        && getAfter(path).data.createdAt == request.time
+        && getAfter(path).data.isActive == true;
+    }
+    function validGroupIdentity(data) {
+      return data.name is string && data.name.size() <= 256 && data.name.matches('.*\\S.*')
+        && (!('description' in data) || data.description == null
+          || (data.description is string && data.description.size() <= 2000));
+    }
+    function initialOwner(groupId, data) {
+      return data.keys().hasAll(['uid','displayName','role','status','joinedAt','updatedAt','personId'])
+        && data.keys().hasOnly(['uid','displayName','role','status','joinedAt','updatedAt','personId'])
+        && data.uid == request.auth.uid && data.role == 'owner' && data.status == 'active'
+        && data.displayName is string && data.displayName.size() <= 256 && data.displayName.matches('.*\\S.*')
+        && data.joinedAt == request.time && data.updatedAt == request.time
+        && (data.personId == null || (data.personId == 'owner'
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)/persons/owner).data.isActive == true
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)/persons/owner).data.displayName == data.displayName
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)/persons/owner).data.linkedUid == request.auth.uid
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)/persons/owner).data.createdBy == request.auth.uid));
+    }
+    function groupIdentity(data) {
+      return {'name': data.name, 'description': data.get('description',null)};
+    }
+    function groupAudit(groupId, data, action, before) {
+      let event = getAfter(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(data.lastAuditEventId)).data;
+      return event.action == action && event.actorUid == request.auth.uid
+        && event.entityId == groupId && event.createdAt == request.time
+        && event.before == before && event.after == groupIdentity(data);
+    }
     function validPerson(data) {
       return data.keys().hasAll(['displayName', 'isActive', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['displayName', 'notes', 'isActive', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['displayName', 'notes', 'isActive', 'createdBy', 'updatedBy', 'createdAt', 'updatedAt','linkedUid','lastAuditEventId','lastParticipationPeriodId','historyGuardVersion','firstMovementId','trashedAt','trashedBy','trashedWasActive','purgingAt'])
         && data.displayName is string && data.displayName.size() > 0 && data.displayName.size() <= 256
         && data.displayName.matches('.*\\S.*')
         && (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() <= 2000))
         && data.isActive is bool && data.createdBy is string && data.updatedBy is string
-        && data.createdAt is timestamp && data.updatedAt is timestamp;
+        && data.createdAt is timestamp && data.updatedAt is timestamp
+        && (data.get('linkedUid',null) == null || (data.linkedUid is string && data.linkedUid.size() > 0 && data.linkedUid.size() <= 128))
+        && (!('lastAuditEventId' in data) || data.lastAuditEventId is string)
+        && (data.get('lastParticipationPeriodId',null) == null || (data.lastParticipationPeriodId is string && data.lastParticipationPeriodId.size() > 0 && data.lastParticipationPeriodId.size() <= 128))
+        && (!('historyGuardVersion' in data) || data.historyGuardVersion == 1)
+        && (!('firstMovementId' in data) || (data.firstMovementId is string && data.firstMovementId.size() > 0 && data.firstMovementId.size() <= 128))
+        && (!('purgingAt' in data) || (data.purgingAt is timestamp && data.get('trashedAt',null) is timestamp))
+        && (!data.keys().hasAny(['trashedAt','trashedBy','trashedWasActive'])
+          || (data.keys().hasAll(['trashedAt','trashedBy','trashedWasActive'])
+            && data.trashedAt is timestamp && data.trashedBy is string && data.trashedWasActive is bool
+            && data.isActive == false));
+    }
+    function personIdentity(data) {
+      return {'displayName':data.displayName,'notes':data.get('notes',null),'isActive':data.isActive};
+    }
+    function personTrace(groupId, personId, data, action, before) {
+      let path = /databases/$(database)/documents/groups/$(groupId)/auditEvents/$(data.lastAuditEventId);
+      let event = getAfter(path).data;
+      return !exists(path) && event.action == action && event.entityType == 'person'
+        && event.entityId == personId && event.actorUid == request.auth.uid && event.createdAt == request.time
+        && event.before == before && event.after == personIdentity(data);
+    }
+    function trashEligible(groupId, personId, data) {
+      return data.get('historyGuardVersion',0) == 1 && data.get('linkedUid',null) == null
+        && data.get('lastParticipationPeriodId',null) == null && data.get('firstMovementId',null) == null;
+    }
+    function changedTrash(groupId, personId, before, data) {
+      return trashEligible(groupId,personId,before)
+        && data.diff(before).affectedKeys().hasOnly(['isActive','trashedAt','trashedBy','trashedWasActive','updatedBy','updatedAt','lastAuditEventId'])
+        && ((before.get('trashedAt',null) == null && data.get('trashedAt',null) == request.time
+            && data.trashedBy == request.auth.uid && data.trashedWasActive == before.isActive
+            && personTrace(groupId,personId,data,'person.trashed',personIdentity(before)))
+          || (before.get('trashedAt',null) != null && request.time < before.trashedAt + duration.value(10,'d')
+            && !data.keys().hasAny(['trashedAt','trashedBy','trashedWasActive'])
+            && data.isActive == before.trashedWasActive
+            && personTrace(groupId,personId,data,'person.restored',personIdentity(before))));
+    }
+    function purgedPerson(groupId,personId) {
+      let person = get(personPath(groupId,personId)).data;
+      return managesPersons(groupId) && trashEligible(groupId,personId,person)
+        && person.get('trashedAt',null) != null && request.time >= person.trashedAt + duration.value(10,'d');
+    }
+    function movementIdentity(data) {
+      return {'type':data.type,'amountCents':data.amountCents,'personId':data.personId,'occurredAt':data.occurredAt,
+        'description':data.description,'status':data.status,'correctionOfMovementId':data.get('correctionOfMovementId',null),
+        'correctedByMovementId':data.get('correctedByMovementId',null),'cancellationReason':data.get('cancellationReason',null),'correctionReason':data.get('correctionReason',null)};
+    }
+    function movementTrace(groupId,id,data,operation,before) {
+      let path = /databases/$(database)/documents/groups/$(groupId)/auditEvents/$(('movement-'+operation+'-'+id));
+      let event = getAfter(path).data;
+      return !exists(path) && event.action == 'movement.'+operation && event.entityType == 'movement' && event.entityId == id
+        && event.actorUid == request.auth.uid && event.createdAt == request.time
+        && event.before == before && event.after == movementIdentity(data);
+    }
+    function traceEvent(groupId,eventId,event) {
+      let type = event.get('entityType','group');
+      let id = event.entityId;
+      let person = personPath(groupId,id);
+      let movement = movementPath(groupId,id);
+      return (type == 'person' && managesPersons(groupId)
+          && ((event.action in ['person.created','person.updated','person.activated','person.trashed','person.restored']
+              && getAfter(person).data.lastAuditEventId == eventId && getAfter(person).data.updatedAt == request.time
+              && event.before == (exists(person)?personIdentity(get(person).data):null)
+              && event.after == personIdentity(getAfter(person).data))
+            || (event.action == 'person.purged' && eventId == 'person-purged-'+id && purgedPerson(groupId,id)
+              && !existsAfter(person) && event.before == personIdentity(get(person).data) && event.after == null)))
+        || (type == 'movement' && managesPersons(groupId)
+          && ((event.action == 'movement.created' && eventId == 'movement-created-'+id && !exists(movement)
+              && getAfter(movement).data.get('refund',null) == null && getAfter(movement).data.createdAt == request.time && event.before == null)
+            || (event.action in ['movement.cancelled','movement.corrected'] && eventId == (event.action == 'movement.cancelled'?'movement-cancelled-':'movement-corrected-')+id
+              && get(movement).data.get('refund',null) == null && get(movement).data.status == 'active'
+              && getAfter(movement).data.status == (event.action == 'movement.cancelled'?'cancelled':'corrected')
+              && getAfter(movement).data.updatedAt == request.time && event.before == movementIdentity(get(movement).data)))
+          && event.after == movementIdentity(getAfter(movement).data));
     }
     function movementPath(groupId, movementId) {
       return /databases/$(database)/documents/groups/$(groupId)/movements/$(movementId);
@@ -56,7 +294,7 @@ service cloud.firestore {
     function validMovement(data) {
       return data.keys().hasAll(['type','amountCents','status','occurredAt','description','personId','createdBy','createdAt','updatedAt'])
         && data.keys().hasOnly(['type','amountCents','status','occurredAt','description','personId','createdBy','createdAt','updatedAt',
-          'cancelledAt','cancelledBy','cancellationReason','correctedAt','correctedBy','correctionReason','correctedByMovementId','correctionOfMovementId'])
+          'cancelledAt','cancelledBy','cancellationReason','correctedAt','correctedBy','correctionReason','correctedByMovementId','correctionOfMovementId','refund','lastRefundOperationId'])
         && data.type in ['income','withdrawal'] && data.status in ['active','cancelled','corrected']
         && data.amountCents is int && data.amountCents > 0 && data.amountCents <= 99999999999999
         && data.occurredAt is timestamp && data.occurredAt >= timestamp.date(2000,1,1) && data.occurredAt < timestamp.date(2101,1,1)
@@ -68,10 +306,13 @@ service cloud.firestore {
         && (data.personId == null || (data.personId is string && data.personId.size() > 0))
         && (data.type != 'income' || data.personId is string)
         && data.createdBy is string && data.createdAt is timestamp && data.updatedAt is timestamp
-        && (!('correctionOfMovementId' in data) || (data.correctionOfMovementId is string && data.correctionOfMovementId.size() > 0));
+        && (!('correctionOfMovementId' in data) || (data.correctionOfMovementId is string && data.correctionOfMovementId.size() > 0))
+        && (data.get('refund',null) == null || (data.type == 'withdrawal' && data.personId is string));
     }
     function validMovementPerson(groupId, data) {
-      return data.personId == null || exists(/databases/$(database)/documents/groups/$(groupId)/persons/$(data.personId));
+      return data.personId == null || (getAfter(personPath(groupId,data.personId)).data.get('trashedAt',null) == null
+        && (getAfter(personPath(groupId,data.personId)).data.get('historyGuardVersion',0) != 1
+          || getAfter(personPath(groupId,data.personId)).data.get('firstMovementId',null) is string));
     }
     function activeMovement(data) {
       return data.status == 'active' && !data.keys().hasAny(['cancelledAt','cancelledBy','cancellationReason',
@@ -85,39 +326,743 @@ service cloud.firestore {
         && after.status == 'corrected' && after.correctedByMovementId == movementId
         && after.correctedBy == request.auth.uid && after.correctedAt == request.time;
     }
-    function cancelMovement(before, after) {
+    function cancelMovement(groupId, movementId, before, after) {
       return after.status == 'cancelled'
-        && after.diff(before).affectedKeys().hasOnly(['status','updatedAt','cancelledAt','cancelledBy','cancellationReason'])
+        && after.diff(before).affectedKeys().hasOnly(['status','updatedAt','cancelledAt','cancelledBy','cancellationReason','lastRefundOperationId'])
         && after.cancelledAt == request.time && after.cancelledBy == request.auth.uid
         && after.cancellationReason is string && after.cancellationReason.size() <= 2000
-        && after.cancellationReason.matches('.*\\S.*');
+        && after.cancellationReason.matches('.*\\S.*')
+        && (before.get('refund',null) == null
+          ? after.get('lastRefundOperationId',null) == before.get('lastRefundOperationId',null)
+          : refundMovementLink(groupId,movementId,after,'cancel',false));
     }
     function correctMovement(groupId, movementId, before, after) {
       let target = movementPath(groupId,after.correctedByMovementId);
       let replacement = getAfter(target).data;
       return after.status == 'corrected' && after.correctedByMovementId != movementId
-        && after.diff(before).affectedKeys().hasOnly(['status','updatedAt','correctedAt','correctedBy','correctionReason','correctedByMovementId'])
+        && after.diff(before).affectedKeys().hasOnly(['status','updatedAt','correctedAt','correctedBy','correctionReason','correctedByMovementId','lastRefundOperationId'])
         && after.correctedAt == request.time && after.correctedBy == request.auth.uid
         && after.correctionReason is string && after.correctionReason.size() <= 2000 && after.correctionReason.matches('.*\\S.*')
         && !exists(target) && replacement.status == 'active'
         && replacement.correctionOfMovementId == movementId
-        && replacement.createdBy == request.auth.uid && replacement.createdAt == request.time;
+        && replacement.createdBy == request.auth.uid && replacement.createdAt == request.time
+        && (before.get('refund',null) != null || replacement.get('refund',null) != null
+          ? refundMovementLink(groupId,movementId,after,'correct',false)
+            && replacement.lastRefundOperationId == after.lastRefundOperationId
+          : after.get('lastRefundOperationId',null) == before.get('lastRefundOperationId',null));
+    }
+    function settingsPath(groupId) { return /databases/$(database)/documents/groups/$(groupId)/invitationSettings/current; }
+    function memberPath(groupId, uid) { return /databases/$(database)/documents/groups/$(groupId)/members/$(uid); }
+    function joinPath(groupId, uid) { return /databases/$(database)/documents/groups/$(groupId)/joinRequests/$(uid); }
+    function settingsSummary(data) { return {'enabled':data.enabled,'requiresApproval':data.requiresApproval}; }
+    function requestSummary(data) { return {'uid':data.uid,'displayName':data.displayName,'status':data.status}; }
+    function memberSummary(data) { return {'uid':data.uid,'role':data.role,'status':data.status,'personId':data.get('personId',null)}; }
+    function linkSummary(data) { return {'uid':data.uid,'personId':data.get('personId',null),'role':data.role}; }
+    function hasActiveLinkedPerson(groupId, data) {
+      return data.get('personId',null) is string
+        && get(personPath(groupId,data.personId)).data.isActive == true
+        && get(personPath(groupId,data.personId)).data.get('linkedUid',null) == data.uid
+        && getAfter(personPath(groupId,data.personId)).data.isActive == true
+        && getAfter(personPath(groupId,data.personId)).data.get('linkedUid',null) == data.uid;
+    }
+    function changedMemberRole(groupId, uid, before, data) {
+      return managesPersons(groupId) && before.status == 'active'
+        && before.uid == uid && before.role in ['member','admin']
+        && data.role in ['member','admin'] && data.role != before.role
+        && data.diff(before).affectedKeys().hasOnly(['role','updatedAt','lastAuditEventId'])
+        && data.updatedAt == request.time
+        && (data.role == 'member' || (uid != request.auth.uid && hasActiveLinkedPerson(groupId,data)))
+        && linkedAudit(groupId,data.lastAuditEventId,'member',uid,'member.roleChanged',linkSummary(before),linkSummary(data));
+    }
+    function recentAuthentication() {
+      return request.auth.token.firebase.sign_in_provider == 'google.com'
+        && request.auth.token.get('auth_time',null) is int
+        && request.auth.token.auth_time * 1000 <= request.time.toMillis()
+        && request.time.toMillis() - request.auth.token.auth_time * 1000 <= 300000;
+    }
+    function deletingGroup(groupId) {
+      let group = get(/databases/$(database)/documents/groups/$(groupId)).data;
+      return request.auth != null && recentAuthentication() && group.isActive == false
+        && group.get('deletionBy',null) == request.auth.uid;
+    }
+    function startedGroupDeletion(groupId,before,data) {
+      let task = getAfter(/databases/$(database)/documents/users/$(request.auth.uid)/groupDeletionTasks/$(groupId)).data;
+      return activeMember(groupId) && recentAuthentication()
+        && get(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.role == 'owner'
+        && data.diff(before).affectedKeys().hasOnly(['isActive','deletionBy','deletionName','deletionStartedAt','updatedBy','updatedAt'])
+        && data.isActive == false && data.deletionBy == request.auth.uid && data.deletionName == before.name
+        && data.deletionStartedAt == request.time && data.updatedAt == request.time && data.updatedBy == request.auth.uid
+        && task.groupName == before.name && task.status == 'deleting' && task.createdAt == request.time;
+    }
+    function transferredRole(before, data, role, eventId) {
+      return before.status == 'active' && data.role == role && data.updatedAt == request.time
+        && data.lastAuditEventId == eventId
+        && data.diff(before).affectedKeys().hasOnly(['role','updatedAt','lastAuditEventId']);
+    }
+    function ownershipTransfer(groupId, eventId) {
+      let eventPath = /databases/$(database)/documents/groups/$(groupId)/auditEvents/$(eventId);
+      let event = getAfter(eventPath).data;
+      let root = /databases/$(database)/documents/groups/$(groupId);
+      let group = get(root).data;
+      let afterGroup = getAfter(root).data;
+      let oldPath = memberPath(groupId,request.auth.uid);
+      let old = get(oldPath).data;
+      let nextPath = memberPath(groupId,event.after.ownerUid);
+      let next = get(nextPath).data;
+      return activeMember(groupId) && old.role == 'owner' && recentAuthentication()
+        && !exists(eventPath) && event.action == 'group.ownershipTransferred'
+        && event.entityType == 'group' && event.entityId == groupId
+        && event.actorUid == request.auth.uid && event.createdAt == request.time
+        && event.before == {'ownerUid':request.auth.uid,'groupName':group.name}
+        && event.after == {'ownerUid':next.uid,'groupName':group.name}
+        && next.uid != request.auth.uid && next.role in ['member','admin']
+        && hasActiveLinkedPerson(groupId,next)
+        && transferredRole(old,getAfter(oldPath).data,'member',eventId)
+        && transferredRole(next,getAfter(nextPath).data,'owner',eventId)
+        && afterGroup.diff(group).affectedKeys().hasOnly(['updatedAt','updatedBy','lastAuditEventId'])
+        && afterGroup.updatedAt == request.time && afterGroup.updatedBy == request.auth.uid
+        && afterGroup.lastAuditEventId == eventId;
+    }
+    function transferredMember(groupId, uid, before, data) {
+      let event = getAfter(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(data.lastAuditEventId)).data;
+      return event.action == 'group.ownershipTransferred'
+        && uid in [request.auth.uid,event.after.ownerUid] && before.uid == uid
+        && ownershipTransfer(groupId,data.lastAuditEventId);
+    }
+    function updatedMember(groupId, uid, before, data) {
+      let action = getAfter(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(data.lastAuditEventId)).data.action;
+      return (action in ['join.accepted','join.approved'] && joinedMember(groupId,uid,data))
+        || (action in ['member.left','member.removed'] && removedMember(groupId,uid,before,data))
+        || (action == 'member.linkChanged' && changedMemberLink(groupId,uid,before,data))
+        || (action == 'person.inactivated' && demotedForPerson(groupId,before,data))
+        || (action == 'member.roleChanged' && changedMemberRole(groupId,uid,before,data))
+        || (action == 'group.ownershipTransferred' && transferredMember(groupId,uid,before,data));
+    }
+    function personPath(groupId, personId) { return /databases/$(database)/documents/groups/$(groupId)/persons/$(personId); }
+    function personStateSummary(groupId, data, after) {
+      let uid = data.get('linkedUid',null);
+      let periodId = data.get('lastParticipationPeriodId',null);
+      let role = uid == null ? null : (after ? getAfter(memberPath(groupId,uid)).data.role : get(memberPath(groupId,uid)).data.role);
+      return periodId == null ? {'isActive':data.isActive,'linkedUid':uid,'role':role}
+        : {'isActive':data.isActive,'linkedUid':uid,'role':role,'periodId':periodId,
+          'firstMonth':get(periodPath(groupId,periodId)).data.firstMonth,
+          'lastMonthInclusive':after ? getAfter(periodPath(groupId,periodId)).data.lastMonthInclusive : get(periodPath(groupId,periodId)).data.lastMonthInclusive};
+    }
+    function changedMemberLink(groupId, uid, before, data) {
+      let oldId = before.get('personId',null);
+      let newId = data.get('personId',null);
+      return oldId != newId && managesPersons(groupId) && (before.role != 'owner' || request.auth.uid == uid)
+        && (newId == null || (before.status == 'active' && newId is string))
+        && data.diff(before).affectedKeys().hasOnly(['personId','role','updatedAt','lastAuditEventId'])
+        && data.updatedAt == request.time
+        && (oldId == null || (get(personPath(groupId,oldId)).data.get('linkedUid',null) == uid
+          && getAfter(personPath(groupId,oldId)).data.get('linkedUid',null) == null
+          && getAfter(personPath(groupId,oldId)).data.lastAuditEventId == data.lastAuditEventId))
+        && (newId == null || (get(personPath(groupId,newId)).data.get('linkedUid',null) == null
+          && getAfter(personPath(groupId,newId)).data.linkedUid == uid
+          && getAfter(personPath(groupId,newId)).data.lastAuditEventId == data.lastAuditEventId))
+        && data.role == (before.role == 'admin' && (newId == null || getAfter(personPath(groupId,newId)).data.isActive != true) ? 'member' : before.role)
+        && linkedAudit(groupId,data.lastAuditEventId,'member',uid,'member.linkChanged',linkSummary(before),linkSummary(data));
+    }
+    function changedPersonLink(groupId, personId, before, data) {
+      let oldUid = before.get('linkedUid',null);
+      let newUid = data.get('linkedUid',null);
+      let uid = newUid == null ? oldUid : newUid;
+      let member = memberPath(groupId,uid);
+      return oldUid != newUid && (oldUid == null || newUid == null)
+        && data.diff(before).affectedKeys().hasOnly(['linkedUid','updatedAt','updatedBy','lastAuditEventId'])
+        && getAfter(member).data.lastAuditEventId == data.lastAuditEventId && getAfter(member).data.updatedAt == request.time
+        && (newUid == null ? (get(member).data.personId == personId && getAfter(member).data.get('personId',null) != personId)
+          : (get(member).data.get('personId',null) != personId && getAfter(member).data.personId == personId));
+    }
+    function inactivatedPerson(groupId, personId, before, data) {
+      let uid = before.get('linkedUid',null);
+      return before.isActive == true && data.isActive == false
+        && (before.get('lastParticipationPeriodId',null) == null || closedPersonPeriod(groupId,before,data))
+        && (uid == null || get(memberPath(groupId,uid)).data.role != 'admin'
+          || (getAfter(memberPath(groupId,uid)).data.role == 'member'
+            && getAfter(memberPath(groupId,uid)).data.lastAuditEventId == data.lastAuditEventId
+            && getAfter(memberPath(groupId,uid)).data.updatedAt == request.time))
+        && linkedAudit(groupId,data.lastAuditEventId,'person',personId,'person.inactivated',
+          personStateSummary(groupId,before,false),personStateSummary(groupId,data,true));
+    }
+    function demotedForPerson(groupId, before, data) {
+      let person = personPath(groupId,before.personId);
+      return managesPersons(groupId) && before.role == 'admin' && data.role == 'member'
+        && data.diff(before).affectedKeys().hasOnly(['role','updatedAt','lastAuditEventId']) && data.updatedAt == request.time
+        && get(person).data.isActive == true && get(person).data.linkedUid == before.uid
+        && getAfter(person).data.isActive == false && getAfter(person).data.lastAuditEventId == data.lastAuditEventId
+        && getAfter(person).data.updatedAt == request.time;
+    }
+    function linkedAudit(groupId, id, type, entityId, action, before, after) {
+      let path = /databases/$(database)/documents/groups/$(groupId)/auditEvents/$(id);
+      let event = getAfter(path).data;
+      return !exists(path) && event.actorUid == request.auth.uid && event.createdAt == request.time
+        && event.entityType == type && event.entityId == entityId && event.action == action
+        && event.before == before && event.after == after;
+    }
+    function validMonth(value) { return value is int && value >= 24000 && value <= 25211; }
+    // Month ONLY: offsets chosen at UTC month boundaries, not for displaying instants.
+    // EU: March's end already has DST, October's end is already standard time.
+    // NY: April-November starts use DST; its November switch occurs after midnight.
+    // Update/test if IANA law changes; unsupported zones fail closed.
+    function billingMonthAt(zone, instant) {
+      let m = instant.month();
+      let euSummerBoundary = m >= 3 && m <= 9;
+      let offset = zone == 'Europe/Madrid' ? (euSummerBoundary ? 120 : 60)
+        : zone in ['Europe/London','Atlantic/Canary'] ? (euSummerBoundary ? 60 : 0)
+        : zone == 'America/New_York' ? (m >= 4 && m <= 11 ? -240 : -300)
+        : zone == 'America/Bogota' ? -300 : -360;
+      let civil = instant + duration.value(offset,'m');
+      return zone in ['Europe/Madrid','Europe/London','Atlantic/Canary','America/New_York','America/Bogota','America/Mexico_City']
+        ? civil.year() * 12 + civil.month() - 1 : -1;
+    }
+    function billingMonth(groupId) {
+      return billingMonthAt(get(/databases/$(database)/documents/groups/$(groupId)).data.timeZone,request.time);
+    }
+    function quotaSummary(data) {
+      return {'effectiveFromMonth':data.effectiveFromMonth,'monthlyFeeCents':data.monthlyFeeCents,'revision':data.revision};
+    }
+    function quotaPath(groupId, id) { return /databases/$(database)/documents/groups/$(groupId)/quotaRules/$(id); }
+    function quotaConfigPath(groupId) { return /databases/$(database)/documents/groups/$(groupId)/quotaSettings/current; }
+    function validQuota(data, id) {
+      return data.keys().hasAll(['effectiveFromMonth','monthlyFeeCents','revision','createdAt','createdBy','updatedAt','updatedBy','lastAuditEventId'])
+        && data.keys().hasOnly(['effectiveFromMonth','monthlyFeeCents','revision','createdAt','createdBy','updatedAt','updatedBy','lastAuditEventId'])
+        && validMonth(data.effectiveFromMonth) && id == string(data.effectiveFromMonth)
+        && data.monthlyFeeCents is int && data.monthlyFeeCents >= 0 && data.monthlyFeeCents <= 99999999999999
+        && data.revision is int && data.revision > 0 && data.revision <= 1000000000
+        && data.updatedAt == request.time && data.updatedBy == request.auth.uid;
+    }
+    function quotaVersion(groupId, id, data) {
+      let path = /databases/$(database)/documents/groups/$(groupId)/quotaRules/$(id)/versions/$(data.lastAuditEventId);
+      return !exists(path) && getAfter(path).data == {'effectiveFromMonth':data.effectiveFromMonth,
+        'monthlyFeeCents':data.monthlyFeeCents,'revision':data.revision,'actorUid':request.auth.uid,'createdAt':request.time};
+    }
+    function changedQuota(groupId, id, before, data) {
+      let config = quotaConfigPath(groupId);
+      return managesPersons(groupId) && validQuota(data,id) && billingMonth(groupId) >= 0
+        && (before == null
+          ? (data.revision == 1 && data.createdBy == request.auth.uid && data.createdAt == request.time
+            && (exists(config) ? data.effectiveFromMonth > billingMonth(groupId)
+              : getAfter(config).data.firstMonth == data.effectiveFromMonth))
+          : (data.revision == before.revision + 1 && data.effectiveFromMonth > billingMonth(groupId)
+            && data.diff(before).affectedKeys().hasOnly(['monthlyFeeCents','revision','updatedAt','updatedBy','lastAuditEventId'])))
+        && quotaVersion(groupId,id,data)
+        && linkedAudit(groupId,data.lastAuditEventId,'quotaRule',id,'quota.changed',
+          before == null ? null : quotaSummary(before),quotaSummary(data));
+    }
+    function periodPath(groupId, id) { return /databases/$(database)/documents/groups/$(groupId)/participationPeriods/$(id); }
+    function validPeriod(data) {
+      return data.keys().hasAll(['personId','firstMonth','lastMonthInclusive','createdAt','createdBy','updatedAt','updatedBy','lastAuditEventId'])
+        && data.keys().hasOnly(['personId','firstMonth','lastMonthInclusive','createdAt','createdBy','updatedAt','updatedBy','lastAuditEventId'])
+        && data.personId is string && data.personId.size() > 0 && validMonth(data.firstMonth)
+        && (data.lastMonthInclusive == null || (validMonth(data.lastMonthInclusive) && data.lastMonthInclusive >= data.firstMonth))
+        && data.updatedAt == request.time && data.updatedBy == request.auth.uid;
+    }
+    function startedParticipation(groupId, personId, before, data) {
+      let old = before.get('lastParticipationPeriodId',null);
+      let id = data.lastParticipationPeriodId;
+      let period = getAfter(periodPath(groupId,id)).data;
+      return data.isActive == true && id != old
+        && data.diff(before).affectedKeys().hasOnly(['isActive','lastParticipationPeriodId','updatedAt','updatedBy','lastAuditEventId'])
+        && (old == null || (before.isActive == false && get(periodPath(groupId,old)).data.lastMonthInclusive is int
+          && period.firstMonth >= get(periodPath(groupId,old)).data.lastMonthInclusive))
+        && !exists(periodPath(groupId,id)) && period.personId == personId && period.lastMonthInclusive == null
+        && period.lastAuditEventId == data.lastAuditEventId && period.updatedAt == request.time
+        && billingMonth(groupId) >= 0 && period.firstMonth <= billingMonth(groupId)
+        && linkedAudit(groupId,data.lastAuditEventId,'person',personId,'participation.started',
+          {'periodId':old,'isActive':before.isActive}, {'periodId':id,'firstMonth':period.firstMonth,'isActive':true});
+    }
+    function initialParticipationSummary(data, period) {
+      return {'displayName':data.displayName,'notes':data.get('notes',null),
+        'periodId':data.lastParticipationPeriodId,'firstMonth':period.firstMonth,'isActive':true};
+    }
+    function createdParticipation(groupId, personId, data) {
+      let period = periodPath(groupId,data.lastParticipationPeriodId);
+      let after = getAfter(period).data;
+      return managesPersons(groupId) && !exists(personPath(groupId,personId))
+        && !exists(period) && after.personId == personId && after.lastMonthInclusive == null
+        && data.isActive == true && after.lastAuditEventId == data.lastAuditEventId
+        && after.updatedAt == request.time && validMonth(after.firstMonth)
+        && billingMonth(groupId) >= 0 && after.firstMonth <= billingMonth(groupId)
+        && linkedAudit(groupId,data.lastAuditEventId,'person',personId,'person.createdWithParticipation',
+          null,initialParticipationSummary(data,after));
+    }
+    function closedPersonPeriod(groupId, before, data) {
+      let period = periodPath(groupId,before.lastParticipationPeriodId);
+      return data.lastParticipationPeriodId == before.lastParticipationPeriodId
+        && get(period).data.lastMonthInclusive == null && getAfter(period).data.lastMonthInclusive is int
+        && getAfter(period).data.lastAuditEventId == data.lastAuditEventId && getAfter(period).data.updatedAt == request.time;
+    }
+    function validCode(groupId, code) {
+      let settings = get(settingsPath(groupId)).data;
+      return code is string && settings.code == code && settings.enabled == true
+        && get(/databases/$(database)/documents/groups/$(groupId)).data.isActive == true
+        && exists(/databases/$(database)/documents/groups/$(groupId)/invitations/$(code));
+    }
+    function validSettings(groupId, data) {
+      let path = settingsPath(groupId);
+      return data.keys().hasAll(['code','enabled','requiresApproval','updatedBy','updatedAt','lastAuditEventId'])
+        && data.keys().hasOnly(['code','enabled','requiresApproval','updatedBy','updatedAt','lastAuditEventId'])
+        && data.code is string && data.code.matches('^[A-Za-z0-9_-]{32}$')
+        && data.enabled is bool && data.requiresApproval is bool && data.updatedBy == request.auth.uid && data.updatedAt == request.time
+        && getAfter(/databases/$(database)/documents/groups/$(groupId)/invitations/$(data.code)).data.requiresApproval == data.requiresApproval
+        && linkedAudit(groupId,data.lastAuditEventId,'invitation','current','invitation.changed',
+          exists(path) ? settingsSummary(get(path).data) : null,
+          {'enabled':data.enabled,'requiresApproval':data.requiresApproval,'regenerated':!exists(path) || get(path).data.code != data.code});
+    }
+    function validJoin(data, uid) {
+      return data.keys().hasAll(['uid','displayName','code','status','createdAt','updatedAt','reviewedBy','reviewedAt','lastAuditEventId'])
+        && data.keys().hasOnly(['uid','displayName','code','status','createdAt','updatedAt','reviewedBy','reviewedAt','lastAuditEventId'])
+        && data.uid == uid && data.displayName is string && data.displayName.size() <= 256 && data.displayName.matches('.*\\S.*')
+        && data.code is string && data.code.matches('^[A-Za-z0-9_-]{32}$')
+        && data.status in ['pending','approved','rejected'] && data.createdAt is timestamp && data.updatedAt == request.time;
+    }
+    function joinedMember(groupId, uid, data) {
+      let path = memberPath(groupId,uid);
+      let joined = getAfter(joinPath(groupId,uid)).data;
+      return data.keys().hasAll(['uid','displayName','role','status','personId','joinedAt','updatedAt','lastAuditEventId'])
+        && data.keys().hasOnly(['uid','displayName','role','status','personId','joinedAt','updatedAt','lastAuditEventId'])
+        && data.uid == uid && data.role == 'member' && data.status == 'active'
+        && data.displayName == joined.displayName && data.updatedAt == request.time
+        && data.personId == (exists(path) ? get(path).data.get('personId',null) : null)
+        && data.joinedAt == (exists(path) ? get(path).data.joinedAt : request.time)
+        && joined.status == 'approved' && joined.updatedAt == request.time && joined.reviewedBy == request.auth.uid
+        && joined.lastAuditEventId == data.lastAuditEventId
+        && (!exists(path) || (get(path).data.status == 'inactive'
+          && get(path).data.role != 'owner' && managesPersons(groupId)));
+    }
+    function submittedJoin(groupId, uid, data) {
+      let old = joinPath(groupId,uid);
+      let member = memberPath(groupId,uid);
+      return request.auth.uid == uid && validCode(groupId,data.code)
+        && (!exists(member) || (get(member).data.status == 'inactive' && get(member).data.role != 'owner'))
+        && data.createdAt == (exists(old) ? get(old).data.createdAt : request.time)
+        && ((data.status == 'pending' && data.reviewedBy == null && data.reviewedAt == null)
+          || (data.status == 'approved' && !exists(member) && get(settingsPath(groupId)).data.requiresApproval == false
+            && data.reviewedBy == uid && data.reviewedAt == request.time
+            && getAfter(member).data.lastAuditEventId == data.lastAuditEventId && getAfter(member).data.status == 'active'))
+        && linkedAudit(groupId,data.lastAuditEventId,'joinRequest',uid,data.status == 'pending' ? 'join.requested' : 'join.accepted',
+          exists(old) ? requestSummary(get(old).data) : null,requestSummary(data));
+    }
+    function decidedJoin(groupId, uid, before, data) {
+      return managesPersons(groupId) && before.status == 'pending' && data.status in ['approved','rejected']
+        && data.diff(before).affectedKeys().hasOnly(['status','reviewedBy','reviewedAt','updatedAt','lastAuditEventId'])
+        && data.reviewedBy == request.auth.uid && data.reviewedAt == request.time
+        && (data.status == 'rejected' || (getAfter(memberPath(groupId,uid)).data.status == 'active'
+          && getAfter(memberPath(groupId,uid)).data.lastAuditEventId == data.lastAuditEventId))
+        && linkedAudit(groupId,data.lastAuditEventId,'joinRequest',uid,data.status == 'approved' ? 'join.approved' : 'join.rejected',requestSummary(before),requestSummary(data));
+    }
+    function removedMember(groupId, uid, before, data) {
+      return before.status == 'active' && before.role != 'owner' && data.status == 'inactive' && data.role == 'member'
+        && ((request.auth.uid == uid && activeMember(groupId)) || managesPersons(groupId))
+        && data.diff(before).affectedKeys().hasOnly(['status','role','updatedAt','lastAuditEventId'])
+        && data.updatedAt == request.time
+        && linkedAudit(groupId,data.lastAuditEventId,'member',uid,request.auth.uid == uid ? 'member.left' : 'member.removed',memberSummary(before),memberSummary(data));
+    }
+    function allocationPath(groupId, id) { return /databases/$(database)/documents/groups/$(groupId)/allocations/$(id); }
+    function allocationBalancePath(groupId, id) { return /databases/$(database)/documents/groups/$(groupId)/allocationBalances/$(id); }
+    function allocationSummary(data) {
+      return {'movementId':data.movementId,'personId':data.personId,'month':data.month,
+        'amountCents':data.amountCents,'revision':data.revision};
+    }
+    function allocationAudit(groupId, eventId, event) {
+      let path = allocationPath(groupId,event.entityId);
+      let after = getAfter(path).data;
+      return managesPersons(groupId) && after.lastAuditEventId == eventId && after.updatedAt == request.time
+        && event.before == (exists(path) ? allocationSummary(get(path).data) : null)
+        && event.after == allocationSummary(after);
+    }
+    function validAllocation(data) {
+      return data.keys().hasAll(['movementId','personId','month','amountCents','revision','participationPeriodId',
+          'createdBy','createdAt','updatedBy','updatedAt','lastAuditEventId'])
+        && data.keys().hasOnly(['movementId','personId','month','amountCents','revision','participationPeriodId',
+          'createdBy','createdAt','updatedBy','updatedAt','lastAuditEventId'])
+        && data.movementId is string && data.personId is string && validMonth(data.month)
+        && data.amountCents is int && data.amountCents >= 0 && data.amountCents <= 99999999999999
+        && data.revision is int && data.revision >= 1 && data.revision <= 1000000000
+        && data.participationPeriodId is string && data.participationPeriodId.size() > 0
+        && data.createdBy is string && data.createdAt is timestamp
+        && data.updatedBy == request.auth.uid && data.updatedAt == request.time
+        && data.lastAuditEventId is string;
+    }
+    function allocationMonthAllowed(groupId, data) {
+      let period = getAfter(periodPath(groupId,data.participationPeriodId)).data;
+      return period.personId == data.personId && period.firstMonth <= data.month
+        && (period.lastMonthInclusive == null || period.lastMonthInclusive >= data.month);
+    }
+    function allocationBudget(groupId, movementId, data) {
+      let row = allocationPath(groupId,data.lastAllocationId);
+      let after = getAfter(row).data;
+      let balance = allocationBalancePath(groupId,movementId);
+      let previous = exists(balance) ? get(balance).data : null;
+      let source = getAfter(movementPath(groupId,movementId)).data;
+      return data.keys().hasAll(['allocatedCents','revision','lastAllocationId','lastAuditEventId','updatedBy','updatedAt'])
+        && data.keys().hasOnly(['allocatedCents','revision','lastAllocationId','lastAuditEventId','updatedBy','updatedAt','refundedCents','refundedAssignedCents','refundedMonths','lastRefundOperationId'])
+        && data.get('refundedCents',0) is int && data.get('refundedCents',0)==(previous==null ? 0 : previous.get('refundedCents',0))
+        && data.get('refundedAssignedCents',0)==(previous==null ? 0 : previous.get('refundedAssignedCents',0))
+        && data.get('refundedMonths',{})==(previous==null ? {} : previous.get('refundedMonths',{}))
+        && data.get('lastRefundOperationId',null)==(previous==null ? null : previous.get('lastRefundOperationId',null))
+        && data.allocatedCents is int && data.allocatedCents >= 0 && data.allocatedCents + data.get('refundedCents',0)-data.get('refundedAssignedCents',0) <= source.amountCents
+        && data.revision is int && data.revision == (previous == null ? 1 : previous.revision + 1)
+        && data.updatedBy == request.auth.uid && data.updatedAt == request.time
+        && source.type == 'income' && source.status == 'active'
+        && after.movementId == movementId && after.lastAuditEventId == data.lastAuditEventId
+        && after.amountCents>=data.get('refundedMonths',{}).get(string(after.month),0)
+        && after.updatedAt == request.time && after.updatedBy == request.auth.uid
+        && data.allocatedCents == (previous == null ? 0 : previous.allocatedCents)
+          - (exists(row) ? get(row).data.amountCents : 0) + after.amountCents;
+    }
+    function changedAllocation(groupId, id, before, data) {
+      let source = movementPath(groupId,data.movementId);
+      let income = get(source).data;
+      let balance = getAfter(allocationBalancePath(groupId,data.movementId)).data;
+      return managesPersons(groupId) && validAllocation(data)
+        && id == data.movementId + '_' + string(data.month)
+        && income.type == 'income' && income.status == 'active' && income.personId == data.personId
+        && getAfter(source).data.status == 'active' && getAfter(source).data.updatedAt == income.updatedAt
+        && (before == null
+          ? data.amountCents > 0 && data.revision == 1 && data.createdBy == request.auth.uid && data.createdAt == request.time
+          : data.movementId == before.movementId && data.personId == before.personId && data.month == before.month
+            && data.createdBy == before.createdBy && data.createdAt == before.createdAt
+            && data.revision == before.revision + 1 && data.amountCents != before.amountCents)
+        && (data.amountCents == 0 || allocationMonthAllowed(groupId,data))
+        && balance.lastAllocationId == id && balance.lastAuditEventId == data.lastAuditEventId
+        && balance.updatedAt == request.time
+        && linkedAudit(groupId,data.lastAuditEventId,'allocation',id,'allocation.changed',
+          before == null ? null : allocationSummary(before),allocationSummary(data));
+    }
+    function refundPath(groupId,id) { return /databases/$(database)/documents/groups/$(groupId)/auditEvents/$(id); }
+    function refundAssigned(plan,keys) {
+      return (keys.size()>0 ? plan.parts.get(keys[0],0) : 0)+(keys.size()>1 ? plan.parts.get(keys[1],0) : 0)
+        +(keys.size()>2 ? plan.parts.get(keys[2],0) : 0)+(keys.size()>3 ? plan.parts.get(keys[3],0) : 0);
+    }
+    function validRefundPlan(plan) {
+      return plan is map && plan.keys().hasOnly(['incomeId','unallocatedCents','parts'])
+        && plan.incomeId is string && plan.unallocatedCents is int && plan.unallocatedCents>=0
+        && plan.parts is map && plan.parts.size()<=4;
+    }
+    function refundMovementLink(groupId,id,data,kind,target) {
+      let path=refundPath(groupId,data.lastRefundOperationId);
+      let op=getAfter(path).data;
+      return !exists(path) && op.createdAt==request.time && op.actorUid==request.auth.uid && op.kind==kind
+        && (target ? op.targetMovementId==id : op.originalMovementId==id)
+        && (!(target || kind=='cancel') || lastRefundMonth(groupId,op));
+    }
+    function lastRefundMonth(groupId,op) {
+      let path=allocationBalancePath(groupId,op.incomeId);
+      let prior=exists(path) ? get(path).data.get('refundedMonths',{}) : {};
+      return refundMonthChange(groupId,op,prior,getAfter(path).data.refundedMonths,
+        getAfter(movementPath(groupId,op.incomeId)).data.personId,3);
+    }
+    function refundCreateLink(groupId,id,data) {
+      return data.get('refund',null)==null && data.get('lastRefundOperationId',null)==null
+        || (refundMovementLink(groupId,id,data,data.get('correctionOfMovementId',null)==null ? 'create' : 'correct',true));
+    }
+    function oldRefund(groupId,op) {
+      return op.previousRefund;
+    }
+    function newRefund(groupId,op) {
+      return op.refund;
+    }
+    function refundOriginalTransition(groupId,id,op) {
+      let path=movementPath(groupId,op.originalMovementId);
+      let before=get(path).data;
+      let after=getAfter(path).data;
+      return before.status=='active' && before.get('refund',null)==op.previousRefund
+        && op.previousAmountCents==(op.previousRefund==null ? 0 : before.amountCents)
+        && after.lastRefundOperationId==id && after.updatedAt==request.time
+        && (op.kind=='cancel' ? after.status=='cancelled' && op.targetMovementId==null && op.refund==null
+          : after.status=='corrected' && after.correctedByMovementId==op.targetMovementId);
+    }
+    function refundTargetTransition(groupId,id,op) {
+      let target=getAfter(movementPath(groupId,op.targetMovementId)).data;
+      return target.status=='active' && target.createdAt==request.time && target.lastRefundOperationId==id
+        && target.get('refund',null)==op.refund && op.amountCents==(op.refund==null ? 0 : target.amountCents)
+        && (op.kind=='create' ? op.originalMovementId==null && op.previousRefund==null && target.get('correctionOfMovementId',null)==null
+          : target.correctionOfMovementId==op.originalMovementId);
+    }
+    function validRefundOperation(groupId,id,op) {
+      let old=oldRefund(groupId,op);
+      let next=newRefund(groupId,op);
+      let balance=getAfter(allocationBalancePath(groupId,op.incomeId)).data;
+      let previous=exists(allocationBalancePath(groupId,op.incomeId)) ? get(allocationBalancePath(groupId,op.incomeId)).data.get('refundedMonths',{}) : {};
+      // The mandatory movement write checks managesPersons; every witness is new in this commit.
+      return request.auth!=null && op.keys().hasOnly(['kind','incomeId','originalMovementId','targetMovementId',
+          'previousAmountCents','amountCents','previousAssignedCents','assignedCents','changes','previousRefund','refund','actorUid','createdAt','action','entityType','entityId','before','after'])
+        && op.entityType=='refund' && op.entityId==id && op.action=='refund.'+op.kind
+        && op.before=={'incomeId':op.incomeId,'movementId':op.originalMovementId,'amountCents':op.previousAmountCents}
+        && op.after=={'incomeId':op.incomeId,'movementId':op.targetMovementId,'amountCents':op.amountCents}
+        && op.kind in ['create','cancel','correct'] && op.incomeId is string
+        && op.previousAmountCents is int && op.amountCents is int && op.previousAssignedCents is int && op.assignedCents is int
+        && op.actorUid==request.auth.uid && op.createdAt==request.time
+        && (old!=null || next!=null) && (old==null || old.incomeId==op.incomeId)
+        && (next==null || validRefundPlan(next) && next.incomeId==op.incomeId)
+        && op.previousAmountCents==(old==null ? 0 : old.unallocatedCents+op.previousAssignedCents)
+        && op.amountCents==(next==null ? 0 : next.unallocatedCents+op.assignedCents)
+        && (old!=null || op.previousAssignedCents==0) && op.assignedCents==(next==null ? 0 : refundAssigned(next,op.changes))
+        && balance.lastRefundOperationId==id && balance.updatedAt==request.time
+        && (op.kind=='create' ? refundTargetTransition(groupId,id,op)
+          : refundOriginalTransition(groupId,id,op) && (op.kind=='cancel' || refundTargetTransition(groupId,id,op)))
+        && op.changes is list && op.changes.size()<=4 && !op.changes.hasAny([null]) && op.changes.toSet().size()==op.changes.size()
+        && (old==null || old.parts.keys().hasOnly(op.changes)) && (next==null || next.parts.keys().hasOnly(op.changes))
+        && refundMonthChange(groupId,op,previous,balance.refundedMonths,getAfter(movementPath(groupId,op.incomeId)).data.personId,2);
+    }
+    function refundMonthChange(groupId,op,prior,next,personId,i) {
+      let key=i<op.changes.size() ? op.changes[i] : null;
+      let old=key==null || op.previousRefund==null ? 0 : op.previousRefund.parts.get(key,0);
+      let amount=key==null || op.refund==null ? 0 : op.refund.parts.get(key,0);
+      let allocation=key==null ? null : get(allocationPath(groupId,op.incomeId+'_'+key)).data;
+      let returned=key==null ? 0 : next.get(key,0);
+      return key==null || (allocation.personId==personId && allocation.movementId==op.incomeId && string(allocation.month)==key
+        && amount is int && amount>=0 && (old>0 || amount>0)
+        && (op.refund==null || !op.refund.parts.keys().hasAny([key]) || amount>0)
+        && returned is int && returned>=0 && returned<=allocation.amountCents && returned==prior.get(key,0)-old+amount);
+    }
+    function changedRefundBalance(groupId,id,before,data) {
+      // All three witnesses are mandatory in this commit. To stay within the
+      // per-write evaluation budget, this counter checks months 0/1, the immutable
+      // audit checks month 2, and the target (or cancelled) movement checks month 3.
+      let path=refundPath(groupId,data.lastRefundOperationId);
+      let op=getAfter(path).data;
+      let income=getAfter(movementPath(groupId,id)).data;
+      let priorMonths=before==null ? {} : before.get('refundedMonths',{});
+      return request.auth!=null && !exists(path) && op.incomeId==id && op.actorUid==request.auth.uid && op.createdAt==request.time
+        && income.type=='income' && income.status=='active'
+        && (op.originalMovementId==null || oldRefund(groupId,op)==null || get(movementPath(groupId,op.originalMovementId)).data.personId==income.personId)
+        && (op.targetMovementId==null || newRefund(groupId,op)==null || getAfter(movementPath(groupId,op.targetMovementId)).data.personId==income.personId
+          && getAfter(movementPath(groupId,op.targetMovementId)).data.occurredAt>=income.occurredAt)
+        && data.keys().hasOnly(['allocatedCents','refundedCents','refundedAssignedCents','refundedMonths','revision','lastAllocationId','lastAuditEventId','lastRefundOperationId','updatedBy','updatedAt'])
+        && data.allocatedCents is int && data.refundedCents is int && data.allocatedCents>=0 && data.refundedCents>=0
+        && data.refundedAssignedCents is int && data.refundedAssignedCents>=0 && data.refundedAssignedCents<=data.allocatedCents
+        && data.refundedAssignedCents<=data.refundedCents && data.allocatedCents+data.refundedCents-data.refundedAssignedCents<=income.amountCents
+        && data.allocatedCents==(before==null ? 0 : before.allocatedCents)
+        && data.refundedCents==(before==null ? 0 : before.get('refundedCents',0))-op.previousAmountCents+op.amountCents
+        && data.refundedAssignedCents==(before==null ? 0 : before.get('refundedAssignedCents',0))-op.previousAssignedCents+op.assignedCents
+        && data.refundedMonths is map && data.refundedMonths.diff(priorMonths).affectedKeys().hasOnly(op.changes)
+        && refundMonthChange(groupId,op,priorMonths,data.refundedMonths,income.personId,0)
+        && refundMonthChange(groupId,op,priorMonths,data.refundedMonths,income.personId,1)
+        && data.revision is int && data.revision==(before==null ? 1 : before.revision+1)
+        && data.lastAllocationId==(before==null ? null : before.lastAllocationId)
+        && data.lastAuditEventId==data.lastRefundOperationId && data.updatedBy==request.auth.uid && data.updatedAt==request.time;
+    }
+    function refundAudit(groupId,id,event) {
+      let op=getAfter(refundPath(groupId,id)).data;
+      return event.entityId==id && op.createdAt==request.time && op.actorUid==request.auth.uid
+        && event.action=='refund.'+op.kind
+        && event.before=={'incomeId':op.incomeId,'movementId':op.originalMovementId,'amountCents':op.previousAmountCents}
+        && event.after=={'incomeId':op.incomeId,'movementId':op.targetMovementId,'amountCents':op.amountCents};
+    }
+    function relatedEvent(groupId, eventId, data) {
+      let type = data.get('entityType','group');
+      let settings = settingsPath(groupId);
+      let joining = joinPath(groupId,data.entityId);
+      let member = memberPath(groupId,data.entityId);
+      return (type == 'refund' && refundAudit(groupId,eventId,data))
+        || (type == 'person' && data.action == 'person.createdWithParticipation'
+          && getAfter(personPath(groupId,data.entityId)).data.lastAuditEventId == eventId
+          && createdParticipation(groupId,data.entityId,getAfter(personPath(groupId,data.entityId)).data))
+        || (type == 'allocation' && data.action == 'allocation.changed' && allocationAudit(groupId,eventId,data))
+        || (type == 'invitation' && managesPersons(groupId) && data.entityId == 'current' && data.action == 'invitation.changed'
+          && getAfter(settings).data.lastAuditEventId == eventId && getAfter(settings).data.updatedAt == request.time
+          && data.before == (exists(settings) ? settingsSummary(get(settings).data) : null)
+          && data.after == {'enabled':getAfter(settings).data.enabled,'requiresApproval':getAfter(settings).data.requiresApproval,
+            'regenerated':!exists(settings) || get(settings).data.code != getAfter(settings).data.code})
+        || (type == 'joinRequest' && (request.auth.uid == data.entityId || managesPersons(groupId))
+          && data.action in ['join.requested','join.accepted','join.approved','join.rejected']
+          && getAfter(joining).data.lastAuditEventId == eventId && getAfter(joining).data.updatedAt == request.time
+          && data.before == (exists(joining) ? requestSummary(get(joining).data) : null) && data.after == requestSummary(getAfter(joining).data))
+        || (type == 'member' && (request.auth.uid == data.entityId || managesPersons(groupId))
+          && data.action in ['member.left','member.removed'] && getAfter(member).data.lastAuditEventId == eventId
+          && getAfter(member).data.updatedAt == request.time && data.before == memberSummary(get(member).data) && data.after == memberSummary(getAfter(member).data))
+        || (type == 'member' && managesPersons(groupId) && data.action in ['member.linkChanged','member.roleChanged']
+          && getAfter(member).data.lastAuditEventId == eventId && getAfter(member).data.updatedAt == request.time
+          && data.before == linkSummary(get(member).data) && data.after == linkSummary(getAfter(member).data))
+        || (type == 'person' && managesPersons(groupId) && data.action == 'person.inactivated'
+          && getAfter(personPath(groupId,data.entityId)).data.lastAuditEventId == eventId
+          && getAfter(personPath(groupId,data.entityId)).data.updatedAt == request.time
+          && data.before == personStateSummary(groupId,get(personPath(groupId,data.entityId)).data,false)
+          && data.after == personStateSummary(groupId,getAfter(personPath(groupId,data.entityId)).data,true))
+        || (type == 'group' && data.action == 'group.ownershipTransferred' && ownershipTransfer(groupId,eventId))
+        || (type == 'quotaRule' && data.action == 'quota.changed' && managesPersons(groupId)
+          && getAfter(quotaPath(groupId,data.entityId)).data.lastAuditEventId == eventId
+          && getAfter(quotaPath(groupId,data.entityId)).data.updatedAt == request.time
+          && data.before == (exists(quotaPath(groupId,data.entityId)) ? quotaSummary(get(quotaPath(groupId,data.entityId)).data) : null)
+          && data.after == quotaSummary(getAfter(quotaPath(groupId,data.entityId)).data))
+        || (type == 'person' && data.action == 'participation.started' && managesPersons(groupId)
+          && getAfter(personPath(groupId,data.entityId)).data.lastAuditEventId == eventId
+          && getAfter(personPath(groupId,data.entityId)).data.updatedAt == request.time
+          && data.before == {'periodId':get(personPath(groupId,data.entityId)).data.get('lastParticipationPeriodId',null),'isActive':get(personPath(groupId,data.entityId)).data.isActive}
+          && data.after == {'periodId':getAfter(personPath(groupId,data.entityId)).data.lastParticipationPeriodId,
+            'firstMonth':getAfter(periodPath(groupId,getAfter(personPath(groupId,data.entityId)).data.lastParticipationPeriodId)).data.firstMonth,'isActive':true});
     }
     // The uid filter in the collection-group query is mandatory.
     match /{path=**}/members/{memberId} {
       allow read: if request.auth != null && resource.data.uid == request.auth.uid;
     }
     match /groups/{groupId} {
-      allow get: if activeMember(groupId);
-      allow list, create, update, delete: if false;
+      // Reading a missing random ID permits an online creation transaction only.
+      allow get: if (request.auth != null && !exists(/databases/$(database)/documents/groups/$(groupId))) || activeMember(groupId) || deletingGroup(groupId);
+      allow list: if false;
+      allow delete: if deletingGroup(groupId)
+        && request.time >= resource.data.deletionStartedAt + duration.value(3,'m')
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)/groupDeletionTasks/$(groupId)).data.status == 'done';
+      allow create: if request.auth != null && !accountClosing(request.auth.uid) && validGroupIdentity(request.resource.data)
+        && request.resource.data.keys().hasAll(['name','description','currency','timeZone','isActive','createdBy','updatedBy','createdAt','updatedAt','lastAuditEventId'])
+        && request.resource.data.keys().hasOnly(['name','description','currency','timeZone','isActive','createdBy','updatedBy','createdAt','updatedAt','lastAuditEventId'])
+        && request.resource.data.currency in ['EUR','USD','GBP']
+        && request.resource.data.timeZone in ['Europe/Madrid','Atlantic/Canary','Europe/London','America/New_York','America/Bogota','America/Mexico_City']
+        && request.resource.data.isActive == true && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+        && request.resource.data.lastAuditEventId == 'created'
+        && !exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid))
+        && initialOwner(groupId,getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data)
+        && groupAudit(groupId,request.resource.data,'group.created',null);
+      allow update: if (managesPersons(groupId) && validGroupIdentity(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description','updatedAt','updatedBy','lastAuditEventId'])
+        && request.resource.data.updatedBy == request.auth.uid && request.resource.data.updatedAt == request.time
+        && request.resource.data.lastAuditEventId is string && request.resource.data.lastAuditEventId.size() > 0
+        && !exists(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(request.resource.data.lastAuditEventId))
+        && groupAudit(groupId,request.resource.data,'group.updated',groupIdentity(resource.data)))
+        || (request.auth != null && ownershipTransfer(groupId,request.resource.data.get('lastAuditEventId','')))
+        || startedGroupDeletion(groupId,resource.data,request.resource.data);
       match /members/{uid} {
         allow read: if activeMember(groupId);
-        // Controlled provisioning only in Phase 2. No client can grant roles.
-        allow write: if false;
+        allow get: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && !accountClosing(uid) && ((uid == request.auth.uid && newOwnGroup(groupId)
+          && initialOwner(groupId,request.resource.data)) || joinedMember(groupId,uid,request.resource.data));
+        allow update: if request.auth != null && !accountClosing(uid) && updatedMember(groupId,uid,resource.data,request.resource.data);
+        allow delete: if false;
+      }
+      match /invitationSettings/{settingsId} {
+        allow get: if settingsId == 'current' && activeMember(groupId);
+        allow list: if false;
+        allow create, update: if settingsId == 'current' && managesPersons(groupId) && validSettings(groupId,request.resource.data);
+        allow delete: if false;
+      }
+      match /invitations/{code} {
+        allow get: if request.auth != null && (activeMember(groupId) || validCode(groupId,code));
+        allow list: if false;
+        allow create, update: if managesPersons(groupId)
+          && request.resource.data.keys().hasAll(['groupName','currency','requiresApproval','createdAt','updatedAt'])
+          && request.resource.data.keys().hasOnly(['groupName','currency','requiresApproval','createdAt','updatedAt'])
+          && getAfter(settingsPath(groupId)).data.code == code
+          && request.resource.data.groupName == getAfter(/databases/$(database)/documents/groups/$(groupId)).data.name
+          && request.resource.data.currency == getAfter(/databases/$(database)/documents/groups/$(groupId)).data.currency
+          && request.resource.data.requiresApproval == getAfter(settingsPath(groupId)).data.requiresApproval
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.createdAt == (resource == null ? request.time : resource.data.createdAt);
+        allow delete: if false;
+      }
+      match /joinRequests/{uid} {
+        allow get: if request.auth != null && (request.auth.uid == uid || managesPersons(groupId));
+        allow list: if managesPersons(groupId);
+        allow create: if request.auth != null && !accountClosing(request.auth.uid) && validJoin(request.resource.data,uid) && submittedJoin(groupId,uid,request.resource.data);
+        allow update: if request.auth != null && !accountClosing(request.auth.uid) && validJoin(request.resource.data,uid)
+          && (submittedJoin(groupId,uid,request.resource.data) || decidedJoin(groupId,uid,resource.data,request.resource.data));
+        allow delete: if false;
+      }
+      match /auditEvents/{eventId} {
+        allow read: if managesPersons(groupId);
+        allow get: if activeMember(groupId) && resource.data.entityType=='photo' && resource.data.actorUid==request.auth.uid;
+        allow create: if request.auth!=null && validPhotoAudit(eventId,request.resource.data)
+          && groupPhotoAllowed(groupId,request.resource.data.after.targetKind,request.resource.data.after.targetId)
+          && (request.resource.data.action=='photo.changeRequested'
+            || photoCompletionMatches(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(('photo-request-'+request.resource.data.after.operationId)),request.resource.data));
+        allow create: if request.auth != null
+          && (request.resource.data.get('entityType','group')=='refund'
+            ? validRefundOperation(groupId,eventId,request.resource.data)
+            : request.resource.data.keys().hasAll(['action','actorUid','entityId','createdAt','before','after'])
+          && request.resource.data.keys().hasOnly(['action','actorUid','entityId','entityType','createdAt','before','after'])
+          && request.resource.data.actorUid == request.auth.uid && request.resource.data.entityId is string
+          && request.resource.data.createdAt == request.time
+          && (traceEvent(groupId,eventId,request.resource.data) || relatedEvent(groupId,eventId,request.resource.data) || ((newOwnGroup(groupId) || managesPersons(groupId))
+          && request.resource.data.get('entityType','group') == 'group' && request.resource.data.entityId == groupId
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)).data.lastAuditEventId == eventId
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)).data.updatedAt == request.time
+          && ((newOwnGroup(groupId) && request.resource.data.action == 'group.created' && request.resource.data.before == null)
+            || (!newOwnGroup(groupId) && request.resource.data.action == 'group.updated'
+              && request.resource.data.before == groupIdentity(get(/databases/$(database)/documents/groups/$(groupId)).data)))
+          && request.resource.data.after == groupIdentity(getAfter(/databases/$(database)/documents/groups/$(groupId)).data))));
+        allow update, delete: if false;
+      }
+      match /allocations/{id} {
+        allow read: if activeMember(groupId);
+        allow create: if request.method=='create' && changedAllocation(groupId,id,null,request.resource.data);
+        allow update: if request.method=='update' && changedAllocation(groupId,id,resource.data,request.resource.data);
+        allow delete: if false;
+      }
+      match /allocationBalances/{movementId} {
+        allow read: if activeMember(groupId);
+        allow create: if request.method=='create' && (request.resource.data.get('lastRefundOperationId',null)!=null
+          ? changedRefundBalance(groupId,movementId,null,request.resource.data)
+          : managesPersons(groupId) && allocationBudget(groupId,movementId,request.resource.data));
+        allow update: if request.method=='update' && (request.resource.data.get('lastRefundOperationId',null)!=resource.data.get('lastRefundOperationId',null)
+          ? changedRefundBalance(groupId,movementId,resource.data,request.resource.data)
+          : managesPersons(groupId) && allocationBudget(groupId,movementId,request.resource.data));
+        allow delete: if false;
+      }
+      match /quotaSettings/{id} {
+        allow read: if id == 'current' && activeMember(groupId);
+        allow create: if id == 'current' && managesPersons(groupId)
+          && request.resource.data.keys().hasAll(['firstMonth','createdBy','createdAt'])
+          && request.resource.data.keys().hasOnly(['firstMonth','createdBy','createdAt'])
+          && validMonth(request.resource.data.firstMonth)
+          && request.resource.data.createdBy == request.auth.uid && request.resource.data.createdAt == request.time
+          && !exists(quotaPath(groupId,string(request.resource.data.firstMonth)))
+          && getAfter(quotaPath(groupId,string(request.resource.data.firstMonth))).data.createdAt == request.time
+          && getAfter(quotaPath(groupId,string(request.resource.data.firstMonth))).data.revision == 1;
+        allow update, delete: if false;
+      }
+      match /quotaRules/{id} {
+        allow read: if activeMember(groupId);
+        allow create: if changedQuota(groupId,id,null,request.resource.data);
+        allow update: if changedQuota(groupId,id,resource.data,request.resource.data);
+        allow delete: if false;
+        match /versions/{versionId} {
+          allow read: if activeMember(groupId);
+          allow create: if managesPersons(groupId)
+            && getAfter(quotaPath(groupId,id)).data.lastAuditEventId == versionId
+            && getAfter(quotaPath(groupId,id)).data.updatedAt == request.time
+            && request.resource.data == {'effectiveFromMonth':getAfter(quotaPath(groupId,id)).data.effectiveFromMonth,
+              'monthlyFeeCents':getAfter(quotaPath(groupId,id)).data.monthlyFeeCents,
+              'revision':getAfter(quotaPath(groupId,id)).data.revision,'actorUid':request.auth.uid,'createdAt':request.time};
+          allow update, delete: if false;
+        }
+      }
+      match /participationPeriods/{id} {
+        allow read: if activeMember(groupId);
+        allow create: if managesPersons(groupId) && validPeriod(request.resource.data)
+          && request.resource.data.lastMonthInclusive == null
+          && request.resource.data.createdAt == request.time && request.resource.data.createdBy == request.auth.uid
+          && (!exists(personPath(groupId,request.resource.data.personId))
+            || get(personPath(groupId,request.resource.data.personId)).data.get('lastParticipationPeriodId',null) != id)
+          && getAfter(personPath(groupId,request.resource.data.personId)).data.lastParticipationPeriodId == id
+          && getAfter(personPath(groupId,request.resource.data.personId)).data.lastAuditEventId == request.resource.data.lastAuditEventId
+          && getAfter(personPath(groupId,request.resource.data.personId)).data.updatedAt == request.time;
+        allow update: if managesPersons(groupId) && validPeriod(request.resource.data)
+          && resource.data.lastMonthInclusive == null && request.resource.data.lastMonthInclusive is int
+          && request.resource.data.lastMonthInclusive <= billingMonth(groupId) && billingMonth(groupId) >= 0
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMonthInclusive','updatedAt','updatedBy','lastAuditEventId'])
+          && get(personPath(groupId,resource.data.personId)).data.lastParticipationPeriodId == id
+          && getAfter(personPath(groupId,resource.data.personId)).data.isActive == false
+          && getAfter(personPath(groupId,resource.data.personId)).data.lastAuditEventId == request.resource.data.lastAuditEventId
+          && getAfter(personPath(groupId,resource.data.personId)).data.updatedAt == request.time;
+        allow delete: if false;
       }
       match /persons/{personId} {
         allow read: if activeMember(groupId);
-        allow create: if managesPersons(groupId) && validPerson(request.resource.data)
+        allow create: if ((managesPersons(groupId) && request.resource.data.get('linkedUid',null) == null)
+          || (newOwnGroup(groupId) && personId == 'owner' && request.resource.data.linkedUid == request.auth.uid
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.personId == personId)) && validPerson(request.resource.data)
+          && ((newOwnGroup(groupId) && !('lastAuditEventId' in request.resource.data))
+            || (request.resource.data.get('historyGuardVersion',0) != 1 && !('lastAuditEventId' in request.resource.data)
+              && request.resource.data.get('lastParticipationPeriodId',null) == null)
+            || personTrace(groupId,personId,request.resource.data,'person.created',null)
+            || createdParticipation(groupId,personId,request.resource.data))
+          && request.resource.data.get('trashedAt',null) == null
+          && request.resource.data.get('firstMovementId',null) == null
           && request.resource.data.isActive == true
           && request.resource.data.createdBy == request.auth.uid
           && request.resource.data.updatedBy == request.auth.uid
@@ -127,22 +1072,65 @@ service cloud.firestore {
           && request.resource.data.createdBy == resource.data.createdBy
           && request.resource.data.createdAt == resource.data.createdAt
           && request.resource.data.updatedBy == request.auth.uid
-          && request.resource.data.updatedAt == request.time;
-        allow delete: if false;
+          && request.resource.data.updatedAt == request.time
+          && (changedTrash(groupId,personId,resource.data,request.resource.data)
+            || (resource.data.get('trashedAt',null) == null && request.resource.data.get('trashedAt',null) == null
+            && (changedPersonLink(groupId,personId,resource.data,request.resource.data)
+            || startedParticipation(groupId,personId,resource.data,request.resource.data)
+            || (request.resource.data.get('linkedUid',null) == resource.data.get('linkedUid',null)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','notes','isActive','updatedAt','updatedBy','lastAuditEventId'])
+              && (resource.data.isActive == true && request.resource.data.isActive == false
+                ? inactivatedPerson(groupId,personId,resource.data,request.resource.data)
+                : !(resource.data.isActive == false && request.resource.data.isActive == true && resource.data.get('lastParticipationPeriodId',null) != null)
+                  && personTrace(groupId,personId,request.resource.data,
+                    resource.data.isActive == false && request.resource.data.isActive == true?'person.activated':'person.updated',personIdentity(resource.data)))))));
+        allow delete: if purgedPerson(groupId,personId)
+          && resource.data.get('purgingAt',null) is timestamp
+          && !exists(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(('person-purged-'+personId)))
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(('person-purged-'+personId))).data.actorUid == request.auth.uid
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(('person-purged-'+personId))).data.createdAt == request.time
+          && getAfter(/databases/$(database)/documents/groups/$(groupId)/auditEvents/$(('person-purged-'+personId))).data.action == 'person.purged';
+      }
+      // Monotonic history witness, written with the first movement. It cannot
+      // be removed when that movement is cancelled or corrected.
+      match /persons/{personId} {
+        allow update: if purgedPerson(groupId,personId) && validPerson(request.resource.data)
+          && resource.data.get('purgingAt',null) == null && request.resource.data.purgingAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['purgingAt']);
+        allow update: if managesPersons(groupId) && validPerson(request.resource.data)
+          && resource.data.get('trashedAt',null) == null && resource.data.get('firstMovementId',null) == null
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['firstMovementId'])
+          && request.resource.data.firstMovementId is string
+          && !exists(movementPath(groupId,request.resource.data.firstMovementId))
+          && getAfter(movementPath(groupId,request.resource.data.firstMovementId)).data.personId == personId
+          && getAfter(movementPath(groupId,request.resource.data.firstMovementId)).data.createdAt == request.time;
       }
       match /movements/{movementId} {
         allow read: if activeMember(groupId);
-        allow create: if managesPersons(groupId) && validMovement(request.resource.data)
+        allow create: if request.method=='create' && managesPersons(groupId) && validMovement(request.resource.data)
+          && refundCreateLink(groupId,movementId,request.resource.data)
           && validMovementPerson(groupId,request.resource.data) && activeMovement(request.resource.data)
+          && (request.resource.data.get('refund',null) != null || movementTrace(groupId,movementId,request.resource.data,'created',null))
           && request.resource.data.createdBy == request.auth.uid
           && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
           && (!('correctionOfMovementId' in request.resource.data) || replacementCreate(groupId,movementId,request.resource.data));
-        allow update: if managesPersons(groupId) && resource.data.status == 'active'
-          && validMovement(request.resource.data) && request.resource.data.updatedAt == request.time
-          && (cancelMovement(resource.data,request.resource.data)
+        allow update: if request.method=='update' && managesPersons(groupId) && resource.data.status == 'active'
+          && (resource.data.type!='income' || !exists(allocationBalancePath(groupId,movementId))
+            || get(allocationBalancePath(groupId,movementId)).data.get('refundedCents',0)==0)
+          && request.resource.data.updatedAt == request.time
+          && (resource.data.get('refund',null) != null || movementTrace(groupId,movementId,request.resource.data,
+            request.resource.data.status == 'cancelled'?'cancelled':'corrected',movementIdentity(resource.data)))
+          && (cancelMovement(groupId,movementId,resource.data,request.resource.data)
             || correctMovement(groupId,movementId,resource.data,request.resource.data));
         allow delete: if false;
       }
+    }
+    // Explicit irreversible group deletion is the only exception to economic
+    // immutability. The root lock remains until all descendant cleanup finishes.
+    match /groups/{groupId}/{collectionId}/{documentId}/{nested=**} {
+      allow read: if deletingGroup(groupId);
+      allow delete: if deletingGroup(groupId)
+        && request.time >= get(/databases/$(database)/documents/groups/$(groupId)).data.deletionStartedAt + duration.value(3,'m');
     }
     // Future collections remain closed until their phases.
     match /{document=**} {

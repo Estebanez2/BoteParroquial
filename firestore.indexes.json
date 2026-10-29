@@ -1,5 +1,29 @@
 {
-  "indexes": [],
+  "indexes": [{
+    "collectionGroup": "movements",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {"fieldPath":"status","order":"ASCENDING"},
+      {"fieldPath":"type","order":"ASCENDING"},
+      {"fieldPath":"amountCents","order":"ASCENDING"}
+    ]
+  }, {
+    "collectionGroup": "movements",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {"fieldPath":"status","order":"ASCENDING"},
+      {"fieldPath":"type","order":"ASCENDING"},
+      {"fieldPath":"occurredAt","order":"ASCENDING"},
+      {"fieldPath":"amountCents","order":"ASCENDING"}
+    ]
+  }, {
+    "collectionGroup": "notifications",
+    "queryScope": "COLLECTION",
+    "fields": [
+      { "fieldPath": "recipientUid", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" }
+    ]
+  }],
   "fieldOverrides": [
     {
       "collectionGroup": "members",

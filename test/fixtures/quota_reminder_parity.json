@@ -1,0 +1,18 @@
+{
+  "month": 24317,
+  "cases": [
+    {"id":"unassigned_credit", "fee":2000, "periods":[[24316,null]], "allocations":{}, "expected":[2000,0,2000]},
+    {"id":"other_month_overpaid", "fee":2000, "periods":[[24316,null]], "allocations":{"24316":3000,"24317":1000}, "expected":[2000,1000,1000]},
+    {"id":"paid", "fee":2000, "periods":[[24316,null]], "allocations":{"24317":2000}, "expected":[2000,2000,0]},
+    {"id":"overpaid", "fee":2000, "periods":[[24316,null]], "allocations":{"24317":2500}, "expected":[2000,2500,0]},
+    {"id":"refund_reopens_due", "fee":2000, "periods":[[24316,null]], "allocations":{"24317":2000}, "refund":{"incomeId":"income","unallocatedCents":200,"parts":{"24317":500}}, "expected":[2000,1500,500]},
+    {"id":"cancelled_refund", "fee":2000, "periods":[[24316,null]], "allocations":{"24317":2000}, "refund":{"incomeId":"income","unallocatedCents":0,"parts":{"24317":500}}, "refundStatus":"cancelled", "expected":[2000,2000,0]},
+    {"id":"corrected_income", "fee":2000, "periods":[[24316,null]], "incomeStatus":"corrected", "allocations":{"24317":2000}, "expected":[2000,0,2000]},
+    {"id":"ordinary_withdrawal", "fee":2000, "periods":[[24316,null]], "allocations":{"24317":2000}, "ordinaryWithdrawal":500, "expected":[2000,2000,0]},
+    {"id":"missing_periods", "fee":2000, "periods":[], "allocations":{}, "expected":[null,0,null]},
+    {"id":"missing_rule", "fee":null, "periods":[[24316,null]], "allocations":{}, "expected":[null,0,null]},
+    {"id":"zero_fee", "fee":0, "periods":[[24316,null]], "allocations":{}, "expected":[0,0,0]},
+    {"id":"closed_before_month", "fee":2000, "periods":[[24316,24316]], "allocations":{}, "expected":[0,0,0]},
+    {"id":"same_month_reactivation", "fee":2000, "periods":[[24316,24317],[24317,null]], "allocations":{"24317":500}, "expected":[2000,500,1500]}
+  ]
+}

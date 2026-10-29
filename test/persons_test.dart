@@ -10,17 +10,62 @@ import 'package:bote_parroquial/models/group_member.dart';
 import 'package:bote_parroquial/models/person.dart';
 import 'package:bote_parroquial/repositories/person_repository.dart';
 import 'package:bote_parroquial/services/person_service.dart';
+import 'package:bote_parroquial/services/participation_service.dart';
+import 'package:bote_parroquial/models/participation_period.dart';
+import 'package:bote_parroquial/models/year_month.dart';
+import 'package:bote_parroquial/repositories/participation_repository.dart';
+import 'package:bote_parroquial/features/quotas/providers/quota_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'auth_flow_test.dart' as auth;
 import 'groups_test.dart' as groups;
 
-class MemoryPersons implements PersonService {
+class MemoryPersons implements PersonService, ParticipationService {
+  @override
+  String newId(String groupId) => 'p1';
   final changes = StreamController<List<Person>>.broadcast();
   List<Person> current = [];
   final writtenGroups = <String>[];
   int revision = 0;
+  final periods = <ParticipationPeriod>[];
+  @override
+  Stream<List<ParticipationPeriod>> watchPeriods(
+    String groupId,
+    String personId,
+  ) async* {
+    yield List.of(periods);
+    yield* changes.stream.map((_) => List.of(periods));
+  }
+
+  @override
+  Future<void> change(
+    String groupId,
+    String uid,
+    Person person,
+    ParticipationPeriod? previous,
+    YearMonth month,
+    bool starting,
+  ) async {
+    final period = ParticipationPeriod(
+      id: starting ? 'period-${revision + 1}' : previous!.id,
+      groupId: groupId,
+      personId: person.id,
+      firstMonth: starting ? month : previous!.firstMonth,
+      lastMonthInclusive: starting ? null : month,
+    );
+    if (!starting) periods.removeWhere((p) => p.id == period.id);
+    periods.add(period);
+    _store(
+      groupId,
+      uid,
+      person.displayName,
+      person.notes,
+      starting,
+      periodId: period.id,
+    );
+  }
+
   @override
   Stream<List<Person>> watchPersons(String groupId) async* {
     yield current;
@@ -32,8 +77,9 @@ class MemoryPersons implements PersonService {
     String uid,
     String name,
     String? notes,
-    bool active,
-  ) {
+    bool active, {
+    String? periodId,
+  }) {
     writtenGroups.add(groupId);
     current = [
       Person(
@@ -42,6 +88,9 @@ class MemoryPersons implements PersonService {
         displayName: name,
         notes: notes,
         isActive: active,
+        lastParticipationPeriodId:
+            periodId ??
+            (current.isEmpty ? null : current.single.lastParticipationPeriodId),
         createdBy: uid,
         updatedBy: uid,
         createdAt: DateTime.utc(2026),
@@ -56,8 +105,30 @@ class MemoryPersons implements PersonService {
     String groupId,
     String uid,
     String name,
-    String? notes,
-  ) async => _store(groupId, uid, name, notes, true);
+    String? notes, {
+    String? id,
+    YearMonth? firstMonth,
+  }) async {
+    if (firstMonth != null) {
+      periods.add(
+        ParticipationPeriod(
+          id: 'initial-p1',
+          groupId: groupId,
+          personId: 'p1',
+          firstMonth: firstMonth,
+        ),
+      );
+    }
+    _store(
+      groupId,
+      uid,
+      name,
+      notes,
+      true,
+      periodId: firstMonth == null ? null : 'initial-p1',
+    );
+  }
+
   @override
   Future<void> edit(
     String groupId,
@@ -100,6 +171,9 @@ void main() {
           ),
           groupRepositoryProvider.overrideWithValue(membership),
           personRepositoryProvider.overrideWithValue(PersonRepository(service)),
+          participationRepositoryProvider.overrideWithValue(
+            ParticipationRepository(service),
+          ),
         ],
       );
       addTearDown(() async {
@@ -149,7 +223,8 @@ void main() {
       expect(service.current.single.isActive, isFalse);
       expect(find.text('Inactiva'), findsOneWidget);
       await tap('Activar');
-      await tap('Activar persona');
+      await tap('Revisar primer mes');
+      await tap('Confirmar primer mes');
       expect(service.current.single.isActive, isTrue);
       expect(service.current.single.id, 'p1');
       expect(service.writtenGroups, everyElement('a'));

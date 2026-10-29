@@ -2,7 +2,119 @@
 
 ## 1. Propósito del documento
 
+Ampliación del **23/10/2026**, D110–D112: copias locales diarias de consulta,
+las siete últimas capturas completas por cuenta/móvil, con Wi-Fi o datos móviles.
+Incluyen datos Firestore autorizados; fotos solo según caché. Visor de solo lectura
+con fecha explícita que reutiliza las pantallas habituales. Implementado y APK
+compilado, pendiente de comprobación física. No reactiva la copia semanal del
+portátil aplazada. Alcance, seguridad y evidencia:
+[DAILY_OFFLINE_COPIES_VALIDATION.md](DAILY_OFFLINE_COPIES_VALIDATION.md).
+
+Estado vigente tras la entrega amplia del **20/10/2026**: PDF/Excel/CSV,
+auditoría adicional, papelera, eliminación de grupo, baja propia y caja con
+agregados exactos implementados y publicados. Reinicio de pruebas autorizado
+finalizado con respaldo, dos grupos DEMO y 280 movimientos. Copia semanal/visor
+aplazados expresamente. Evidencia y límites:
+[FULL_PRODUCT_COMPLETION_2026-10-20.md](FULL_PRODUCT_COMPLETION_2026-10-20.md).
+Esta es la visión funcional, no una certificación física o de producción:
+iOS/APNs, pruebas reales de varios móviles y mejoras de volumen indicadas allí
+siguen abiertas. Los párrafos de entregas anteriores que siguen son históricos.
+
+Continuación Phase 11, 2026-10-20: consulta paginada de auditoría, búsqueda/filtros
+sobre cargados y detalle antes/después. No introduce auditoría de operaciones que
+no la guardaban ni papelera/eliminación. Estado y evidencia:
+[PHASE11_AUDIT_HISTORY_VALIDATION.md](PHASE11_AUDIT_HISTORY_VALIDATION.md).
+
+Continuación 2026-10-20: comparaciones entre periodos de caja/cuotas en Informes,
+con mismo tramo transcurrido para periodos en curso según D103. No cambia datos
+remotos ni cierra agregados/volumen o validación física. Evidencia:
+[PHASE10_PERIOD_COMPARISONS_VALIDATION.md](PHASE10_PERIOD_COMPARISONS_VALIDATION.md).
+
+Estado vigente 2026-10-20: recordatorios y actividad automática desplegados en
+Supabase aislado, cron cada quince minutos y tres preferencias independientes.
+Enlaces HTTPS con Hosting y Android debug preparados. La validación de push y
+apertura física sigue pendiente; iOS/APNs/AASA también. No declara terminada toda
+la visión. Alcance, copia y comprobaciones:
+[PHASE9_NOTIFICATIONS_AND_LINKS_VALIDATION.md](PHASE9_NOTIFICATIONS_AND_LINKS_VALIDATION.md).
+Las entregas siguientes conservan su estado histórico.
+
+Estado de implementación: consultar docs/ROADMAP.md. El 2026-10-17 se añade una
+entrega acotada de búsqueda/filtros del historial (56, 85 y 86); no implica que
+el resto de la visión completa ni la validación física del MVP estén terminados.
+Informe: [WORK_REPORT_2026-10-17.md](WORK_REPORT_2026-10-17.md).
+
+Continuación posterior del mismo día: grupos e identidad, informes/fichas económicos,
+perfil y CSV parcialmente implementados. Estado y límites en
+[FULL_PRODUCT_PROGRESS_2026-10-17.md](FULL_PRODUCT_PROGRESS_2026-10-17.md).
+
+Siguiente bloque del mismo día: códigos, solicitudes, aprobación y salida/expulsión
+parciales, con Rules publicadas y datos DEMO aislados. Estado exacto y pendientes:
+[PHASE7_INVITATIONS_VALIDATION.md](PHASE7_INVITATIONS_VALIDATION.md). No implica
+enlaces, roles editables ni transferencia implementados. Readmisión añadida
+posteriormente con aprobación obligatoria según elección del usuario:
+[PHASE7_READMISSION_VALIDATION.md](PHASE7_READMISSION_VALIDATION.md).
+
+El 2026-10-18 se añaden vínculos únicos usuario/persona, vista de pendientes y
+pérdida automática de admin del apartado 10.4. No implica promociones/transferencia
+terminadas. Alcance y evidencia: [PHASE7_LINKS_VALIDATION.md](PHASE7_LINKS_VALIDATION.md).
+
+En la entrega posterior del mismo día se implementan promociones/degradaciones de
+10.2 y transferencia de 44 con confirmación fuerte. Usuario decide antiguo owner
+como member, conservando vínculo/historial, y confirmar con Google y nombre exacto
+del grupo. Publicación, evidencia y pendientes físicos:
+[PHASE7_ROLES_TRANSFER_VALIDATION.md](PHASE7_ROLES_TRANSFER_VALIDATION.md).
+
+2026-10-19: comienzo de Phase 8 por modelos y cálculo puro de importes esperados
+para meses/reglas/periodos explícitos. No implementa aún las pantallas ni persistencia
+de cuotas, asignaciones o deudas. Tres decisiones de aplicación solicitadas antes
+de depender de ellas; alcance y evidencia:
+[PHASE8_FOUNDATION_VALIDATION.md](PHASE8_FOUNDATION_VALIDATION.md).
+
+Continuación posterior: las preguntas iniciales quedan resueltas en D077 y se
+integran pantallas, repositorios, servicios y Rules de cuotas/periodos, publicadas
+y verificadas. D078 permite compartir el mes de baja/vuelta y contarlo una vez.
+Aquella entrega no incorporó pagos/deudas ni allocations. Evidencia:
+[PHASE8_QUOTAS_PERIODS_VALIDATION.md](PHASE8_QUOTAS_PERIODS_VALIDATION.md).
+
+Siguiente entrega del mismo día: asignaciones de ingresos a meses y ficha de pagos,
+con propuesta revisable hasta doce meses futuros y sobrepago manual advertido
+(D079–D081). Cada mes se confirma por separado; ingresos antiguos no se reparten
+automáticamente. Anular/corregir invalida los pagos del original, conservando
+su historia; el sustituto requiere revisar otro reparto. En aquella entrega aún
+quedaban pendientes devoluciones y primer mes en el alta, añadidos abajo. Evidencia:
+[PHASE8_ALLOCATIONS_VALIDATION.md](PHASE8_ALLOCATIONS_VALIDATION.md).
+
+Continuación posterior del mismo día: devolución parcial de un ingreso, hasta
+cuatro meses y crédito sin asignar. Anular restaura cuotas/crédito; corregir exige
+revisar el sustituto. Se conservan asignaciones brutas e historial, descontando
+devoluciones activas al calcular pagos. Alta de persona con primer mes opcional,
+sin imponerlo a personas existentes. Son ampliaciones concretas, no cierre de las
+fases futuras ni validación física. Evidencia:
+[PHASE8_REFUNDS_VALIDATION.md](PHASE8_REFUNDS_VALIDATION.md).
+
 Este documento define la visión funcional completa de **BoteParroquial**.
+
+Actualización 2026-10-19: el usuario prioriza dashboard e informes de cuotas
+(55, 59–62) antes de notificaciones. Estado de pagos actualizado hasta hoy, sin
+reconstruir cierres históricos; futuro separado como previsión. Dashboard incorpora
+pendiente acumulado y cifras de cuotas/dinero del mes; informes añaden cuotas,
+cumplimiento y detalle mensual/individual. Comparaciones y agregados siguen
+pendientes. Lecturas solamente. Evidencia:
+[PHASE10_QUOTA_REPORTS_VALIDATION.md](PHASE10_QUOTA_REPORTS_VALIDATION.md).
+
+Phase 9, continuación 2026-10-19: cliente de registro de dispositivos, preferencias
+por grupo y bandeja privada implementados. El usuario decide permiso por botón
+y retirada confirmada antes de logout (D093/D094), push sin importes y resumen
+por grupo (D092). Esto no implementa todavía generación de avisos o cron.
+Evidencia y estado remoto: [PHASE9_NOTIFICATION_CLIENT_VALIDATION.md](PHASE9_NOTIFICATION_CLIENT_VALIDATION.md).
+
+2026-10-20: dominio del futuro worker adaptado a Deno, con cálculo mensual,
+destinatarios vigentes y lector REST de instantánea readOnly por grupo. Trece
+escenarios compartidos con los cálculos Dart. D096 incluye personas vinculadas
+a cuentas que salieron en el resumen de gestores y permite recuperar el aviso
+durante el mismo día desde las 10:00. Sin worker desplegado, cron, secretos o
+reservas persistentes todavía. Evidencia y límites:
+[PHASE9_REMINDER_SERVER_CALCULATION.md](PHASE9_REMINDER_SERVER_CALCULATION.md).
 
 Su objetivo es describir con suficiente detalle:
 
@@ -1113,6 +1225,10 @@ El receptor debe:
 - estar vinculado a una persona activa.
 
 Debe requerir confirmación fuerte.
+
+Concretado e implementado el 2026-10-18 (D074/D075): verificar de nuevo la misma
+cuenta Google y escribir el nombre exacto del grupo. Antiguo owner pasa a member;
+ambos conservan vínculo e historial. Receptor y persona vinculada deben estar activos.
 
 ---
 

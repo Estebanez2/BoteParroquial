@@ -9,6 +9,7 @@ import '../../../models/movement.dart';
 import '../../groups/presentation/group_access_body.dart';
 import '../providers/movement_providers.dart';
 import 'pending_movement_card.dart';
+import 'movement_history_controls.dart';
 
 String _historyDayLabel(BuildContext context, DateTime date, DateTime today) {
   if (date == today) return 'Hoy';
@@ -76,6 +77,10 @@ class MovementsScreen extends ConsumerWidget {
                 ],
               ),
             const SizedBox(height: AppSpacing.xl),
+            if (focusId == null) ...[
+              MovementHistoryControls(key: ValueKey(groupId), groupId: groupId),
+              const SizedBox(height: AppSpacing.lg),
+            ],
             ref
                 .watch(movementDaysProvider((groupId, focusId)))
                 .when(
@@ -91,12 +96,35 @@ class MovementsScreen extends ConsumerWidget {
                     onAction: () => ref.invalidate(movementsProvider(groupId)),
                   ),
                   data: (days) => days.isEmpty
-                      ? const EmptyState(
-                          icon: Icons.receipt_long_outlined,
-                          title: 'Todo empieza con un movimiento.',
-                          description:
-                              'Todavía no hay ingresos ni retiradas en este grupo.',
-                        )
+                      ? focusId != null
+                            ? const EmptyState(
+                                icon: Icons.search_off_rounded,
+                                title: 'Movimiento no disponible',
+                                description:
+                                    'Vuelve al historial para consultar los movimientos del grupo.',
+                              )
+                            : ref
+                                      .watch(movementFilterProvider(groupId))
+                                      .criteriaCount !=
+                                  0
+                            ? EmptyState(
+                                icon: Icons.search_off_rounded,
+                                title: 'No hay coincidencias',
+                                description:
+                                    'Prueba con otra búsqueda o limpia los filtros para ver todo el historial.',
+                                actionLabel: 'Mostrar todos los movimientos',
+                                onAction: () => ref
+                                    .read(
+                                      movementFilterProvider(groupId).notifier,
+                                    )
+                                    .reset(),
+                              )
+                            : const EmptyState(
+                                icon: Icons.receipt_long_outlined,
+                                title: 'Todo empieza con un movimiento.',
+                                description:
+                                    'Todavía no hay ingresos ni retiradas en este grupo.',
+                              )
                       : Column(
                           children: [
                             for (final day in days)
@@ -193,7 +221,9 @@ class _MovementRow extends ConsumerWidget {
                 AppBadge(
                   movement.input.type == MovementType.income
                       ? 'Ingreso'
-                      : 'Retirada',
+                      : movement.input.refund == null
+                      ? 'Retirada'
+                      : 'Devolución',
                   tone: movement.input.type == MovementType.income
                       ? AppTone.success
                       : AppTone.danger,
@@ -257,6 +287,35 @@ class _MovementRow extends ConsumerWidget {
                       '/groups/$groupId/movements?focus=${movement.correctedByMovementId}',
                     ),
                   ),
+                if (movement.input.refund case final refund?) ...[
+                  Text(
+                    'Devolución · Crédito sin asignar: ${formatMoneyCents(refund.unallocatedCents, currency: currency)}',
+                    style: t.bodySmall,
+                  ),
+                  for (final part in refund.parts)
+                    Text(
+                      '${part.month}: ${formatMoneyCents(part.amountCents, currency: currency)}',
+                      style: t.bodySmall,
+                    ),
+                  AppButton(
+                    label: 'Ver ingreso de origen',
+                    variant: AppButtonVariant.ghost,
+                    onPressed: () => context.push(
+                      '/groups/$groupId/movements?focus=${refund.incomeId}',
+                    ),
+                  ),
+                ],
+                if (movement.input.type == MovementType.income)
+                  AppButton(
+                    label: movement.status == MovementStatus.active
+                        ? 'Repartir por meses'
+                        : 'Ver reparto conservado',
+                    variant: AppButtonVariant.ghost,
+                    leadingIcon: Icons.calendar_month_outlined,
+                    onPressed: () => context.push(
+                      '/groups/$groupId/movements/${movement.id}/allocations',
+                    ),
+                  ),
                 if (movement.correctionOfMovementId != null)
                   AppButton(
                     label: 'Ver original conservado',
@@ -275,9 +334,20 @@ class _MovementRow extends ConsumerWidget {
                         variant: AppButtonVariant.outline,
                         size: AppButtonSize.compact,
                         onPressed: () => context.push(
-                          '/groups/$groupId/movements/${movement.id}/correct',
+                          movement.input.refund == null
+                              ? '/groups/$groupId/movements/${movement.id}/correct'
+                              : '/groups/$groupId/refunds/${movement.input.refund!.incomeId}?original=${movement.id}',
                         ),
                       ),
+                      if (movement.input.refund != null)
+                        AppButton(
+                          label: 'Corregir como movimiento normal',
+                          variant: AppButtonVariant.ghost,
+                          size: AppButtonSize.compact,
+                          onPressed: () => context.push(
+                            '/groups/$groupId/movements/${movement.id}/correct',
+                          ),
+                        ),
                       AppButton(
                         label: 'Anular',
                         variant: AppButtonVariant.ghost,

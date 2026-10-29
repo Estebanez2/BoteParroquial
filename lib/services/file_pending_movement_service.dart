@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../core/errors/app_failure.dart';
 import '../models/movement.dart';
+import '../models/refund_plan.dart';
 import '../models/pending_movement.dart';
 import 'pending_movement_service.dart';
 
@@ -40,6 +41,7 @@ class FilePendingMovementService implements PendingMovementService {
     ).toIso8601String(),
     'description': input.description.trim(),
     'personId': input.personId,
+    if (input.refund != null) 'refund': input.refund!.toMap(),
   };
   MovementInput _readInput(Map<String, dynamic> data) => MovementInput(
     type: MovementType.values.byName(data['type'] as String),
@@ -47,6 +49,7 @@ class FilePendingMovementService implements PendingMovementService {
     occurredAt: DateTime.parse(data['occurredAt'] as String),
     description: data['description'] as String,
     personId: data['personId'] as String?,
+    refund: RefundPlan.fromMap(data['refund']),
   );
   @override
   Future<PendingMovement?> read(String uid, String groupId) =>
@@ -57,7 +60,7 @@ class FilePendingMovementService implements PendingMovementService {
       if (!await file.exists()) return null;
       final data =
           jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-      if (data['version'] != 1 ||
+      if (![1, 2].contains(data['version']) ||
           data['uid'] != uid ||
           data['groupId'] != groupId) {
         throw _failure;
@@ -96,7 +99,11 @@ class FilePendingMovementService implements PendingMovementService {
       final temporary = File('${file.path}.tmp');
       await temporary.writeAsString(
         jsonEncode({
-          'version': 1,
+          'version':
+              submission.input.refund != null ||
+                  submission.original?.input.refund != null
+              ? 2
+              : 1,
           'uid': submission.actorUid,
           'groupId': submission.groupId,
           'id': submission.id,

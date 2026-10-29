@@ -2,6 +2,14 @@
 
 Actualizado el 2026-10-15.
 
+Separación vigente, 2026-10-20: este documento describe **fotos**, proyecto
+ietnizafvtovelyuxbvk. El worker de avisos está en otro Supabase Free,
+**BoteParroquialNotificaciones**, qngrmxfjckrrfiyioyzl, eu-west-1. Su credencial
+Firebase privilegiada, secreto de endpoint y Vault permanecen solo allí; no
+añadirlos al proyecto de fotos. Desplegar por nombre y ref explícitos, nunca todas
+las funciones indiscriminadamente. Cron cada quince minutos y estado comprobado:
+[informe del servidor](PHASE9_NOTIFICATIONS_AND_LINKS_VALIDATION.md).
+
 ## Acuerdos y configuración conocida
 
 El usuario elige Supabase Storage para fotos, manteniendo Firebase Authentication

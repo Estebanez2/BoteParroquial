@@ -182,6 +182,66 @@ grupos o membresías. No se adelantan funciones futuras dibujadas en las referen
 
 Fuera del MVP inicial
 
+Avance autorizado del producto completo del 2026-10-17: creación/edición de grupos,
+nombre de cuenta, informes/ficha económicos y CSV se han añadido parcialmente.
+No son nuevos criterios para cerrar el MVP. Detalle y límites en
+docs/FULL_PRODUCT_PROGRESS_2026-10-17.md; el resto de esta lista sigue sujeto a fase.
+
+Después se añaden códigos de invitación, solicitudes/aprobación y salida/expulsión
+como subconjunto de Phase 7. Rules publicadas y datos DEMO aislados. No cambian
+los criterios de cierre del MVP ni habilitan enlaces, vínculos
+generales, roles editables o transferencia. Registro:
+docs/PHASE7_INVITATIONS_VALIDATION.md.
+
+Readmisión añadida tras elección explícita: solicitudes con aprobación obligatoria
+y retorno como miembro conservando vínculo e historia, incluso en entrada
+automática. Evidencia: docs/PHASE7_READMISSION_VALIDATION.md.
+
+Ampliación del 2026-10-18: vínculos únicos cuenta/persona con gestión manual y
+auditoría, vista de pendientes, persona inactiva con advertencia y degradación
+automática de admin al perder la persona activa. Sin cambios de movimientos ni
+fotos; conservar vínculo al salir hasta desvinculación expresa. Fuera del MVP
+inicial. Evidencia: docs/PHASE7_LINKS_VALIDATION.md.
+
+Ampliación posterior del mismo día: gestión general de roles no owner y
+transferencia por el propietario con Google y nombre exacto del grupo. Owner
+anterior pasa a member, conservando vínculo e historial. No amplía los criterios
+de cierre del MVP ni declara terminada la validación física. Evidencia:
+docs/PHASE7_ROLES_TRANSFER_VALIDATION.md.
+
+Continuación Phase 8 (2026-10-19), fuera del MVP original: configuración de cuotas
+temporales/versiones y periodos de personas, con resumen de importes esperados,
+integrada, con Rules publicadas/verificadas. No marca pagos ni genera deuda a partir de ingresos. Estado
+de publicación, decisiones y comprobaciones: docs/PHASE8_QUOTAS_PERIODS_VALIDATION.md.
+
+Continuación de Phase 8: asignaciones expresas de ingresos a meses, con propuesta
+revisable, pagos parciales, pendientes, adelantos, sobrepagos y crédito sin asignar.
+Anular/corregir deja de contar el reparto original; no se hereda al sustituto.
+No se infieren pagos históricos ni deuda cuando falta configuración. Evidencia
+de esa entrega: docs/PHASE8_ALLOCATIONS_VALIDATION.md.
+
+Entrega posterior: devoluciones parciales desde un ingreso, con hasta cuatro meses
+seleccionados y crédito sin asignar; anular restaura, corregir revisa expresamente
+el sustituto. Una retirada normal conserva las cuotas. Las personas nuevas pueden
+elegir primer mes al crearlas; omitirlo no crea obligaciones. No se modifican
+datos anteriores automáticamente. Evidencia: docs/PHASE8_REFUNDS_VALIDATION.md.
+
+Continuación autorizada de informes (2026-10-19): el usuario prioriza completar
+dashboard e informes de cuotas antes de notificaciones. Se muestra cumplimiento
+actualizado de los meses seleccionados, incluyendo pagos posteriores y devoluciones.
+Pendiente solo hasta el mes actual; meses siguientes, previsión separada. El
+dashboard distingue pendiente acumulado de cuotas/dinero del mes. Personas
+inactivas conservan obligaciones históricas. Datos incompletos no son deuda cero;
+sobrepagos no compensan otros meses/personas. Sin nuevas escrituras ni reglas.
+Evidencia: docs/PHASE10_QUOTA_REPORTS_VALIDATION.md. Comparaciones/agregados,
+notificaciones, recuperación general y exportaciones ampliadas siguen pendientes.
+
+Phase 9 iniciada expresamente: registro de móviles por botón, preferencia por
+grupo y bandeja privada implementados. Cerrar sesión confirma retirada cuando
+el móvil estaba registrado. La generación automática sigue pendiente; el MVP
+original no se redefine como completamente validado por estas ampliaciones.
+Estado/evidencia: docs/PHASE9_NOTIFICATION_CLIENT_VALIDATION.md.
+
 No implementar todavía salvo fase específica:
 
 cuotas mensuales;

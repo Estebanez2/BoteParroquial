@@ -25,6 +25,9 @@ class FirestoreGroupSyncService implements GroupSyncService {
         FirestorePaths.persons(groupId),
         FirestorePaths.movements(groupId),
         FirestorePaths.members(groupId),
+        FirestorePaths.quotaRules(groupId),
+        FirestorePaths.participationPeriods(groupId),
+        FirestorePaths.allocations(groupId),
       ])
         _firestore
             .collection(path)

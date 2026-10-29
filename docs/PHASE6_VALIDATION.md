@@ -5,6 +5,10 @@ del grupo. La fase sigue abierta hasta las comprobaciones de cierre que se indic
 abajo. El usuario confirma que el Dashboard anterior funciona en el móvil conectado;
 esa confirmación no se extiende automáticamente a estos cambios nuevos.
 
+La referencia de Rules de este informe es histórica. La publicación actual de
+Phase 7 está en PHASE7_INVITATIONS_VALIDATION.md; conserva las restricciones
+financieras de esta fase. Sus avances no cierran las pruebas físicas pendientes.
+
 ## Cambios y decisiones
 
 - Consulta offline de datos disponibles, con aviso cuando las fuentes de grupo,
@@ -96,3 +100,15 @@ No se instala/ejecuta la app: lo hará el usuario. La validación física de est
 sigue pendiente; no se amplía la evidencia anterior ni se cierran otras pruebas.
 
 Análisis final: flutter analyze --no-pub sin incidencias. Dos pruebas dirigidas superadas.
+
+## Revisión del 2026-10-17
+
+Las funciones básicas siguen implementadas y los pendientes físicos anteriores
+permanecen abiertos. Sin móvil, no se verifica recuperación/offline real ni se
+retoma la segunda cuenta. Se añade búsqueda/filtros del historial como ampliación
+acotada autorizada de la especificación completa. Tres casos nuevos de historial
+y las dos regresiones existentes del Dashboard pasan; no se repite la suite completa.
+Se actualiza la aserción del Dashboard al texto «Actualización pendiente» y al
+margen de dos segundos ya implementados. El flujo comprueba carga sin aviso,
+pendiente sostenido y retirada al confirmar. No son cambios de reglas o dinero.
+Informe detallado: [WORK_REPORT_2026-10-17.md](WORK_REPORT_2026-10-17.md).

@@ -2,6 +2,48 @@ Configuración Firebase
 
 Este documento registra configuración real.
 
+Publicación vigente, 2026-10-20: preferencias económicas e informativas,
+ruleset projects/boteparroquial/rulesets/b74cba9c-8221-4c48-9226-5ab95ea716c3,
+release 2026-10-20T09:23:23.193385Z, SHA-256 remoto/local
+c9e4cb547e11c5053f8814eea7ca3622a39eef6e45e7af1b02608532516d3c55.
+Hosting https://boteparroquial.web.app publicado para invitaciones. Identidad IAM
+dedicada y credencial autorizadas expresamente para el segundo Supabase aislado;
+worker/cron activos, sin Blaze ni cambio de facturación. Respaldo externo nuevo,
+metadatos y validaciones: [informe vigente](PHASE9_NOTIFICATIONS_AND_LINKS_VALIDATION.md).
+Push y App Links en dispositivo, APNs/iOS y firma Android release pendientes.
+
+Publicación anterior, 2026-10-19: devoluciones y alta con primer mes opcional
+(D082–D086). Ruleset projects/boteparroquial/rulesets/38c2c77a-c18c-4c51-a8a9-f43e9dfa5702,
+actualizado 2026-10-19T17:33:36.670521Z. SHA-256 remoto/local coincidente:
+5c776e8d4b9b965ca4fe19a9e14f3564378e5461767a69c59d628098e20c3520.
+Nuevo respaldo externo de reglas activas anteriores, código local y APK anterior,
+sin sobrescribir copias previas; no incluye documentos ni fotos. Publicación solo
+firestore:rules, sin modificar datos, índices, Auth Console o Supabase. Informe:
+docs/PHASE8_REFUNDS_VALIDATION.md.
+
+Publicación anterior, 2026-10-19: asignaciones de cuotas (D079–D081). Ruleset
+projects/boteparroquial/rulesets/19c7a8f8-7ff2-4b94-b7dc-4264df8cc585,
+actualizado 2026-10-19T09:50:45.107352Z. SHA-256 remoto/local coincidente:
+b98fa4c4356da632aab553ab33d3ef92a5c69dbf70c9d647eb136a11a16886c8.
+Sin cambios de documentos remotos, Auth Console, índices o Supabase. Evidencia y copia
+externa de permisos anterior: docs/PHASE8_ALLOCATIONS_VALIDATION.md.
+
+Publicación anterior, 2026-10-19: cuotas y periodos (D077/D078). Ruleset
+projects/boteparroquial/rulesets/b7d039b7-06c4-4e20-a947-557342332195,
+actualizado 2026-10-19T09:15:51.925178Z. SHA-256 remoto/local coincidente:
+e268187755291c0c5fa8bb4d78325f36b02459e0e1fd6ae8b7d1989bfbf48f4a.
+Sin cambios de Auth Console, Supabase o documentos remotos. Evidencia y respaldo:
+docs/PHASE8_QUOTAS_PERIODS_VALIDATION.md. Los registros siguientes son históricos.
+
+Publicación anterior, 2026-10-18: roles y transferencia con reautenticación Google,
+grupo y membresías auditados atómicamente. Ruleset activo
+projects/boteparroquial/rulesets/b71e918a-cec6-4593-9560-2e88387e755d,
+actualizado 2026-10-18T10:19:39.169901Z. Fuente remota/local coincidente, SHA-256
+cf818683961a26ef5416d257e7b1e620ad03d0aac6e72a3d1faf876b5b647019.
+Sin cambios en Auth Console, Supabase ni documentos. Evidencia y copia externa
+anterior: docs/PHASE7_ROLES_TRANSFER_VALIDATION.md. Los despliegues que siguen
+se conservan como historial, no como descripción completa de permisos vigentes.
+
 No define el esquema de datos.
 
 Para el esquema consultar:
@@ -138,12 +180,37 @@ anteriores registran sus despliegues históricos, no las reglas vigentes complet
 No crear otra base simplemente porque estos datos todavía no estén documentados.
 
 Phase 6 (2026-10-15): cuatro pruebas económicas pasan en emulador y el despliegue
-confirma compilación y publicación. Ruleset vigente:
+confirma compilación y publicación. Ruleset histórico de esa fase:
 3a47ea62-c02e-47d8-ab82-deb95b2313ad. Añade occurredAt == occurredAt.date() para
 exigir día civil UTC sin horas; mantiene los permisos y transiciones de Phase 4.
 Sin nuevos índices, colecciones ni activaciones de servicios. El margen request.time+24 h
 permanece: no implica validación exacta de «hoy» por zona IANA en servidor.
 Ver docs/PHASE6_VALIDATION.md. Los rulesets anteriores son historial.
+
+Phase 7 parcial (2026-10-17): el usuario autoriza publicar después del respaldo
+externo. Publicadas primero las Rules de creación/identidad de grupos y perfil;
+después códigos, solicitudes/aprobación y bajas con auditoría atómica. Versión
+verificada de ese bloque: c4d4cdd5-23d6-4a9e-8cc3-30cbf1370d3b, actualización
+2026-10-17T10:22:46.741797Z; hash remoto igual al local. No se cambian índices ni
+servicios de Console. 14 documentos DEMO nuevos, grupo aislado y sin sobrescrituras.
+En ese bloque, readmisiones y gestión general de roles seguían cerradas. Evidencia:
+docs/PHASE7_INVITATIONS_VALIDATION.md. La copia anterior de Phase 6 sigue fuera
+de Git; docs/FIRESTORE_RULES_BACKUP.md contiene su ubicación y restauración.
+
+Readmisión posterior (D069): el usuario escoge aprobación obligatoria incluso en
+entrada automática. Rules publicadas y verificadas de ese bloque:
+546c76d7-8784-4565-8326-365182315b98, 2026-10-17T10:37:08.559634Z. Hash coincide
+con la fuente local. Solo gestores autorizados reactivan la membresía como member
+con vínculo/antigüedad conservados; no se escriben documentos reales. Pruebas y
+límites: docs/PHASE7_READMISSION_VALIDATION.md. Roles generales siguen cerrados.
+
+Vínculos (2026-10-18): versión activa b3d98bda-b2d0-4070-83f2-3765cf28cf69,
+actualizada 2026-10-18T09:46:37.411830Z. SHA-256 remoto/local
+305fe15bf4e83cf66fe205ff006a8cb105ef5948c7c6d1a52171f1b6b0279e31.
+Vínculos únicos recíprocos y degradación automática de admin, sin promociones.
+Preparados dos vínculos anteriores del grupo DEMO con auditoría y precondiciones;
+sin cambios de roles ni dinero durante la preparación. No hay nuevos índices ni
+activaciones de Console. Detalle: docs/PHASE7_LINKS_VALIDATION.md.
 
 No asumir que la configuración de la base garantiza autorización correcta.
 

@@ -3,6 +3,9 @@ import '../../../core/errors/app_failure.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../models/group_member.dart';
 import '../../../models/person.dart';
+import '../../../models/year_month.dart';
+import '../../movements/providers/movement_providers.dart'
+    show groupCalendarRepositoryProvider;
 import '../../../repositories/person_repository.dart';
 import '../../../services/firestore_person_service.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -56,6 +59,22 @@ class PersonController extends Notifier<AsyncValue<void>> {
   AsyncValue<void> build() => const AsyncData(null);
   String? validateName(String? value) => PersonRepository.nameError(value);
   String? validateNotes(String? value) => PersonRepository.notesError(value);
+  String startCreate() => ref.read(personRepositoryProvider).newId(groupId);
+  YearMonth currentMonth() {
+    final group = ref.read(groupProvider(groupId)).requireValue;
+    if (group == null) {
+      throw const AppFailure(
+        FailureCode.permissionDenied,
+        'Grupo no disponible.',
+      );
+    }
+    return YearMonth.fromDate(
+      ref.read(groupCalendarRepositoryProvider).today(group.timeZone),
+    );
+  }
+
+  String? validateFirstMonth(YearMonth? month) =>
+      PersonRepository.firstMonthError(month, currentMonth());
   void clearError() {
     if (!state.isLoading) state = const AsyncData(null);
   }
@@ -77,6 +96,13 @@ class PersonController extends Notifier<AsyncValue<void>> {
         );
       }
       await action(ref.read(personRepositoryProvider), user.uid);
+      if (!ref.mounted) return false;
+      if (ref.read(authStateProvider).asData?.value?.uid != user.uid) {
+        throw const AppFailure(
+          FailureCode.cancelled,
+          'La sesión ha cambiado. Revisa el listado desde tu cuenta actual.',
+        );
+      }
       if (ref.mounted) state = const AsyncData(null);
       return true;
     } catch (error, stack) {
@@ -85,12 +111,25 @@ class PersonController extends Notifier<AsyncValue<void>> {
     }
   }
 
-  Future<bool> save({Person? person, required String name, String? notes}) =>
-      _perform(
-        (repo, uid) => person == null
-            ? repo.create(groupId, uid, name, notes)
-            : repo.edit(groupId, uid, person, name, notes),
-      );
+  Future<bool> save({
+    Person? person,
+    required String name,
+    String? notes,
+    String? id,
+    YearMonth? firstMonth,
+  }) => _perform(
+    (repo, uid) => person == null
+        ? repo.create(
+            groupId,
+            uid,
+            name,
+            notes,
+            id: id,
+            firstMonth: firstMonth,
+            currentMonth: firstMonth == null ? null : currentMonth(),
+          )
+        : repo.edit(groupId, uid, person, name, notes),
+  );
   Future<bool> setActive(Person person, bool active) =>
       _perform((repo, uid) => repo.setActive(groupId, uid, person, active));
 }

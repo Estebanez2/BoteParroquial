@@ -2,12 +2,33 @@ import '../core/errors/app_failure.dart';
 import '../models/dashboard_summary.dart';
 import '../models/movement.dart';
 import '../models/person.dart';
+import '../models/movement_cash_totals.dart';
 import 'movement_repository.dart';
 
 /// Pure projection: reusable by any UI, without Flutter or Firebase dependencies.
 class DashboardRepository {
   const DashboardRepository();
   static const recentLimit = 5;
+  DashboardSummary fromCash(
+    String groupId,
+    MovementCashTotals cash,
+    List<Movement> recent,
+    List<Person> persons,
+  ) {
+    cash.validate(groupId, cash.monthStart);
+    final details = summarize(groupId, recent, persons);
+    return DashboardSummary(
+      groupId: groupId,
+      incomeCents: cash.incomeCents,
+      withdrawalCents: cash.withdrawalCents,
+      activePersonsCount: details.activePersonsCount,
+      inactivePersonsCount: details.inactivePersonsCount,
+      recentActivity: details.recentActivity,
+      cashConfirmedAt: cash.confirmedAt,
+      cashCached: cash.cached,
+    );
+  }
+
   DashboardSummary summarize(
     String groupId,
     List<Movement> movements,

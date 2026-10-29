@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/person.dart';
 import '../../../models/photo_target.dart';
 import '../../photos/presentation/photo_view.dart';
 import '../providers/person_providers.dart';
+import '../providers/person_trash_providers.dart';
 import 'person_editor.dart';
+import '../../quotas/presentation/participation_editor.dart';
 
 class PersonsSection extends ConsumerWidget {
   const PersonsSection({super.key, required this.groupId});
@@ -34,6 +37,12 @@ class PersonsSection extends ConsumerWidget {
               leadingIcon: Icons.add_rounded,
               onPressed: () => showPersonEditor(context, ref, groupId),
             ),
+          ),
+          AppButton(
+            label: 'Abrir papelera',
+            leadingIcon: Icons.delete_outline,
+            variant: AppButtonVariant.ghost,
+            onPressed: () => context.push('/groups/$groupId/trash'),
           ),
         ],
         const SizedBox(height: AppSpacing.xl),
@@ -92,13 +101,22 @@ class _PersonCard extends ConsumerWidget {
   final Person person;
   final bool canManage;
   Future<void> _changeState(BuildContext context, WidgetRef ref) async {
+    if (!person.isActive || person.lastParticipationPeriodId != null) {
+      await showParticipationEditor(
+        context,
+        ref,
+        person,
+        starting: !person.isActive,
+      );
+      return;
+    }
     final confirmed = await AppDialog.show(
       context,
       title: person.isActive
           ? '¿Inactivar a ${person.displayName}?'
           : '¿Activar a ${person.displayName}?',
       description: person.isActive
-          ? 'Conservará todos sus datos y podrás reactivarla cuando quieras.'
+          ? 'Conservará todos sus datos y podrás reactivarla cuando quieras. Si tiene un administrador vinculado, pasará a ser miembro. Reactivarla no recuperará ese rol.'
           : 'Volverá a aparecer como persona activa del bote.',
       confirmLabel: person.isActive ? 'Inactivar persona' : 'Activar persona',
     );
@@ -180,11 +198,54 @@ class _PersonCard extends ConsumerWidget {
                             ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    AppActionMenu<bool>(
+                    AppActionMenu<String>(
                       label: 'Más opciones',
                       enabled: !action.isLoading,
-                      items: {true: person.isActive ? 'Inactivar' : 'Activar'},
-                      onSelected: (_) => _changeState(context, ref),
+                      items: {
+                        'state': person.isActive ? 'Inactivar' : 'Activar',
+                        'trash': 'Enviar a la papelera',
+                      },
+                      onSelected: (value) async {
+                        if (value == 'state') {
+                          await _changeState(context, ref);
+                          return;
+                        }
+                        final confirmed = await AppDialog.show(
+                          context,
+                          title: '¿Enviar a la papelera?',
+                          description:
+                              'Solo se permite sin movimientos, repartos, periodos de cuota ni cuenta vinculada. Podrás restaurarla durante diez días. Si tiene historial, usa Inactivar.',
+                          confirmLabel: 'Enviar a la papelera',
+                        );
+                        if (!confirmed || !context.mounted) return;
+                        final ok = await ref
+                            .read(
+                              personTrashControllerProvider(groupId).notifier,
+                            )
+                            .trash(person);
+                        if (!context.mounted) return;
+                        AppSnackbar.show(
+                          context,
+                          ok
+                              ? 'Persona enviada a la papelera.'
+                              : failureMessage(
+                                  ref
+                                          .read(
+                                            personTrashControllerProvider(
+                                              groupId,
+                                            ),
+                                          )
+                                          .error ??
+                                      const AppFailure(
+                                        FailureCode.cancelled,
+                                        'La operación no se ha completado; actualiza el listado.',
+                                      ),
+                                ),
+                          variant: ok
+                              ? AppSnackbarVariant.success
+                              : AppSnackbarVariant.error,
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -192,6 +253,13 @@ class _PersonCard extends ConsumerWidget {
             ],
           ),
           const Divider(height: AppSpacing.xl),
+          AppButton(
+            label: 'Ver ficha y aportaciones',
+            leadingIcon: Icons.insights_outlined,
+            variant: AppButtonVariant.ghost,
+            onPressed: () =>
+                context.push('/groups/$groupId/persons/${person.id}'),
+          ),
           Text(
             'Persona creada el ${MaterialLocalizations.of(context).formatMediumDate(person.createdAt.toLocal())}',
             style: t.bodySmall,

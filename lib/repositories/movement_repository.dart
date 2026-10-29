@@ -2,6 +2,8 @@ import '../core/errors/app_failure.dart';
 import '../models/movement.dart';
 import '../models/person.dart';
 import '../services/movement_service.dart';
+import '../services/movement_dashboard_source.dart';
+import '../models/movement_cash_totals.dart';
 
 class MovementRepository {
   const MovementRepository(this._service);
@@ -12,8 +14,92 @@ class MovementRepository {
       _service.watchMovements(groupId);
   Future<List<Movement>> loadMovements(String groupId) =>
       _service.loadMovements(groupId);
-  static int balanceOf(Iterable<Movement> movements) =>
-      movements.fold(0, (total, m) => total + m.contributionCents);
+  Stream<List<Movement>> watchRecent(String groupId) {
+    final service = _service;
+    return service is MovementDashboardSource
+        ? (service as MovementDashboardSource).watchRecent(groupId)
+        : service.watchMovements(groupId);
+  }
+
+  Stream<List<Movement>> watchQuotaSources(String groupId) {
+    final service = _service;
+    return service is MovementDashboardSource
+        ? (service as MovementDashboardSource).watchQuotaSources(groupId)
+        : service.watchMovements(groupId);
+  }
+
+  Future<void> clearCashAccount(String uid) async {
+    final service = _service;
+    if (service is MovementDashboardSource) {
+      await (service as MovementDashboardSource).clearCashAccount(uid);
+    }
+  }
+
+  Stream<MovementCashTotals> watchCash(
+    String groupId,
+    String uid,
+    DateTime monthStart,
+  ) {
+    final service = _service;
+    if (service is MovementDashboardSource) {
+      return (service as MovementDashboardSource).watchCash(
+        groupId,
+        uid,
+        monthStart,
+      );
+    }
+    return service.watchMovements(groupId).map((rows) {
+      int sum(MovementType type, bool month) {
+        final total = rows
+            .where(
+              (m) =>
+                  m.status == MovementStatus.active &&
+                  m.input.type == type &&
+                  (!month ||
+                      (m.input.occurredAt.year == monthStart.year &&
+                          m.input.occurredAt.month == monthStart.month)),
+            )
+            .fold<BigInt>(
+              BigInt.zero,
+              (acc, m) => acc + BigInt.from(m.input.amountCents),
+            );
+        if (BigInt.from(total.toInt()) != total) {
+          throw const AppFailure(
+            FailureCode.invalidData,
+            'El total excede el intervalo admitido.',
+          );
+        }
+        return total.toInt();
+      }
+
+      final value = MovementCashTotals(
+        groupId: groupId,
+        monthStart: monthStart,
+        incomeCents: sum(MovementType.income, false),
+        withdrawalCents: sum(MovementType.withdrawal, false),
+        monthIncomeCents: sum(MovementType.income, true),
+        monthWithdrawalCents: sum(MovementType.withdrawal, true),
+        confirmedAt: DateTime.now().toUtc(),
+      );
+      value.validate(groupId, monthStart);
+      return value;
+    });
+  }
+
+  static int balanceOf(Iterable<Movement> movements) {
+    final exact = movements.fold<BigInt>(
+      BigInt.zero,
+      (total, m) => total + BigInt.from(m.contributionCents),
+    );
+    if (BigInt.from(exact.toInt()) != exact) {
+      throw const AppFailure(
+        FailureCode.invalidData,
+        'El saldo supera el intervalo admitido.',
+      );
+    }
+    return exact.toInt();
+  }
+
   static String? reasonError(String? value) =>
       value == null || value.trim().isEmpty
       ? 'Escribe el motivo.'
@@ -21,6 +107,18 @@ class MovementRepository {
       ? 'El motivo admite hasta 2000 caracteres.'
       : null;
   static String? inputError(MovementInput input, {DateTime? today}) {
+    final refund = input.refund;
+    if (refund != null &&
+        (input.type != MovementType.withdrawal ||
+            input.personId == null ||
+            refund.amountCents != input.amountCents ||
+            refund.parts.length > 4 ||
+            refund.unallocatedCents < 0 ||
+            refund.parts.any((p) => p.amountCents <= 0) ||
+            refund.parts.map((p) => p.month).toSet().length !=
+                refund.parts.length)) {
+      return 'Revisa el reparto de la devolución: un ingreso y hasta cuatro meses.';
+    }
     if (input.amountCents <= 0 || input.amountCents > maximumCents) {
       return 'Introduce una cantidad mayor que cero y dentro del límite admitido.';
     }
@@ -106,6 +204,9 @@ class MovementRepository {
           saved.amountCents == input.amountCents &&
           saved.personId == input.personId &&
           saved.description == input.description.trim() &&
+          (saved.refund == null
+              ? input.refund == null
+              : saved.refund!.sameAs(input.refund)) &&
           saved.occurredAt ==
               DateTime.utc(
                 input.occurredAt.year,
@@ -127,6 +228,17 @@ class MovementRepository {
     }
     Movement? current;
     if (original != null) {
+      if (original.input.type == MovementType.income &&
+          movements.any(
+            (m) =>
+                m.status == MovementStatus.active &&
+                m.input.refund?.incomeId == original.id,
+          )) {
+        throw const AppFailure(
+          FailureCode.invalidData,
+          'Este ingreso tiene devoluciones activas. Anúlalas o revísalas antes de anular o corregir su origen.',
+        );
+      }
       for (final movement in movements) {
         if (movement.id == original.id) current = movement;
       }
@@ -183,6 +295,7 @@ class MovementRepository {
       ),
       description: input.description.trim(),
       personId: input.personId,
+      refund: input.refund,
     );
     return _service.save(
       groupId,
