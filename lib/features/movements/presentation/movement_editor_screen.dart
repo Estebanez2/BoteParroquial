@@ -110,6 +110,9 @@ class MovementEditorForm extends ConsumerStatefulWidget {
 
 class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
   final _form = GlobalKey<FormState>();
+  final _guard = GlobalKey<AppFormGuardState>();
+  late String _initialAmount, _initialDescription;
+  late DateTime _initialDate;
   late final Movement? _original;
   late final String _draftId;
   late final TextEditingController _amount, _description;
@@ -140,6 +143,9 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
           : '${_cents! ~/ 100},${(_cents! % 100).toString().padLeft(2, '0')}',
     );
     _description = TextEditingController(text: input?.description);
+    _initialAmount = _amount.text;
+    _initialDescription = _description.text;
+    _initialDate = _date;
   }
 
   @override
@@ -150,8 +156,8 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
     super.dispose();
   }
 
-  Future<void> _submit(String currency) async {
-    if (_submitting || !(_form.currentState?.validate() ?? false)) return;
+  bool _validateDraft() {
+    if (!(_form.currentState?.validate() ?? false)) return false;
     final controller = ref.read(
       movementControllerProvider(widget.groupId).notifier,
     );
@@ -169,7 +175,21 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
                   ? null
                   : controller.validateReason(_reason.text));
     setState(() => _validation = error);
-    if (error != null) return;
+    return error == null;
+  }
+
+  Future<void> _submit(String currency) async {
+    if (_submitting || !_validateDraft()) return;
+    final controller = ref.read(
+      movementControllerProvider(widget.groupId).notifier,
+    );
+    final input = MovementInput(
+      type: _type,
+      amountCents: _cents ?? 0,
+      occurredAt: _date,
+      description: _description.text,
+      personId: _personId,
+    );
     setState(() => _submitting = true);
     try {
       final actor = controller.currentActor();
@@ -231,6 +251,7 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
               expectedActorUid: actor,
             );
       if (!mounted || !saved) return;
+      _guard.currentState?.saved();
       context.go('/groups/${widget.groupId}/movements');
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -252,8 +273,17 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
         : 'Corregir movimiento';
     final allowed = ref.watch(canManageMovementsProvider(groupId));
     final busy = _submitting || state.isLoading;
-    return PopScope(
-      canPop: !busy,
+    return AppFormGuard(
+      key: _guard,
+      busy: busy,
+      changes: Listenable.merge([_amount, _description, _reason]),
+      isDirty: () =>
+          _amount.text != _initialAmount ||
+          _description.text != _initialDescription ||
+          _reason.text.isNotEmpty ||
+          _date != _initialDate ||
+          _type != (_original?.input.type ?? widget.initialType) ||
+          _personId != _original?.input.personId,
       child: AppScaffold(
         maxWidth: AppSpacing.readingMax,
         appBar: AppTopBar(
@@ -263,7 +293,9 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
             label: 'Volver al historial',
             onPressed: busy
                 ? null
-                : () => context.go('/groups/$groupId/movements'),
+                : () => _guard.currentState?.requestExit(
+                    () => context.go('/groups/$groupId/movements'),
+                  ),
           ),
         ),
         child: !allowed || group == null
@@ -441,6 +473,7 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
                           : 'Revisar y guardar',
                       leadingIcon: Icons.check_rounded,
                       trailingIcon: Icons.chevron_right_rounded,
+                      validate: _validateDraft,
                       fullWidth: true,
                       loading: state.isLoading,
                       onPressed: busy || people.isLoading || people.hasError

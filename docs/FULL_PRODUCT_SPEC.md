@@ -2,6 +2,20 @@
 
 ## 1. Propósito del documento
 
+Continuación visual **02/11/2026**, D120–D124: cargas con formas y brillo,
+acciones flotantes de Inicio, Copias en cuenta y menús compartidos. Letras
+elegibles y paletas propias locales de tres colores con vista previa antes de
+guardar y contraste automático, manteniendo aislamiento del visor. Once pruebas
+dirigidas, análisis limpio y APK compilado; prueba física pendiente. Alcance:
+[VISUAL_LIBRARY_2026-11-02.md](VISUAL_LIBRARY_2026-11-02.md).
+
+Ampliación del **02/11/2026**, D116–D119: recorte 16:9 para portadas, aviso de
+cambios sin guardar en editores afectados, primeros meses con selección múltiple
+en Personas, paletas con complementario/tercer acento y solicitud inicial de
+notificaciones tras login. Sin cambio de Rules/worker ni migración de datos;
+APK compilado, pendiente de prueba física. Alcance y evidencia:
+[UX_IMPROVEMENTS_2026-11-02.md](UX_IMPROVEMENTS_2026-11-02.md).
+
 Ampliación del **23/10/2026**, D110–D112: copias locales diarias de consulta,
 las siete últimas capturas completas por cuenta/móvil, con Wi-Fi o datos móviles.
 Incluyen datos Firestore autorizados; fotos solo según caché. Visor de solo lectura

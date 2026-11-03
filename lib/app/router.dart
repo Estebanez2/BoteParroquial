@@ -1,6 +1,9 @@
+import '../core/routing/app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../design_system/design_system.dart';
+import '../design_system/lab/motion_lab_screen.dart';
 
 import '../features/home/presentation/home_screen.dart';
 import '../features/offline/presentation/daily_copies_screen.dart';
@@ -11,6 +14,7 @@ import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/persons/presentation/persons_screen.dart';
 import '../features/persons/presentation/person_trash_screen.dart';
 import '../features/groups/presentation/group_members_screen.dart';
+import '../features/groups/presentation/group_navigation_shell.dart';
 import '../features/movements/presentation/movements_screen.dart';
 import '../features/movements/presentation/movement_editor_screen.dart';
 import '../models/movement.dart';
@@ -30,6 +34,8 @@ import '../features/groups/presentation/group_deletion_screen.dart';
 import '../features/notifications/presentation/notifications_screen.dart';
 import '../core/firebase/firebase_bootstrap.dart';
 import '../core/routing/invitation_links.dart';
+import '../features/groups/presentation/participants_screen.dart';
+import '../features/settings/presentation/appearance_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
@@ -61,116 +67,176 @@ final routerProvider = Provider<GoRouter>((ref) {
           : null;
     },
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-      GoRoute(
+      appRoute(
+        path: '/',
+        builder: (context, state) => const HomeScreen(),
+        routes: [
+          if (motionLabEnabled)
+            appRoute(
+              path: 'testing/motion',
+              builder: (_, _) => const MotionLabScreen(),
+            ),
+          appRoute(
+            path: 'settings/appearance',
+            builder: (c, s) => const AppearanceScreen(),
+          ),
+          appRoute(
+            path: 'groups/new',
+            motion: AppPageMotion.form,
+            builder: (c, s) => const GroupEditorScreen(),
+          ),
+          ShellRoute(
+            pageBuilder: (context, state, child) => AppMotionPage<void>(
+              key: state.pageKey,
+              motion: AppPageMotion.group,
+              origin: state.extra is AppGroupOrigin
+                  ? (state.extra as AppGroupOrigin).rect
+                  : null,
+              child: GroupNavigationShell(state: state, child: child),
+            ),
+            routes: [
+              appRoute(
+                path: 'groups/:groupId',
+                motion: AppPageMotion.section,
+                sectionIndex: 0,
+                builder: (c, s) =>
+                    DashboardScreen(groupId: s.pathParameters['groupId']!),
+                routes: [
+                  appRoute(
+                    path: 'participants',
+                    motion: AppPageMotion.section,
+                    sectionIndex: 2,
+                    builder: (c, s) => ParticipantsScreen(
+                      groupId: s.pathParameters['groupId']!,
+                    ),
+                  ),
+                  appRoute(
+                    path: 'persons',
+                    motion: AppPageMotion.section,
+                    sectionIndex: 2,
+                    builder: (c, s) =>
+                        PersonsScreen(groupId: s.pathParameters['groupId']!),
+                  ),
+                  appRoute(
+                    path: 'members',
+                    motion: AppPageMotion.section,
+                    sectionIndex: 2,
+                    builder: (c, s) => GroupMembersScreen(
+                      groupId: s.pathParameters['groupId']!,
+                    ),
+                  ),
+                  appRoute(
+                    path: 'reports',
+                    motion: AppPageMotion.section,
+                    sectionIndex: 3,
+                    builder: (c, s) => EconomicReportScreen(
+                      groupId: s.pathParameters['groupId']!,
+                    ),
+                  ),
+                  appRoute(
+                    path: 'movements',
+                    motion: AppPageMotion.section,
+                    sectionIndex: 1,
+                    builder: (c, s) => MovementsScreen(
+                      groupId: s.pathParameters['groupId']!,
+                      focusId: s.uri.queryParameters['focus'],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+      appRoute(
         path: '/offline',
         builder: (context, state) => const DailyCopiesScreen(),
       ),
-      GoRoute(
+      appRoute(
         path: '/offline/:day',
         builder: (context, state) =>
             SnapshotBrowserScreen(day: state.pathParameters['day']!),
       ),
-      GoRoute(
+      appRoute(
         path: '/join',
+        motion: AppPageMotion.form,
         builder: (context, state) => const JoinGroupScreen(),
       ),
-      GoRoute(
+      appRoute(
         path: '/join/:code',
+        motion: AppPageMotion.form,
         builder: (context, state) =>
             JoinGroupScreen(initialCode: state.pathParameters['code']),
       ),
-      GoRoute(
+      appRoute(
         path: '/profile',
+        motion: AppPageMotion.form,
         builder: (context, state) => const ProfileScreen(),
       ),
-      GoRoute(
+      appRoute(
         path: '/account/delete',
+        motion: AppPageMotion.form,
         builder: (context, state) => const AccountDeletionScreen(),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/delete',
+        motion: AppPageMotion.form,
         builder: (context, state) => GroupDeletionScreen(
           groupId: state.pathParameters['groupId']!,
           pendingName: state.uri.queryParameters['name'],
         ),
       ),
-      GoRoute(
-        path: '/groups/new',
-        builder: (context, state) => const GroupEditorScreen(),
-      ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/settings',
+        motion: AppPageMotion.form,
         builder: (context, state) =>
             GroupEditorScreen(groupId: state.pathParameters['groupId']!),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/invitations',
         builder: (context, state) =>
             GroupInvitationsScreen(groupId: state.pathParameters['groupId']!),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/quotas',
         builder: (context, state) =>
             QuotaScreen(groupId: state.pathParameters['groupId']!),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/notifications',
         builder: (context, state) =>
             NotificationsScreen(groupId: state.pathParameters['groupId']!),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/transfer',
+        motion: AppPageMotion.form,
         builder: (context, state) =>
             OwnershipTransferScreen(groupId: state.pathParameters['groupId']!),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/audit',
         builder: (context, state) =>
             GroupAuditScreen(groupId: state.pathParameters['groupId']!),
       ),
-      GoRoute(
-        path: '/groups/:groupId/reports',
-        builder: (context, state) =>
-            EconomicReportScreen(groupId: state.pathParameters['groupId']!),
-      ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/persons/:personId',
         builder: (context, state) => PersonDetailsScreen(
           groupId: state.pathParameters['groupId']!,
           personId: state.pathParameters['personId']!,
         ),
       ),
-      GoRoute(
-        path: '/groups/:groupId',
-        builder: (context, state) =>
-            DashboardScreen(groupId: state.pathParameters['groupId']!),
-      ),
-      GoRoute(
-        path: '/groups/:groupId/persons',
-        builder: (context, state) =>
-            PersonsScreen(groupId: state.pathParameters['groupId']!),
-      ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/trash',
         builder: (context, state) =>
             PersonTrashScreen(groupId: state.pathParameters['groupId']!),
       ),
-      GoRoute(
-        path: '/groups/:groupId/members',
-        builder: (context, state) =>
-            GroupMembersScreen(groupId: state.pathParameters['groupId']!),
+      appRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
       ),
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(
-        path: '/groups/:groupId/movements',
-        builder: (context, state) => MovementsScreen(
-          groupId: state.pathParameters['groupId']!,
-          focusId: state.uri.queryParameters['focus'],
-        ),
-      ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/movements/new',
+        motion: AppPageMotion.form,
         builder: (context, state) => MovementEditorScreen(
           groupId: state.pathParameters['groupId']!,
           initialType: state.uri.queryParameters['type'] == 'withdrawal'
@@ -178,43 +244,46 @@ final routerProvider = Provider<GoRouter>((ref) {
               : MovementType.income,
         ),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/movements/:movementId/correct',
+        motion: AppPageMotion.form,
         builder: (context, state) => MovementEditorScreen(
           groupId: state.pathParameters['groupId']!,
           originalId: state.pathParameters['movementId']!,
         ),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/movements/:movementId/allocations',
+        motion: AppPageMotion.form,
         builder: (context, state) => IncomeAllocationScreen(
           groupId: state.pathParameters['groupId']!,
           movementId: state.pathParameters['movementId']!,
         ),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/movements/:movementId/cancel',
+        motion: AppPageMotion.form,
         builder: (context, state) => MovementEditorScreen(
           groupId: state.pathParameters['groupId']!,
           originalId: state.pathParameters['movementId']!,
           cancel: true,
         ),
       ),
-      GoRoute(
+      appRoute(
         path: '/groups/:groupId/refunds/:incomeId',
+        motion: AppPageMotion.form,
         builder: (context, state) => RefundEditorScreen(
           groupId: state.pathParameters['groupId']!,
           incomeId: state.pathParameters['incomeId']!,
           originalId: state.uri.queryParameters['original'],
         ),
       ),
-      GoRoute(
+      appRoute(
         path: '/loading',
-        builder: (context, state) => const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(
-              semanticsLabel: 'Restaurando sesión',
-            ),
+        builder: (context, state) => const AppScaffold(
+          child: AppSkeleton(
+            layout: AppSkeletonLayout.groups,
+            label: 'Restaurando sesión',
           ),
         ),
       ),

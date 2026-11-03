@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
+import '../navigation/app_menu_row.dart';
+import 'app_icon_button.dart';
 
-class AppActionMenu<T> extends StatelessWidget {
+class AppActionMenu<T> extends StatefulWidget {
   const AppActionMenu({
     super.key,
     required this.label,
@@ -16,23 +16,33 @@ class AppActionMenu<T> extends StatelessWidget {
   final ValueChanged<T> onSelected;
   final bool enabled;
   @override
+  State<AppActionMenu<T>> createState() => _AppActionMenuState<T>();
+}
+
+class _AppActionMenuState<T> extends State<AppActionMenu<T>> {
+  final _menu = GlobalKey<PopupMenuButtonState<T>>();
+  @override
   Widget build(BuildContext context) {
-    final c = AppColors.of(context);
     return PopupMenuButton<T>(
-      tooltip: label,
-      enabled: enabled,
-      onSelected: onSelected,
-      icon: const Icon(Icons.more_vert_rounded),
-      style: IconButton.styleFrom(
-        minimumSize: const Size.square(AppSpacing.compactHeight),
-        backgroundColor: c.surfaceVariant.withValues(alpha: .65),
-        foregroundColor: c.textPrimary,
-        side: BorderSide(color: c.outline.withValues(alpha: .4)),
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.control),
+      key: _menu,
+      // The child already owns its tooltip and accessible label.
+      tooltip: '',
+      enabled: widget.enabled,
+      onSelected: widget.onSelected,
+      offset: const Offset(0, AppSpacing.sm),
+      child: AppIconButton(
+        icon: Icons.more_vert_rounded,
+        label: widget.label,
+        onPressed: widget.enabled
+            ? () => _menu.currentState?.showButtonMenu()
+            : null,
       ),
       itemBuilder: (context) => [
-        for (final entry in items.entries)
-          PopupMenuItem<T>(value: entry.key, child: Text(entry.value)),
+        for (final entry in widget.items.entries)
+          PopupMenuItem<T>(
+            value: entry.key,
+            child: AppMenuRow(label: entry.value),
+          ),
       ],
     );
   }

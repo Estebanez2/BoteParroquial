@@ -4,13 +4,24 @@ import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 
-enum AppTone { neutral, primary, success, warning, danger, info }
+enum AppTone {
+  neutral,
+  primary,
+  secondary,
+  tertiary,
+  success,
+  warning,
+  danger,
+  info,
+}
 
 Color toneColor(BuildContext context, AppTone tone) {
   final c = AppColors.of(context);
   return switch (tone) {
     AppTone.neutral => c.textSecondary,
     AppTone.primary => c.primary,
+    AppTone.secondary => c.secondary,
+    AppTone.tertiary => c.tertiary,
     AppTone.success => c.success,
     AppTone.warning => c.warning,
     AppTone.danger => c.danger,
@@ -36,12 +47,11 @@ class AppBadge extends StatelessWidget {
       excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: .10),
-          border: Border.all(color: color.withValues(alpha: .2)),
+          color: color.withValues(alpha: .12),
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Wrap(

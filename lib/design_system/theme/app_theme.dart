@@ -3,18 +3,55 @@ import 'app_colors.dart';
 import 'app_radius.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
+import '../../models/appearance_settings.dart';
+import '../platform/app_page_transitions.dart';
 
 abstract final class AppTheme {
   static ThemeData get light => _build(Brightness.light, AppColors.light);
   static ThemeData get dark => _build(Brightness.dark, AppColors.dark);
-  static ThemeData _build(Brightness brightness, AppColors c) {
-    final typography = AppTypography(c);
+  static ThemeData forPalette(
+    AppPalette palette,
+    Brightness brightness, {
+    AppFont font = AppFont.manrope,
+  }) =>
+      _build(brightness, AppColors.forPalette(palette, brightness), font: font);
+  static ThemeData forSettings(
+    AppearanceSettings settings,
+    Brightness brightness,
+  ) => settings.customPalette == null
+      ? forPalette(settings.palette, brightness, font: settings.font)
+      : _build(
+          brightness,
+          AppColors.forCustom(settings.customPalette!, brightness),
+          font: settings.font,
+        );
+  static ThemeData _build(
+    Brightness brightness,
+    AppColors c, {
+    AppFont font = AppFont.manrope,
+  }) {
+    final family = switch (font) {
+      AppFont.manrope => 'Manrope',
+      AppFont.newsreader => 'Newsreader',
+      AppFont.system => null,
+    };
+    final typography = AppTypography(c, fontFamily: family);
     final border = OutlineInputBorder(
       borderRadius: AppRadius.control,
-      borderSide: BorderSide(color: c.outline),
+      borderSide: BorderSide(color: c.divider),
     );
     return ThemeData(
       useMaterial3: true,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: AppContextPageTransitionsBuilder(),
+          TargetPlatform.iOS: AppCupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: AppCupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: AppContextPageTransitionsBuilder(),
+          TargetPlatform.linux: AppContextPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: AppContextPageTransitionsBuilder(),
+        },
+      ),
       brightness: brightness,
       colorScheme:
           ColorScheme.fromSeed(
@@ -28,6 +65,15 @@ abstract final class AppTheme {
             secondary: c.secondary,
             secondaryContainer: c.secondaryContainer,
             onSecondaryContainer: c.textPrimary,
+            onSecondary: c.secondary.computeLuminance() > .45
+                ? AppColors.light.textPrimary
+                : AppColors.light.surface,
+            tertiary: c.tertiary,
+            tertiaryContainer: c.tertiaryContainer,
+            onTertiary: c.tertiary.computeLuminance() > .45
+                ? AppColors.light.textPrimary
+                : AppColors.light.surface,
+            onTertiaryContainer: c.textPrimary,
             surface: c.surface,
             onSurface: c.textPrimary,
             onSurfaceVariant: c.textSecondary,
@@ -36,11 +82,11 @@ abstract final class AppTheme {
             outlineVariant: c.divider,
           ),
       extensions: [c],
-      fontFamily: 'Manrope',
+      fontFamily: family,
       textTheme: typography.textTheme,
       scaffoldBackgroundColor: c.background,
       dividerColor: c.divider,
-      splashFactory: InkSparkle.splashFactory,
+      splashFactory: InkRipple.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: c.background,
         foregroundColor: c.textPrimary,
@@ -52,7 +98,7 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: c.surface,
+        fillColor: c.surfaceVariant,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.lg,
@@ -102,6 +148,18 @@ abstract final class AppTheme {
           color: c.primary,
           borderRadius: AppRadius.control,
         ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: c.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 8,
+        position: PopupMenuPosition.under,
+        menuPadding: const EdgeInsets.all(AppSpacing.sm),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.card,
+          side: BorderSide(color: c.divider),
+        ),
+        textStyle: typography.labelLarge,
       ),
     );
   }

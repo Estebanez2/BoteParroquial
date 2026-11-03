@@ -10,6 +10,7 @@ import '../providers/group_providers.dart';
 import '../providers/group_invitation_providers.dart';
 import '../providers/member_link_providers.dart';
 import 'group_access_body.dart';
+import 'group_bottom_navigation.dart';
 import 'group_widgets.dart';
 import 'member_link_editor.dart';
 import 'member_role_button.dart';
@@ -22,12 +23,13 @@ class GroupMembersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => AppScaffold(
     maxWidth: AppSpacing.readingMax,
+    bottomNavigation: GroupBottomNavigation(groupId: groupId, selectedIndex: 2),
     appBar: AppTopBar(
       title: 'Miembros',
       leading: AppIconButton(
         icon: Icons.arrow_back_rounded,
-        label: 'Volver al resumen',
-        onPressed: () => context.go('/groups/$groupId'),
+        label: 'Volver a participantes',
+        onPressed: () => context.go('/groups/$groupId/participants'),
       ),
     ),
     child: GroupAccessBody(
@@ -37,7 +39,10 @@ class GroupMembersScreen extends ConsumerWidget {
           .when(
             skipLoadingOnReload: false,
             skipLoadingOnRefresh: false,
-            loading: () => const LoadingIndicator(label: 'Cargando miembros…'),
+            loading: () => const AppSkeleton(
+              layout: AppSkeletonLayout.people,
+              label: 'Cargando miembros…',
+            ),
             error: (error, _) => EmptyState(
               icon: Icons.cloud_off_outlined,
               title: 'No pudimos cargar los miembros',

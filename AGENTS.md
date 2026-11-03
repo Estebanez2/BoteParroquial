@@ -1,5 +1,121 @@
 BoteParroquial — Instrucciones para agentes
 
+Corrección de navegación D131, 2026-11-03: AppDeferredSection aplaza montar las
+features durante la entrada y muestra un esqueleto estático. La página saliente
+usa SnapshotWidget efímero y TickerMode pausado durante el movimiento; no es una
+copia diaria ni una caché persistente. GroupNavigationShell observa permisos fuera
+del subárbol pausado y entrega clave opaca/permiso en AppSectionRenderScope:
+cambio de cuenta, acceso o grupo descarta inmediatamente el cuadro anterior.
+Conservar aislamiento del visor y movimiento reducido. Curvas de salida/entrada
+acompasadas, sin cambiar D130 ni retirar laboratorio. Cinco casos dirigidos
+superados y análisis limpio; fluidez física aún no acreditada. Diagnóstico profile
+optativo TRACE_GROUP_MOTION registra tiempos/índices, nunca datos personales.
+Estado vigente: docs/GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md.
+
+Selección aplicada 2026-11-03, D130: B07 principales/destructivos; B08 secundarios,
+iconos, menús y AppChoiceBar; B04 validación rechazada y B05 deshabilitado visible,
+sin ejecutar acciones rechazadas ni activar permisos. AppControlFeedback espera
+320 ms, revalida al terminar y cancela por busy/acceso/desmontaje/ruta no actual.
+AppButton.validate explícito; reglas del dominio permanecen en controllers/repos.
+N01 sin escala del icono; P03 derecha y P05 formularios abajo. GroupNavigationShell
+con AppSectionMotionScope/sectionIndex mueve izquierda/derecha según índice,
+incluido volver a Inicio. AppGroupEntry: onda de 1 s y expansión desde rectángulo
+real AppGroupOrigin (geometría efímera, no persistir ni usar para permisos).
+Movimiento reducido sin efectos/espera. AppBottomSheet usa contexto modal del
+host fuera del Navigator de sección, dentro del ámbito actual/copia. El usuario
+elige CONSERVAR el laboratorio por ahora. No retirarlo automáticamente. Estado,
+evidencia, APK y pendientes físicos: docs/SELECTED_MOTION_2026-11-03.md.
+Nueve casos dirigidos superados, análisis limpio y APK debug/profile compilados;
+sin cambios remotos. Usuario ejecuta; no acreditar fluidez o aprobación física.
+
+Laboratorio temporal 2026-11-03, D129: el usuario no aprueba las animaciones
+actuales y pide compararlas antes de elegir. Inicio muestra Laboratorio de
+animaciones, ruta autenticada /testing/motion solo debug/profile (!kReleaseMode).
+No exponer la galería general ni el laboratorio en release. Catálogo aislado
+lib/design_system/lab: 24 rutas P01–P24, 12 botones B01–B12 y 4 barras N01–N04;
+velocidad 150–1.000 ms, estado visual efímero y contenido ficticio, sin SDKs/datos.
+No aplicar ninguna opción al producto ni borrarlo hasta recibir la selección
+del usuario. Las transiciones D128 siguen provisionales. Entrar con código usa
+llave mediante iconos por opción en AppFloatingActions; conservar ese ajuste al
+retirar el laboratorio. Evidencia, retirada y pendientes físicos:
+docs/MOTION_LAB_2026-11-03.md. Cuatro casos dirigidos distintos superados, análisis
+limpio y APK debug/profile compilados. Usuario ejecuta; sin cambios remotos.
+
+Última continuación cerrada 2026-11-03, D128: el usuario comunica lag y elige efectos más
+marcados. AppMotionPage/AppContextPageTransitionsBuilder distinguen grupo (zoom),
+secciones (fundido/escala), formularios (vertical) y resto (avance corto). Sustituye
+deslizamiento uniforme D127; pulso completo 80 ms por tramo, rutas 240 ms.
+GroupNavigationShell/AppNavigationHost mantienen una sola barra con indicador
+continuo, fuera del Navigator de secciones, en vivo y en visor aislado. Editores
+manuales de personas/fotos en Navigator raíz: cubren la barra durante edición. Conservar
+rutas/guards/Atrás y acceso reactivo; no cachear permisos. AppReveal usa hijo
+estable y evita su entrada mientras la ruta se anima. Biblioteca App*, reducción
+de movimiento y Apple nativo conservados. Estado/evidencia/APK y pendientes:
+docs/MOTION_PERFORMANCE_2026-11-02.md. Siete casos dirigidos, análisis limpio y APK
+debug/profile compilados. Usuario ejecuta; no afirmar fluidez medida.
+Sin cambios remotos. Los párrafos siguientes de movimiento son históricos.
+
+Último cambio 2026-11-02, D125–D127: selector cuadrado + arcoíris con hexadecimal
+sincronizado; conservar confirmación y preview. Atlántico intacto; Cyberpunk,
+Cartoon, Arcade y Pop Art sustituyen las otras cuatro, conservando IDs locales.
+AppPressFeedback completa presión/retorno antes del callback de botones/iconos/
+tarjetas; cancelar/deshabilitar/desmontar anula la acción pendiente, reducir
+movimiento elimina espera. Rutas usan appRoute (MaterialPage SDK explícita) porque
+go_router 18 detectaba material_ui y elegía NoTransitionPage. AppTheme y
+AppPageTransitions comparten deslizamiento; editores, paneles y diálogos reutilizan
+tokens. Visor aislado y guards intactos. Trece pruebas dirigidas y tres capturas
+simuladas, análisis limpio y APK debug compilado; estado/APK/pendientes físicos:
+docs/COLOR_PICKER_PALETTES_MOTION_2026-11-02.md.
+Sin cambios remotos. Usuario ejecuta la app.
+
+Continuación visual 2026-11-02, D120–D124: carga con AppShimmer/AppSkeleton y
+formas de grupos/personas/movimientos/resumen, fotos y botones; sin círculos ni
+datos ficticios, estática con movimiento reducido. Inicio usa Añadir flotante
+(crear/código) y Copias en cuenta. Menús con AppMenuRow/PopupMenuTheme compartidos.
+Manrope/Newsreader/Sistema y paletas propias de tres colores, preview claro/oscuro
+con App* y contraste automático, incluyendo etiquetas. Apariencia versión 2 local,
+compatible con preferencias anteriores, independiente de UID y sin SDK nuevos.
+AppTheme/AppTypography propagan fuente y paleta; conservar aislamiento del visor.
+Once pruebas dirigidas distintas, análisis limpio y APK debug compilado; cuatro capturas simuladas;
+estado exacto/APK/pendientes en docs/VISUAL_LIBRARY_2026-11-02.md. Usuario ejecuta
+la app; no acreditar validación física. Sin cambios remotos ni Rules.
+
+Ampliación 2026-11-02, D116–D119: portadas con editor y vista previa 16:9;
+avatares cuadrados, sin migrar fotos existentes. AppFormGuard protege cambios
+sin guardar en personas/perfil/grupos/movimientos/fotos y primeros meses en lote.
+Personas muestra pendientes activas sin etapas y permite selección múltiple con
+primer mes común explícito; cada persona conserva transacción/auditoría individual,
+detener e informar ante fallo parcial. Cinco paletas ampliadas con complementario
+y tercer acento, conservando errores/avisos. D119 sustituye D093: solicitud nativa
+de avisos en primera entrada autenticada por UID/móvil, elección local persistida;
+rechazo/retirada no se reactivan automáticamente. Preferencias ausentes de grupo
+ya activas; no sobrescribir false. Sin Rules/despliegues/datos remotos nuevos.
+Evidencia y pendientes físicos: docs/UX_IMPROVEMENTS_2026-11-02.md.
+23 pruebas dirigidas distintas superadas, análisis limpio y APK debug compilado.
+El usuario ejecuta la app; no dar por comprobada entrega push ni editor nativo.
+
+Entrega vigente v0.4, 2026-10-30, D114–D115: el usuario rechaza v0.3. Cinco paletas
+(Atlántico/Iris/Coral/Bosque/Grafito), claro/oscuro/Sistema y selección guardada en
+este móvil mediante UI → provider → repository → service local. Inicio sin bloque
+promocional; grupo con portada 16:9 de ancho completo y nombre/descripción debajo.
+Barra Inicio/Actividad/Participantes/Informes; Participantes abre Personas/Miembros.
+Acciones económicas compartidas y enlaces generales duplicados retirados. Atrás
+de sección vuelve al resumen, de este a Tus grupos, con rutas principales anidadas.
+El visor recibe tema sin romper su aislamiento. 37 pruebas dirigidas distintas,
+análisis limpio, 19 capturas simuladas revisadas y APK debug compilado e instalado
+en A059P mediante actualización. Aprobación física v0.4 pendiente; el usuario ejecuta la app. Evidencia:
+docs/VISUAL_REDESIGN_V04_VALIDATION.md. v0.3 inferior es histórico, no aprobado.
+
+Entrega visual 2026-10-30, D113: Design System v0.3 carbón/menta implementado según
+dos nuevas referencias; el usuario elige «Más expresivo». Manrope también en
+titulares/saldos sustituye el serif de v0.2. App* renueva las pantallas existentes;
+Inicio/resumen reorganizados, barra inferior en cuatro vistas de grupo, entradas
+escalonadas, pulsación y órbitas decorativas, con movimiento reducido. Forui y
+Flutter Animate consultados como referencias; implementación en SDK existente.
+33 pruebas dirigidas, análisis limpio, ocho capturas simuladas revisadas y APK debug
+compilado; aprobación visual en móvil pendiente, el usuario ejecuta la app. Ver
+docs/VISUAL_REDESIGN_V03_VALIDATION.md. Los párrafos visuales antiguos son históricos.
+
 Entrega 2026-10-23, D110–D112: copias diarias locales de consulta implementadas.
 Siete últimas capturas diarias completas por UID/móvil, con Wi-Fi o datos móviles;
 datos de su ámbito Firestore y fotos según caché. No sustituir por un volcado global

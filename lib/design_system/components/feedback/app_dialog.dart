@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_motion.dart';
 import '../buttons/app_button.dart';
 import '../display/app_badge.dart';
 
@@ -22,6 +23,12 @@ abstract final class AppDialog {
     };
     final result = await showDialog<bool>(
       context: context,
+      animationStyle: MediaQuery.disableAnimationsOf(context)
+          ? AnimationStyle.noAnimation
+          : const AnimationStyle(
+              duration: AppMotion.durationNormal,
+              reverseDuration: AppMotion.durationFast,
+            ),
       builder: (context) => AlertDialog(
         icon: Icon(switch (variant) {
           AppDialogVariant.warning ||

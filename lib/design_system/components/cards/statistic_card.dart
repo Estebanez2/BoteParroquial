@@ -3,6 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import 'app_card.dart';
+import '../display/app_badge.dart';
 
 class StatisticCard extends StatelessWidget {
   const StatisticCard({
@@ -12,32 +13,63 @@ class StatisticCard extends StatelessWidget {
     required this.icon,
     this.caption,
     this.framed = true,
+    this.tone = AppTone.primary,
   });
   final String label, value;
   final IconData icon;
   final String? caption;
   final bool framed;
+  final AppTone tone;
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final t = AppTypography.of(context);
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: c.primary, size: AppSpacing.iconLarge),
-        const SizedBox(height: AppSpacing.lg),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(value, style: t.statisticValue),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(label, style: t.bodyMedium.copyWith(color: c.textSecondary)),
-        if (caption != null) ...[
-          const SizedBox(height: AppSpacing.sm),
-          Text(caption!, style: t.bodySmall.copyWith(color: c.textMuted)),
-        ],
-      ],
+    final accent = toneColor(context, tone);
+    final content = LayoutBuilder(
+      builder: (context, constraints) {
+        final symbol = Container(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: .1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: accent, size: AppSpacing.icon),
+        );
+        final title = Text(
+          label,
+          style: t.bodySmall.copyWith(color: c.textSecondary),
+        );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (constraints.maxWidth < AppSpacing.coverLarge * 1.5) ...[
+              symbol,
+              const SizedBox(height: AppSpacing.sm),
+              title,
+            ] else
+              Row(
+                children: [
+                  symbol,
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(child: title),
+                ],
+              ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              value,
+              style:
+                  (constraints.maxWidth < AppSpacing.coverLarge * 1.5
+                          ? t.moneyMedium
+                          : t.statisticValue)
+                      .copyWith(color: accent),
+            ),
+            if (caption != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(caption!, style: t.bodySmall.copyWith(color: c.textMuted)),
+            ],
+          ],
+        );
+      },
     );
     return framed ? AppCard(child: content) : content;
   }

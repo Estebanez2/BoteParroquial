@@ -10,10 +10,12 @@ import '../../../models/group.dart';
 import '../../../models/group_member.dart';
 import '../../../models/movement.dart';
 import '../../groups/presentation/group_access_body.dart';
+import '../../groups/presentation/group_bottom_navigation.dart';
 import '../../groups/providers/group_management_providers.dart';
 
 import '../../movements/providers/movement_providers.dart';
 import '../../movements/presentation/pending_movement_card.dart';
+import '../../movements/presentation/movement_actions.dart';
 import '../../persons/providers/person_providers.dart';
 import '../providers/dashboard_providers.dart';
 import '../../reports/presentation/quota_report_section.dart';
@@ -24,6 +26,8 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppScaffold(
     maxWidth: AppSpacing.readingMax,
+    padding: EdgeInsets.zero,
+    bottomNavigation: GroupBottomNavigation(groupId: groupId, selectedIndex: 0),
     appBar: AppTopBar(
       title: 'BoteParroquial',
       actions: [
@@ -41,6 +45,7 @@ class DashboardScreen extends StatelessWidget {
     ),
     child: GroupAccessBody(
       groupId: groupId,
+      edgeToEdge: true,
       builder: (group, membership) =>
           _Dashboard(group: group, membership: membership),
     ),
@@ -63,8 +68,10 @@ class _Dashboard extends ConsumerWidget {
             .when(
               skipLoadingOnRefresh: false,
               skipLoadingOnReload: false,
-              loading: () =>
-                  const LoadingIndicator(label: 'Actualizando el resumen…'),
+              loading: () => const AppSkeleton(
+                layout: AppSkeletonLayout.summary,
+                label: 'Actualizando el resumen…',
+              ),
               error: (error, _) => EmptyState(
                 icon: Icons.cloud_off_outlined,
                 title: 'No pudimos preparar el resumen',
@@ -96,13 +103,8 @@ class _SummaryBody extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AppButton(
-          label: 'Cuotas y etapas',
-          variant: AppButtonVariant.ghost,
-          leadingIcon: Icons.calendar_month_outlined,
-          onPressed: () => context.push('/groups/$groupId/quotas'),
-        ),
         AppReveal(
+          order: 1,
           child: BalanceCard(
             balanceCents: summary.balanceCents,
             currency: group.currency,
@@ -132,89 +134,25 @@ class _SummaryBody extends ConsumerWidget {
           ),
         ],
         if (canManage) ...[
-          const SizedBox(height: AppSpacing.xl),
-          AppAdaptiveRow(
-            children: [
-              AppButton(
-                label: 'Registrar ingreso',
-                fullWidth: true,
-                trailingIcon: Icons.chevron_right_rounded,
-                leadingIcon: Icons.add_rounded,
-                onPressed: () =>
-                    context.push('/groups/$groupId/movements/new?type=income'),
-              ),
-              AppButton(
-                label: 'Registrar retirada',
-                fullWidth: true,
-                variant: AppButtonVariant.outline,
-                leadingIcon: Icons.north_east_rounded,
-                onPressed: () => context.push(
-                  '/groups/$groupId/movements/new?type=withdrawal',
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: AppSpacing.md),
+          MovementActions(groupId: groupId),
         ],
-        const SizedBox(height: AppSpacing.lg),
-        AppAdaptiveRow(
-          children: [
-            AppNavigationTile(
-              label: 'Ver movimientos',
-              icon: Icons.receipt_long_outlined,
-              onTap: () => context.push('/groups/$groupId/movements'),
-            ),
-            AppNavigationTile(
-              label: 'Ver personas',
-              icon: Icons.people_outline,
-              onTap: () => context.push('/groups/$groupId/persons'),
-            ),
-            AppNavigationTile(
-              label: 'Ver miembros',
-              icon: Icons.groups_outlined,
-              onTap: () => context.push('/groups/$groupId/members'),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        QuotaReportSection(
-          groupId: groupId,
-          currency: group.currency,
-          dashboard: true,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        if (ref.watch(canEditGroupProvider(groupId))) ...[
-          AppAdaptiveRow(
-            children: [
-              AppButton(
-                label: 'Editar grupo',
-                leadingIcon: Icons.tune_rounded,
-                variant: AppButtonVariant.ghost,
-                onPressed: () => context.push('/groups/$groupId/settings'),
-              ),
-              AppButton(
-                label: 'Historial administrativo',
-                leadingIcon: Icons.history_rounded,
-                variant: AppButtonVariant.ghost,
-                onPressed: () => context.push('/groups/$groupId/audit'),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-        ],
-        AppButton(
-          label: 'Informes del grupo',
-          leadingIcon: Icons.bar_chart_rounded,
-          variant: AppButtonVariant.outline,
-          onPressed: () => context.push('/groups/$groupId/reports'),
-        ),
         const SizedBox(height: AppSpacing.lg),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('La historia en cifras', style: type.headingSmall),
+              Text('Resumen del grupo', style: type.headingSmall),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Todo el historial · Movimientos activos',
+                style: type.bodySmall.copyWith(
+                  color: AppColors.of(context).textMuted,
+                ),
+              ),
               const SizedBox(height: AppSpacing.xl),
               AppAdaptiveRow(
+                minChildWidth: AppSpacing.coverSmall,
                 children: [
                   StatisticCard(
                     framed: false,
@@ -228,6 +166,7 @@ class _SummaryBody extends ConsumerWidget {
                   StatisticCard(
                     framed: false,
                     label: 'Total retirado',
+                    tone: AppTone.danger,
                     value: formatMoneyCents(
                       summary.withdrawalCents,
                       currency: group.currency,
@@ -237,6 +176,7 @@ class _SummaryBody extends ConsumerWidget {
                   StatisticCard(
                     framed: false,
                     label: 'Personas activas',
+                    tone: AppTone.tertiary,
                     value: '${summary.activePersonsCount}',
                     icon: Icons.people_outline,
                     caption:
@@ -256,15 +196,9 @@ class _SummaryBody extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Lo último que ha pasado',
+                      'Últimos movimientos',
                       style: type.headingSmall,
                     ),
-                  ),
-                  AppIconButton(
-                    icon: Icons.chevron_right_rounded,
-                    label: 'Ver todo el historial',
-                    variant: AppIconButtonVariant.ghost,
-                    onPressed: () => context.push('/groups/$groupId/movements'),
                   ),
                 ],
               ),
@@ -288,6 +222,42 @@ class _SummaryBody extends ConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.section),
+        QuotaReportSection(
+          groupId: groupId,
+          currency: group.currency,
+          dashboard: true,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        AppNavigationTile(
+          label: 'Cuotas y etapas',
+          icon: Icons.calendar_month_outlined,
+          description: 'Consulta la cuota y los periodos de participación',
+          onTap: () => context.push('/groups/$groupId/quotas'),
+        ),
+        if (ref.watch(canEditGroupProvider(groupId))) ...[
+          const SizedBox(height: AppSpacing.section),
+          AppCard(
+            child: AppExpandableRow(
+              title: Text('Gestionar este espacio', style: type.labelLarge),
+              leading: const Icon(Icons.tune_rounded),
+              children: [
+                AppButton(
+                  label: 'Editar grupo',
+                  leadingIcon: Icons.tune_rounded,
+                  variant: AppButtonVariant.ghost,
+                  onPressed: () => context.push('/groups/$groupId/settings'),
+                ),
+                AppButton(
+                  label: 'Historial administrativo',
+                  leadingIcon: Icons.history_rounded,
+                  variant: AppButtonVariant.ghost,
+                  onPressed: () => context.push('/groups/$groupId/audit'),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -314,6 +284,14 @@ class _ActivityCard extends ConsumerWidget {
       DashboardActivityKind.cancelled => 'Movimiento anulado',
       DashboardActivityKind.corrected => 'Movimiento corregido',
     };
+    final amount = MoneyText(
+      event.input.amountCents,
+      currency: currency,
+      variant: event.input.type == MovementType.income
+          ? MoneyTextVariant.income
+          : MoneyTextVariant.withdrawal,
+    );
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
     return AppReveal(
       key: ValueKey('${event.movementId}/${event.kind.name}'),
       child: Semantics(
@@ -341,24 +319,15 @@ class _ActivityCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AppBadge(
-                        title,
-                        tone: event.kind == DashboardActivityKind.cancelled
-                            ? AppTone.warning
-                            : AppTone.primary,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      MoneyText(
-                        event.input.amountCents,
-                        currency: currency,
-                        variant: event.input.type == MovementType.income
-                            ? MoneyTextVariant.income
-                            : MoneyTextVariant.withdrawal,
-                      ),
                       Text(
                         labels.person(event.input.personId),
                         style: t.labelLarge,
                       ),
+                      if (largeText) amount,
+                      if (event.kind != DashboardActivityKind.registered) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        AppBadge(title, tone: AppTone.warning),
+                      ],
                       if (event.reason != null)
                         Text(event.reason!, style: t.bodySmall)
                       else if (event.input.description.isNotEmpty)
@@ -371,7 +340,15 @@ class _ActivityCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded),
+                if (!largeText) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Flexible(child: amount),
+                ],
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: AppSpacing.icon,
+                  color: AppColors.of(context).textMuted,
+                ),
               ],
             ),
           ),

@@ -7,9 +7,11 @@ import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/movement.dart';
 import '../../groups/presentation/group_access_body.dart';
+import '../../groups/presentation/group_bottom_navigation.dart';
 import '../providers/movement_providers.dart';
 import 'pending_movement_card.dart';
 import 'movement_history_controls.dart';
+import 'movement_actions.dart';
 
 String _historyDayLabel(BuildContext context, DateTime date, DateTime today) {
   if (date == today) return 'Hoy';
@@ -26,6 +28,10 @@ class MovementsScreen extends ConsumerWidget {
     final t = AppTypography.of(context);
     return AppScaffold(
       maxWidth: AppSpacing.readingMax,
+      bottomNavigation: GroupBottomNavigation(
+        groupId: groupId,
+        selectedIndex: 1,
+      ),
       appBar: AppTopBar(
         title: 'Movimientos',
         leading: AppIconButton(
@@ -55,27 +61,7 @@ class MovementsScreen extends ConsumerWidget {
               ),
             if (ref.watch(canManageMovementsProvider(groupId)) &&
                 focusId == null)
-              AppAdaptiveRow(
-                children: [
-                  AppButton(
-                    label: 'Registrar ingreso',
-                    fullWidth: true,
-                    leadingIcon: Icons.add_rounded,
-                    onPressed: () => context.push(
-                      '/groups/$groupId/movements/new?type=income',
-                    ),
-                  ),
-                  AppButton(
-                    label: 'Registrar retirada',
-                    fullWidth: true,
-                    variant: AppButtonVariant.outline,
-                    leadingIcon: Icons.north_east_rounded,
-                    onPressed: () => context.push(
-                      '/groups/$groupId/movements/new?type=withdrawal',
-                    ),
-                  ),
-                ],
-              ),
+              MovementActions(groupId: groupId),
             const SizedBox(height: AppSpacing.xl),
             if (focusId == null) ...[
               MovementHistoryControls(key: ValueKey(groupId), groupId: groupId),
@@ -86,8 +72,10 @@ class MovementsScreen extends ConsumerWidget {
                 .when(
                   skipLoadingOnRefresh: false,
                   skipLoadingOnReload: false,
-                  loading: () =>
-                      const LoadingIndicator(label: 'Cargando historial…'),
+                  loading: () => const AppSkeleton(
+                    layout: AppSkeletonLayout.movements,
+                    label: 'Cargando historial…',
+                  ),
                   error: (error, _) => EmptyState(
                     icon: Icons.cloud_off_outlined,
                     title: 'El historial está a un reintento',

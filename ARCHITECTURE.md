@@ -1,5 +1,125 @@
 Arquitectura
 
+Renderizado de navegación, 2026-11-03 (D131)
+
+appRoute entrega un builder diferido a AppDeferredSection para las secciones.
+El componente no consulta providers/Firebase: espera al fin del movimiento y
+presenta un esqueleto compartido mientras tanto. GroupNavigationShell observa
+identidad, membresía y disponibilidad del grupo fuera del árbol pausado; publica
+en AppSectionRenderScope una clave opaca y autorización de congelación visual.
+Cambios de acceso invalidan el cuadro temporal inmediatamente. SnapshotWidget
+es una imagen efímera de GPU, nunca respaldo ni almacenamiento entre cuentas.
+TickerMode pausa animaciones y suscripciones Consumer durante ese intervalo.
+El router de copias usa el mismo mecanismo dentro de su contenedor sin SDKs.
+GroupMotionMetrics solo diagnostica en profile con TRACE_GROUP_MOTION=true;
+registra índices/tiempos y no identificadores ni contenido del usuario.
+
+Selección integrada de movimiento, 2026-11-03 (D130)
+
+Las features declaran intentos y validadores UI en AppButton; AppControlFeedback
+anima/rechaza sin calcular dominio. Los controllers conservan validación económica,
+roles y escritura. JoinGroupController reutiliza parse del repositorio para un
+rechazo local de formato, sin consulta remota ni nueva regla de invitaciones.
+AppGroupEntry pasa AppGroupOrigin efímero a AppMotionPage; GroupNavigationShell
+publica orden de secciones en AppSectionMotionScope para las rutas entrantes y
+salientes. Nada se guarda o mezcla con providers de permisos. AppBottomSheet usa
+modalContextOf del host actual para cubrir la barra permaneciendo dentro del
+router/ProviderContainer propio del visor. Laboratorio conservado por petición
+expresa. Evidencia: docs/SELECTED_MOTION_2026-11-03.md.
+
+Laboratorio temporal de presentación, 2026-11-03 (D129)
+
+Home enlaza a la ruta autenticada de pruebas solo en debug/profile. Los
+renderizadores y el Navigator local viven en design_system/lab, sin SDKs ni
+providers/repositorios del dominio. Su estado local es exclusivamente visual
+(categoría, duración y códigos probados), no una preferencia del producto.
+La galería general no se incorpora al router. Al elegir, trasladar únicamente
+los efectos aprobados a App* y retirar el laboratorio según su informe:
+docs/MOTION_LAB_2026-11-03.md. AppFloatingActions admite iconos explícitos por
+opción; no deduce el significado de textos ni conoce las acciones de negocio.
+
+Movimiento por contexto y barra persistente, 2026-11-02 (D128)
+
+appRoute crea AppMotionPage (MaterialPage SDK) con intención visual explícita.
+La shell de grupo crea su página Material y conserva AppNavigationHost fuera del
+Navigator de secciones. GroupBottomNavigation sigue comprobando membresía en sus
+providers; las pantallas y guards existentes no se sustituyen por estado visual.
+El router del visor compone la misma shell dentro de su contenedor aislado.
+Los editores manuales de personas/fotos se abren en el Navigator raíz para cubrir
+la barra durante la edición y conservar el guardia de cambios sin guardar.
+La biblioteca define transiciones y suprime slots inferiores duplicados; no
+consulta SDKs ni guarda datos. No hay nueva caché ni precarga de historia para
+animar. Estado/evidencia: docs/MOTION_PERFORMANCE_2026-11-02.md.
+
+Continuación de movimiento/color, 2026-11-02
+
+appRoute (core/routing) crea MaterialPage SDK con pageKey/parámetros/padres
+conservados. Evita NoTransitionPage por la detección material_ui de go_router 18
+sin cambiar dependencias. Router principal y del visor comparten adaptación;
+AppTheme/AppPageTransitions poseen estilo/tiempo, no los archivos de features.
+El contenedor de copia sigue independiente, con SDKs/operaciones bloqueados.
+
+AppPressFeedback ejecuta el callback vigente después de presión/retorno y lo
+cancela al desmontar/deshabilitar; con movimiento reducido es inmediato. Las
+validaciones de actor, permiso y envío siguen en providers/repositories. ColorPlane
+y HueSlider solo editan borrador visual y sincronizan AppColorField/hex; guardado
+y preferencias conservan la cadena existente. Identificadores de paleta estables,
+nombres/colores centralizados. Evidencia: docs/COLOR_PICKER_PALETTES_MOTION_2026-11-02.md.
+
+Biblioteca y apariencia local, continuación del 2026-11-02
+
+AppearanceScreen/CustomPaletteEditor → AppearanceController →
+AppearanceRepository → FileAppearanceService. AppearanceSettings v2 añade AppFont,
+CustomPalette (RGB entero sin Flutter) y selección local. Lee versiones anteriores,
+conserva IDs al editar y fuente/modo al borrar una paleta. Nada se escribe a Firebase.
+AppTheme deriva superficies/contraste y AppTypography propaga letra; el visor
+recibe ThemeData sin enlazar su ProviderContainer al de producción.
+
+AppSkeleton/AppShimmer, AppMenuRow, AppColorField y AppThemePreview son presentación
+compartida sin proveedores de datos ni permisos. Features solo eligen variantes
+y callbacks. Home declara acciones flotantes en AppScaffold. La carga no confirma
+datos ni oculta errores/autorización. Evidencia: docs/VISUAL_LIBRARY_2026-11-02.md.
+
+Ampliación 2026-11-02
+
+Primeros meses: panel/pantalla → first_month_setup_providers →
+ParticipationRepository → ParticipationService/Firestore existente. Candidatos
+desde personas/periodos compartidos por grupo; selección y mes explícitos.
+Una transacción auditada por persona, con revisión de actor/permisos entre ellas;
+resultado parcial explícito, sin atomicidad global ni sobrescritura de etapas.
+AppFormGuard solo protege la presentación, no guarda ni calcula reglas.
+
+Notificaciones iniciales: PushDeviceController → PushDeviceRepository →
+PushConsentService/FilePushConsentService y adaptadores nativos/Firestore ya
+existentes. Primera entrada autenticada solicita permiso una vez por UID/móvil;
+booleano local sin tokens. Journal privado y retirada confirmada se conservan.
+Paletas se amplían en tokens centrales, manteniendo persistencia existente.
+Recorte por destino viaja por provider → repository → picker service → cropper.
+Sin nuevo acceso directo a SDK desde widgets. Evidencia:
+docs/UX_IMPROVEMENTS_2026-11-02.md.
+
+Apariencia y navegación v0.4 (2026-10-30)
+
+Ajustes de apariencia → AppearanceController → AppearanceRepository →
+AppearanceService/FileAppearanceService → archivo local en application support.
+AppearanceSettings, AppPalette y AppearanceMode son Dart puro. Preferencia por
+instalación/móvil, independiente de UID y sin Firestore ni nuevos SDKs. Escrituras
+serializadas con temporal/rename; lectura ausente/corrupta usa valores iniciales.
+La UI aplica la selección al momento, anuncia error de guardado y permite reintentar.
+Una carga antigua no puede sobrescribir una selección posterior.
+
+BoteParroquialApp observa el estado y compone ambos ThemeData desde AppTheme.
+El router no se reconstruye al cambiar apariencia. SnapshotBrowser pasa ThemeData
+al visor; no enlaza su ProviderContainer aislado al vivo ni habilita SDKs allí.
+
+Las rutas principales se anidan bajo Inicio → resumen del grupo → sección. Así
+Atrás tiene páginas reales que recuperar tras context.go y en entrada directa a
+una sección. ParticipantsScreen abre Personas/Miembros mediante push; conservan
+sus guards y providers. MovementActions comparte presentación y callbacks de las
+dos acciones económicas, manteniendo permisos en sus providers existentes.
+Portada panorámica adapta PhotoCover/AppCover, sin cambiar permisos o binarios.
+Evidencia: docs/VISUAL_REDESIGN_V04_VALIDATION.md.
+
 Copias diarias locales (2026-10-23)
 
 App/lifecycle → DailyCopyController → DailySnapshotRepository →

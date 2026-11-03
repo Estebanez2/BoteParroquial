@@ -6,7 +6,13 @@ import '../models/group_notification.dart';
 import '../services/notification_service.dart';
 
 final class PushDeviceRepository {
-  PushDeviceRepository(this._messaging, this._devices, this._local);
+  PushDeviceRepository(
+    this._messaging,
+    this._devices,
+    this._local, {
+    this.consent,
+  });
+  final PushConsentService? consent;
   final PushMessagingService _messaging;
   final NotificationService _devices;
   final PushRegistrationService _local;
@@ -35,18 +41,34 @@ final class PushDeviceRepository {
     final old = await _local.read();
     if (old != null && (old.uid != uid || !old.enabled)) await _remove(old);
     if (!await _messaging.authorized(request: true)) {
+      await consent?.write(uid, false);
       throw const AppFailure(
         FailureCode.permissionDenied,
         'No se concedió permiso. Puedes activarlo en los ajustes de notificaciones del móvil.',
       );
     }
+    _check(uid);
+    await consent?.write(uid, true);
     return _register(uid);
   });
   Future<bool> resume(String uid) => _locked(() async {
     _check(uid);
     final registration = await _local.read();
-    if (registration == null) return false; // Never ask permission on login.
+    if (registration == null) {
+      final consent = this.consent;
+      if (consent == null) return false;
+      final choice = await consent.read(uid);
+      _check(uid);
+      if (choice == false) return false;
+      // Persist before showing the OS dialog: denial/interruption never loops.
+      if (choice == null) await consent.write(uid, false);
+      final granted = await _messaging.authorized(request: choice == null);
+      _check(uid);
+      await consent.write(uid, granted);
+      return granted ? _register(uid) : false;
+    }
     if (!registration.enabled) {
+      await consent?.write(uid, false);
       await _remove(registration);
       return false;
     }
@@ -86,6 +108,8 @@ final class PushDeviceRepository {
   }
 
   Future<void> disable() => _locked(() async {
+    final uid = _messaging.currentUid;
+    if (uid != null) await consent?.write(uid, false);
     final registration = await _local.read();
     if (registration != null) await _remove(registration);
   });

@@ -10,6 +10,7 @@ import '../providers/person_providers.dart';
 import '../providers/person_trash_providers.dart';
 import 'person_editor.dart';
 import '../../quotas/presentation/participation_editor.dart';
+import '../../quotas/presentation/first_month_setup.dart';
 
 class PersonsSection extends ConsumerWidget {
   const PersonsSection({super.key, required this.groupId});
@@ -29,6 +30,7 @@ class PersonsSection extends ConsumerWidget {
         ),
         if (canManage) ...[
           const SizedBox(height: AppSpacing.xl),
+          FirstMonthSetupPanel(groupId: groupId),
           Align(
             alignment: Alignment.centerLeft,
             child: AppButton(
@@ -51,8 +53,10 @@ class PersonsSection extends ConsumerWidget {
             .when(
               skipLoadingOnRefresh: false,
               skipLoadingOnReload: false,
-              loading: () =>
-                  const LoadingIndicator(label: 'Cargando personas…'),
+              loading: () => const AppSkeleton(
+                layout: AppSkeletonLayout.people,
+                label: 'Cargando personas…',
+              ),
               error: (error, _) => EmptyState(
                 icon: Icons.cloud_off_outlined,
                 title: 'No pudimos cargar las personas',

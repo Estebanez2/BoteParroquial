@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
+import '../feedback/app_control_feedback.dart';
 
 enum AppIconButtonVariant { standard, ghost, danger }
 
@@ -20,22 +21,26 @@ class AppIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
-    return IconButton(
-      tooltip: label,
-      onPressed: onPressed,
-      icon: Icon(icon, size: AppSpacing.iconLarge),
-      style: IconButton.styleFrom(
-        minimumSize: const Size.square(AppSpacing.compactHeight),
-        backgroundColor: variant == AppIconButtonVariant.standard
-            ? c.surfaceVariant.withValues(alpha: .65)
-            : Colors.transparent,
-        foregroundColor: variant == AppIconButtonVariant.danger
-            ? c.danger
-            : c.textPrimary,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.control),
-        side: variant == AppIconButtonVariant.standard
-            ? BorderSide(color: c.outline.withValues(alpha: .4))
-            : null,
+    return AppControlFeedback(
+      enabled: onPressed != null,
+      onActivate: onPressed,
+      builder: (context, activate) => IconButton(
+        tooltip: label,
+        onPressed: onPressed == null ? null : activate,
+        icon: Icon(icon, size: AppSpacing.iconLarge),
+        style: IconButton.styleFrom(
+          minimumSize: const Size.square(AppSpacing.compactHeight),
+          backgroundColor: variant == AppIconButtonVariant.standard
+              ? c.surfaceVariant
+              : Colors.transparent,
+          foregroundColor: variant == AppIconButtonVariant.danger
+              ? c.danger
+              : c.textPrimary,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.control),
+          side: variant == AppIconButtonVariant.standard
+              ? BorderSide(color: c.divider)
+              : null,
+        ),
       ),
     );
   }

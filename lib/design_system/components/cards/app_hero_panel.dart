@@ -9,46 +9,17 @@ class AppHeroPanel extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => ClipRRect(
-    borderRadius: AppRadius.card,
+    borderRadius: AppRadius.hero,
     child: DecoratedBox(
       decoration: BoxDecoration(
         gradient: AppGradients.hero(context),
-        borderRadius: AppRadius.card,
-        border: Border.all(color: AppColors.of(context).outline),
+        borderRadius: AppRadius.hero,
+        border: Border.all(color: AppColors.of(context).divider),
       ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(
-                painter: _Rings(AppColors.of(context).primary),
-              ),
-            ),
-          ),
-          Padding(padding: const EdgeInsets.all(AppSpacing.xl), child: child),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: child,
       ),
     ),
   );
-}
-
-class _Rings extends CustomPainter {
-  const _Rings(this.color);
-  final Color color;
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color.withValues(alpha: .14)
-      ..style = PaintingStyle.stroke;
-    for (var i = 1; i <= 4; i++) {
-      canvas.drawCircle(
-        Offset(size.width, 0),
-        size.width * (.18 + i * .13),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_Rings oldDelegate) => color != oldDelegate.color;
 }

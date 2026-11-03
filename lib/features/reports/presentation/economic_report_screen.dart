@@ -6,6 +6,7 @@ import '../../../design_system/design_system.dart';
 import '../../../models/economic_report.dart';
 import '../../../models/report_export.dart';
 import '../../groups/presentation/group_access_body.dart';
+import '../../groups/presentation/group_bottom_navigation.dart';
 import '../../movements/providers/movement_providers.dart';
 import '../../persons/providers/person_providers.dart';
 import '../providers/report_providers.dart';
@@ -35,6 +36,7 @@ class EconomicReportScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => AppScaffold(
     maxWidth: AppSpacing.readingMax,
+    bottomNavigation: GroupBottomNavigation(groupId: groupId, selectedIndex: 3),
     appBar: AppTopBar(
       title: 'Informes',
       leading: AppIconButton(
@@ -215,6 +217,7 @@ class _ReportBody extends StatelessWidget {
           children: [
             StatisticCard(
               label: 'Saldo inicial',
+              tone: AppTone.secondary,
               value: formatMoneyCents(report.openingCents, currency: currency),
               icon: Icons.history_rounded,
             ),

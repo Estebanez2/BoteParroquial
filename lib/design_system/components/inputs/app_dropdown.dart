@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
+import '../../theme/app_spacing.dart';
+import '../navigation/app_menu_row.dart';
 
 class AppDropdown<T> extends StatelessWidget {
   const AppDropdown({
@@ -23,6 +27,13 @@ class AppDropdown<T> extends StatelessWidget {
     key: ValueKey(value),
     initialValue: value,
     isExpanded: true,
+    itemHeight: null,
+    dropdownColor: AppColors.of(context).surface,
+    elevation: 8,
+    icon: Icon(
+      Icons.unfold_more_rounded,
+      color: AppColors.of(context).secondary,
+    ),
     style: AppTypography.of(context).bodyLarge,
     decoration: InputDecoration(
       labelText: label,
@@ -31,15 +42,30 @@ class AppDropdown<T> extends StatelessWidget {
     ),
     items: options.entries
         .map(
-          (entry) =>
-              DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+          (entry) => DropdownMenuItem(
+            value: entry.key,
+            child: AppMenuRow(
+              label: entry.value,
+              icon: Icons.radio_button_unchecked_rounded,
+              selected: entry.key == value,
+            ),
+          ),
         )
         .toList(),
     onChanged: enabled ? onChanged : null,
-    borderRadius:
-        Theme.of(context).inputDecorationTheme.border is OutlineInputBorder
-        ? (Theme.of(context).inputDecorationTheme.border! as OutlineInputBorder)
-              .borderRadius
-        : null,
+    selectedItemBuilder: (context) => options.values
+        .map(
+          (label) => Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.of(context).bodyLarge,
+            ),
+          ),
+        )
+        .toList(),
+    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+    borderRadius: AppRadius.card,
   );
 }

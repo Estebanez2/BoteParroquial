@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'support/idle_daily_copies.dart';
 import 'package:bote_parroquial/app/app.dart';
 import 'package:bote_parroquial/app/router.dart';
 import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
@@ -138,6 +139,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
           groupServerConfirmedProvider.overrideWith(
             (ref, groupId) => Stream.value(true),
           ),
@@ -213,6 +215,8 @@ void main() {
       await tap('Continuar con persona inactiva');
       await tap('Confirmar saldo negativo');
       expect(service.current.first.input.amountCents, 2050);
+      expect(find.text('Revisar el reparto tras corregir'), findsOneWidget);
+      await tap('Continuar con la corrección');
       expect(service.current.first.status, MovementStatus.corrected);
       expect(MovementRepository.balanceOf(service.current), -2000);
       router.go('/groups/a/movements/m2/cancel');

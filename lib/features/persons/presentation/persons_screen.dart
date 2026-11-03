@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design_system/design_system.dart';
 import '../../groups/presentation/group_access_body.dart';
+import '../../groups/presentation/group_bottom_navigation.dart';
 import 'persons_section.dart';
 
 class PersonsScreen extends StatelessWidget {
@@ -10,12 +11,13 @@ class PersonsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppScaffold(
     maxWidth: AppSpacing.readingMax,
+    bottomNavigation: GroupBottomNavigation(groupId: groupId, selectedIndex: 2),
     appBar: AppTopBar(
       title: 'Personas',
       leading: AppIconButton(
         icon: Icons.arrow_back_rounded,
-        label: 'Volver al resumen',
-        onPressed: () => context.go('/groups/$groupId'),
+        label: 'Volver a participantes',
+        onPressed: () => context.go('/groups/$groupId/participants'),
       ),
     ),
     child: GroupAccessBody(

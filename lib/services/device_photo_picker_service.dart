@@ -43,7 +43,11 @@ class DevicePhotoPickerService implements PhotoPickerService {
   final ImagePicker _picker;
 
   @override
-  Future<Uint8List?> edit(Uint8List bytes, {bool darkTheme = true}) async {
+  Future<Uint8List?> edit(
+    Uint8List bytes, {
+    bool darkTheme = true,
+    bool panoramic = false,
+  }) async {
     final root = await getTemporaryDirectory();
     final directory = await Directory(
       '${root.path}/bote_photo_edit_',
@@ -54,6 +58,7 @@ class DevicePhotoPickerService implements PhotoPickerService {
       final cropped = await AppImageCropper.edit(
         source.path,
         darkTheme: darkTheme,
+        panoramic: panoramic,
       );
       return cropped == null ? null : await _prepare(XFile(cropped));
     } on PlatformException {
@@ -94,7 +99,11 @@ class DevicePhotoPickerService implements PhotoPickerService {
   }
 
   @override
-  Future<Uint8List?> pick(PhotoSource source, {bool darkTheme = true}) async {
+  Future<Uint8List?> pick(
+    PhotoSource source, {
+    bool darkTheme = true,
+    bool panoramic = false,
+  }) async {
     try {
       // A picker result left by a terminated process has no trusted account or
       // target context. Discard it; never attach it to the next signed-in user.
@@ -114,6 +123,7 @@ class DevicePhotoPickerService implements PhotoPickerService {
       final cropped = await AppImageCropper.edit(
         file.path,
         darkTheme: darkTheme,
+        panoramic: panoramic,
       );
       return cropped == null ? null : _prepare(XFile(cropped));
     } on PlatformException {

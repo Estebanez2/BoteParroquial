@@ -4,7 +4,78 @@ El proyecto debe avanzar por fases pequeñas.
 
 Mantener siempre una versión compilable.
 
-Seguimiento general — actualizado el 2026-10-23
+Seguimiento general — actualizado el 2026-11-03
+
+Corrección vigente D131: separar construcción/datos de la transición de secciones,
+esqueleto estático de entrada, captura efímera de salida con tickers pausados y
+curvas inversas acompasadas. Invalidación por acceso fuera del subárbol pausado;
+visor aislado conserva sus restricciones. Cinco casos dirigidos superados y
+análisis limpio. Medición física del APK corregido pendiente; no certificar cero
+tirones por pruebas de widgets. Sin cambios remotos ni retirada del laboratorio.
+[Estado y evidencia](GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md).
+
+Última continuación D130: integrar B07/B08/B04/B05, N01 y P03/P05; grupo con onda
+de un segundo y expansión desde su tarjeta. Pestañas direccionales por índice,
+barra persistente y paneles fuera del navegador de secciones. Nueve casos
+dirigidos superados, análisis limpio y APK debug/profile compilados; pendiente
+físico, sin cambios remotos. El usuario conserva
+el laboratorio. [Estado, evidencia y APK](SELECTED_MOTION_2026-11-03.md).
+
+Última continuación D129: laboratorio temporal de 40 opciones en Inicio de
+debug/profile; códigos P/B/N y velocidad ajustable para elegir antes de aplicar
+y retirar. D128 no supone aprobación visual. Llave restaurada en Entrar con
+código. Cuatro casos dirigidos distintos superados, análisis limpio y APK
+debug/profile compilados; prueba física pendiente. Sin cambios remotos ni
+ampliación funcional del producto.
+[Estado, APK, comprobaciones y retirada](MOTION_LAB_2026-11-03.md).
+
+Última continuación D128, cierre 2026-11-03: sustituir deslizamiento uniforme por movimiento según
+contexto, más marcado por elección del usuario, reduciendo efectos superpuestos
+y espera. Barra persistente con indicador continuo; shell también en visor
+aislado. Siete casos dirigidos, análisis limpio y APK debug/profile compilados.
+Validación física de fluidez pendiente, sin cambios remotos.
+[Evidencia y APK debug/profile](MOTION_PERFORMANCE_2026-11-02.md).
+
+Última continuación D125–D127: selector cuadrado/arcoíris/hex; cuatro identidades
+nuevas conservando Atlántico e IDs. Pulsación completa y transición de páginas
+por biblioteca compartida y appRoute explícita. Trece pruebas dirigidas, tres
+capturas simuladas, análisis limpio y APK debug compilado; falta comprobación
+física, sin cambios remotos.
+[Evidencia y APK](COLOR_PICKER_PALETTES_MOTION_2026-11-02.md).
+
+Continuación visual D120–D124: esqueletos con brillo, menús compartidos, Añadir
+flotante y Copias en cuenta; fuentes y paletas propias locales con preview y
+contraste automático. Once pruebas dirigidas distintas, análisis limpio y cuatro
+capturas simuladas revisadas, APK debug compilado, sin prueba física ni cambios remotos.
+[Evidencia y APK](VISUAL_LIBRARY_2026-11-02.md).
+
+Ampliación de UX, D116–D119: recorte de portadas 16:9, guardia reutilizable de
+cambios sin guardar, primeros meses pendientes visibles y selección múltiple,
+paletas complementarias con tercer acento y solicitud inicial de notificaciones
+con elección local persistida. Operaciones de participación individuales y
+auditadas, informando resultados parciales. Sin despliegues ni modificaciones
+remotas de datos/configuración. Validación física pendiente, usuario ejecuta.
+23 pruebas dirigidas distintas superadas, análisis limpio y APK debug compilado.
+[Alcance y evidencia](UX_IMPROVEMENTS_2026-11-02.md).
+
+Entrega visual vigente v0.4, D114–D115: el usuario rechaza el resultado v0.3 y pide
+otro aspecto. Cinco paletas con claro/oscuro, modo Sistema y guardado local elegido.
+Inicio sin bloque promocional, portada panorámica, Participantes como entrada a
+Personas/Miembros, acciones económicas compartidas y enlaces duplicados retirados.
+Rutas principales anidadas: Atrás de sección a resumen y después a Tus grupos.
+37 pruebas dirigidas distintas, análisis limpio, 19 capturas simuladas revisadas
+y APK debug compilado e instalado en A059P mediante actualización. Aprobación física de v0.4 pendiente.
+Evidencia: [VISUAL_REDESIGN_V04_VALIDATION.md](VISUAL_REDESIGN_V04_VALIDATION.md).
+
+Rediseño anterior v0.3 (histórico, D113): el usuario elige la interpretación
+«Más expresivo» de sus dos nuevas referencias. Paleta carbón/menta, Manrope para
+titulares y saldos, tarjetas/controles renovados y movimiento centralizado con
+alternativa reducida. Inicio/resumen reorganizados y navegación inferior en
+Inicio, Actividad, Personas e Informes del grupo. Componentes compartidos propagan
+el estilo a las pantallas existentes y al visor de copias. 33 pruebas dirigidas,
+análisis limpio, ocho capturas simuladas revisadas y APK Android debug compilado.
+Pendiente aprobación visual en dispositivo; el usuario ejecuta la app. Evidencia:
+[VISUAL_REDESIGN_V03_VALIDATION.md](VISUAL_REDESIGN_V03_VALIDATION.md).
 
 Copias diarias locales de consulta añadidas (D110–D112): siete capturas completas
 por móvil/cuenta, datos de su ámbito, fotos según caché, Wi-Fi/datos móviles,
@@ -134,7 +205,7 @@ reanudar segunda cuenta aplazada. Informe:
 | Phase 4 — Movements | Implementada; reglas, flujo visual y operaciones nativas verificadas | Hardening y pruebas con varios móviles en fases posteriores |
 | Phase 5 — Dashboard | MVP implementado y confirmado en móvil; ampliación de cuotas en Phase 10 | Estado compartido entre dos administradores y ampliación reciente sin validación física |
 | Phase 6 — MVP Hardening | En curso: caché señalizada y recuperación persistente de envíos | Validación física de los cambios, revisión final y comprobaciones de cierre del MVP |
-| Rediseño por referencias, durante Phase 6 | Base visual v0.2 y pantallas actuales adaptadas; iniciales | Aprobación visual del usuario; fotos/subidas y funciones futuras aplazadas |
+| Rediseño por referencias, durante Phase 6 | v0.4 elegible D114–D115 sustituye v0.3: cinco paletas, temas locales, portadas y navegación reorganizadas; APK instalado en A059P | Aprobación visual en móvil; fotos conservan validaciones previas |
 | Phase 7 — Full groups | Creación/identidad, códigos, solicitudes, bajas/readmisión, vínculos, roles, transferencia y enlaces HTTPS publicados | Apertura física Android; iOS/AASA y validación multiusuario de las ampliaciones |
 | Phase 8 — Monthly quotas | Cuotas, periodos, asignaciones, propuestas, pagos parciales/atrasados/adelantados, devoluciones y primer mes opcional al crear persona | Validación física; reparto conjunto de la propuesta y ampliaciones fuera del límite inicial de devolución, si se solicitan |
 | Phase 9 — Notifications | Cliente y worker publicados: recordatorios, actividad, tres preferencias, bandeja/reservas y cron cada quince minutos; HTTP y DEMO verificados | Push real, pruebas móviles/calendario, APNs/iOS y ampliación para volumen |

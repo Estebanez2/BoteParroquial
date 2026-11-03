@@ -5,6 +5,7 @@ import '../../theme/app_radius.dart';
 import '../../theme/app_shadows.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_gradients.dart';
+import '../feedback/app_control_feedback.dart';
 
 enum AppCardVariant { standard, elevated, outlined, interactive }
 
@@ -16,37 +17,50 @@ class AppCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(AppSpacing.lg),
     this.onTap,
     this.semanticLabel,
+    this.tapEffect = AppTapEffect.wave,
   });
   final Widget child;
   final AppCardVariant variant;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
   final String? semanticLabel;
+  final AppTapEffect tapEffect;
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     return Semantics(
       label: semanticLabel,
       container: true,
-      child: AnimatedContainer(
-        duration: AppMotion.duration(context, AppMotion.durationNormal),
-        decoration: BoxDecoration(
-          gradient: AppGradients.surface(context),
-          borderRadius: AppRadius.card,
-          border: Border.all(
-            color: variant == AppCardVariant.outlined ? c.outline : c.divider,
-          ),
-          boxShadow: variant == AppCardVariant.elevated
-              ? AppShadows.soft(context)
-              : null,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: AppRadius.card,
-          child: InkWell(
-            onTap: variant == AppCardVariant.interactive ? onTap : null,
+      child: AppControlFeedback(
+        enabled: variant == AppCardVariant.interactive && onTap != null,
+        busy: variant != AppCardVariant.interactive,
+        effect: tapEffect,
+        radius: AppRadius.card,
+        onActivate: onTap,
+        builder: (context, activate) => AnimatedContainer(
+          duration: AppMotion.duration(context, AppMotion.durationNormal),
+          decoration: BoxDecoration(
+            gradient: AppGradients.surface(context),
             borderRadius: AppRadius.card,
-            child: Padding(padding: padding, child: child),
+            border: Border.all(
+              color: variant == AppCardVariant.outlined
+                  ? c.outline
+                  : c.divider.withValues(alpha: .65),
+            ),
+            boxShadow: variant == AppCardVariant.elevated
+                ? AppShadows.soft(context)
+                : null,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: AppRadius.card,
+            child: InkWell(
+              onTap: variant == AppCardVariant.interactive && onTap != null
+                  ? activate
+                  : null,
+              borderRadius: AppRadius.card,
+              child: Padding(padding: padding, child: child),
+            ),
           ),
         ),
       ),

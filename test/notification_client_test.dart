@@ -21,9 +21,11 @@ import 'package:bote_parroquial/repositories/notification_repository.dart';
 import 'package:bote_parroquial/repositories/push_device_repository.dart';
 import 'package:bote_parroquial/services/auth_service.dart';
 import 'package:bote_parroquial/services/file_push_registration_service.dart';
+import 'package:bote_parroquial/services/file_push_consent_service.dart';
 import 'package:bote_parroquial/services/notification_service.dart';
 import 'auth_flow_test.dart' as auth;
 import 'groups_test.dart' as groups;
+import 'support/idle_daily_copies.dart';
 
 class LocalRegistration implements PushRegistrationService {
   PushRegistration? value;
@@ -37,6 +39,16 @@ class LocalRegistration implements PushRegistrationService {
   @override
   Future<void> clear() async {
     value = null;
+  }
+}
+
+class Consent implements PushConsentService {
+  final choices = <String, bool>{};
+  @override
+  Future<bool?> read(String uid) async => choices[uid];
+  @override
+  Future<void> write(String uid, bool enabled) async {
+    choices[uid] = enabled;
   }
 }
 
@@ -168,6 +180,56 @@ class SessionService extends auth.FakeAuthRepository implements AuthService {
 
 void main() {
   test(
+    'Primera entrada solicita permiso una vez; respeta rechazo y retirada, y separa cuentas',
+    () async {
+      final native = Messaging(), cloud = Notices(), consent = Consent();
+      addTearDown(native.close);
+      addTearDown(cloud.changes.close);
+      final repo = PushDeviceRepository(
+        native,
+        cloud,
+        LocalRegistration(),
+        consent: consent,
+      );
+      expect(await repo.resume('alice'), isTrue);
+      expect(native.permissionRequests, 1);
+      expect(await repo.resume('alice'), isTrue);
+      expect(native.permissionRequests, 1);
+      await repo.disable();
+      expect(await repo.resume('alice'), isFalse);
+      expect(native.permissionRequests, 1);
+      await repo.enable('alice');
+      expect(native.permissionRequests, 2);
+      await repo.beforeSignOut();
+      native.uid = 'bob';
+      native.granted = false;
+      expect(await repo.resume('bob'), isFalse);
+      expect(native.permissionRequests, 3);
+      expect(await repo.resume('bob'), isFalse);
+      expect(native.permissionRequests, 3);
+      expect(consent.choices, {'alice': false, 'bob': false});
+    },
+  );
+  test('Elección inicial persiste localmente por UID, sin tokens', () async {
+    final root = await Directory.systemTemp.createTemp('bote-push-consent-');
+    final checkedPath = root.absolute.uri;
+    addTearDown(() async {
+      if (root.absolute.uri != checkedPath ||
+          !root.path.contains('bote-push-consent-')) {
+        throw StateError('Unexpected test directory');
+      }
+      await root.delete(recursive: true);
+    });
+    final service = FilePushConsentService(directory: () async => root);
+    expect(await service.read('alice'), isNull);
+    await service.write('alice', false);
+    final restored = FilePushConsentService(directory: () async => root);
+    expect(await restored.read('alice'), isFalse);
+    expect(await restored.read('bob'), isNull);
+    await restored.write('alice', true);
+    expect(await service.read('alice'), isTrue);
+  });
+  test(
     'Consentimiento, registro incierto y logout bloqueado hasta retirar el dispositivo',
     () async {
       final native = Messaging(),
@@ -297,6 +359,7 @@ void main() {
           local = LocalRegistration();
       final container = ProviderContainer(
         overrides: [
+          dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
           firebaseStartupProvider.overrideWithValue(
             FirebaseStartup.ready(auth.FakeApp()),
           ),

@@ -1003,8 +1003,8 @@ Decisiones todavía pendientes
 Las decisiones D110–D112 añadidas al final resuelven la nueva petición de copias
 diarias en el móvil. No reactivan la copia semanal del portátil aplazada en D105.
 
-Aprobación visual del rediseño v0.2 según las referencias del usuario; la apariencia
-puede iterarse tras revisar la instalación. No afirmar coincidencia exacta sin revisión.
+Aprobación visual en móvil de v0.4 (D114–D115). El usuario rechaza el resultado
+v0.3 y solicita la nueva dirección; no considerar aprobada aquella propuesta.
 
 Política concreta de generación de exportaciones grandes.
 
@@ -1051,3 +1051,211 @@ consume lecturas/tráfico según la cantidad de información. No activar factura
 cron, servidor nuevo ni permisos privilegiados. UI normal sigue usando sus flujos
 actuales; el fichero completo se obtiene de servidor con fecha coherente, no de
 una caché que puede estar incompleta. Evidencia: DAILY_OFFLINE_COPIES_VALIDATION.md.
+
+D113 — Rediseño integral, dirección más expresiva (2026-10-30)
+
+El usuario solicita cambiar el aspecto de la app con dos referencias móviles,
+extender su lenguaje a los componentes que faltan y consultar webs/repositorios
+de diseño y, especialmente, animación. Entre seguir muy fielmente las capturas
+y reinterpretarlas con más personalidad, elige expresamente «Más expresivo».
+Base carbón y menta, titulares con más presencia, profundidad y movimiento más
+visible. Sustituye la dirección serif de D051: v0.3 usa Manrope también en títulos
+y saldos. Se conservan tema claro, texto ampliado y movimiento reducido.
+
+Aplicación de esta dirección: componentes App* compartidos, entradas escalonadas,
+respuesta de pulsación, ornamentación orbital y navegación inferior entre vistas
+existentes. Forui y Flutter Animate sirven de referencia; los efectos se adaptan
+al SDK de Flutter, centralizados en el sistema visual. Los adornos no representan
+series económicas ni justifican cifras ficticias. Evidencia, APK y pendientes:
+VISUAL_REDESIGN_V03_VALIDATION.md. La implementación no equivale a aprobación
+estética en dispositivo; el usuario ejecuta la app.
+
+D114 — Nueva estética y apariencia local elegible (2026-10-30)
+
+El usuario indica que no le gusta el resultado v0.3 y pide cambiar completamente
+la estética de todas las pantallas, con varias paletas vivas/oscuras/profesionales,
+cada una con claro y oscuro. Elige expresamente guardar la elección en este móvil,
+sin sincronizarla con la cuenta. Implementación v0.4: Atlántico, Iris, Coral,
+Bosque y Grafito; modo Sistema/Claro/Oscuro, base inicial Atlántico/Sistema.
+Ajustes desde Inicio y Tu perfil; cambio inmediato y persistencia local con
+reintento visible ante fallo. Se retira el panel «CADA APORTE CUENTA» completo.
+
+D115 — Atrás al resumen, Participantes y portada panorámica (2026-10-30)
+
+Ante la pregunta explícita, el usuario elige que Atrás desde Actividad,
+Participantes o Informes vuelva al resumen del grupo, y desde ese resumen a
+la lista de grupos. No salir de la app desde esas pantallas. La barra renombra
+Personas a Participantes y abre una página para elegir Personas o Miembros.
+El resumen usa portada horizontal de ancho completo y nombre/descripción debajo.
+Ingreso/retirada deben ser iguales en resumen e historial. Se retiran los accesos
+generales duplicados a movimientos/personas/miembros/informes del resumen, también
+el enlace general de informe de cuotas. Las cifras y detalles de cuotas permanecen.
+Estado, pruebas y pendientes: VISUAL_REDESIGN_V04_VALIDATION.md.
+
+D116 — Recorte según destino y aviso de cambios sin guardar (2026-11-02)
+
+El usuario pide que el editor respete las fotos rectangulares y que Atrás avise
+si ha cambiado datos sin guardarlos. Portadas de grupo 16:9 según D115; avatares
+cuadrados. No transformar imágenes guardadas automáticamente. Aviso reutilizable
+en personas, perfil, grupos, movimientos, fotos y nueva selección de primeros
+meses, tanto en flecha/Cancelar como Atrás del sistema. Conservar al seguir
+editando; salir solo al descartar o tras guardado confirmado. No persistir
+borradores implícitamente ni prometer protección ante cierre forzado.
+
+D117 — Primer mes visible con selección múltiple (2026-11-02)
+
+El usuario confirma que «completar datos» significa elegir el primer mes de cuota
+y elige bloque visible en Personas, selección múltiple y mes común antes de
+confirmar. Solo personas activas sin etapa configurada; nunca inventar el mes a
+partir del alta. Reutilizar operaciones individuales atómicas y auditadas: informar
+resultado parcial y detener ante fallo; no anunciar atomicidad del conjunto. No
+crear pagos ni modificar periodos existentes o reactivar personas.
+
+D118 — Ampliar las cinco paletas con varios acentos (2026-11-02)
+
+El usuario elige mantener las cinco actuales y añadir colores complementarios y
+otros acentos en la misma paleta. Atlántico azul/ámbar/lavanda, Iris violeta/lima/
+rosa, Coral coral/turquesa/violeta, Bosque verde/frambuesa/ocre y Grafito neutro con
+cobre/petróleo. Conservar modos claro/oscuro/Sistema, guardado local y semántica
+de errores/avisos. Tokens compartidos, contraste y transiciones completos.
+
+D119 — Solicitar avisos en la primera entrada (2026-11-02)
+
+El usuario sustituye D093: pedir permiso de notificaciones al entrar por primera
+vez, sin obligar a buscar el control por grupo, y mantener ese control para
+desactivar/reactivar. Se solicita al tener la cuenta autenticada para asociar el
+dispositivo correcto. Elección local por UID/móvil; no repetir tras rechazo o
+retirada expresa. Mantener controles de Perfil y preferencias independientes por
+grupo. Las preferencias ausentes ya valen activo; no sobrescribir false existentes.
+Logout conserva la retirada y no se autoriza reactivación automática después.
+No implica nueva configuración de worker/cron, IAM, APNs ni entrega física validada.
+
+Alcance y evidencia D116–D119: UX_IMPROVEMENTS_2026-11-02.md.
+
+D120 — Carga con formas y banda de brillo compartidas (2026-11-02)
+
+El usuario sustituye círculos de espera por formas del objeto con brillo diagonal
+de izquierda a derecha, en toda la app. AppShimmer/AppSkeleton y variantes viven
+en design_system; LoadingIndicator, fotos y botones heredan su presentación.
+Respetar movimiento reducido, semántica y datos ya disponibles. No mostrar dinero
+ficticio, animar cifras ni convertir barras de gráficos en indicadores de espera.
+
+D121 — Añadir flotante y Copias en cuenta (2026-11-02)
+
+El usuario elige expresamente botón flotante «Añadir» con Crear grupo y Entrar con
+código, y mover Copias al menú de cuenta. Mantener Añadir visible al desplazar
+muchos grupos y dejar espacio para no tapar el último. Sustituye esos accesos
+al final de la lista y Crear junto al título. No habilitar creación en copias.
+
+D122 — Menús con presentación propia en la biblioteca (2026-11-02)
+
+El usuario pide mejorar cualquier desplegable, especialmente el perfil. Componer
+identidad, iconos, superficies, selección y separación desde AppMenuRow/App* y
+PopupMenuTheme central; mantener controles nativos de foco/cancelación/animación.
+No introducir reglas de permisos dentro de componentes visuales.
+
+D123 — Fuente elegible por móvil (2026-11-02)
+
+El usuario solicita elegir letra como las paletas. Ofrecer Manrope, Newsreader
+ya empaquetadas y Sistema, aplicadas por AppTheme/AppTypography a toda la app,
+incluido el visor aislado por ThemeData. Guardar en apariencia local existente;
+no descargar fuentes ni sincronizar con UID. Base anterior Manrope se conserva.
+
+D124 — Paletas personales de tres colores y vista previa (2026-11-02)
+
+El usuario elige principal/complementario/tercer acento con fondos y contraste
+automáticos, y añade expresamente un widget de ejemplo antes de crear/guardar.
+Selector de color y preview reutilizables en design_system; claro/oscuro visibles
+antes de guardar. Conservar semillas RGB originales y ajustar tonos para lectura.
+Varias paletas locales con nombre, edición e eliminación; ningún dato de Firestore.
+Preferencias por instalación según D114, independientes de cuenta y teléfono.
+Conservar cinco predefinidas, estados semánticos y fuente/modo al cambiar paleta.
+
+Evidencia y pendientes D120–D124: VISUAL_LIBRARY_2026-11-02.md.
+
+D125 — Cuadrado de color y barra arcoíris (2026-11-02)
+
+El usuario confirma cuadrado donde arrastrar para intensidad/luminosidad y barra
+arcoíris para tono, manteniendo entrada hexadecimal completa. Sustituye los tres
+deslizadores anteriores de AppColorField. Conservar color/vista previa/código
+sincronizados, validación, accesibilidad y confirmación explícita, sin persistencia
+desde el componente. Todas las instancias heredan la nueva biblioteca.
+
+D126 — Cuatro paletas radicalmente distintas; Atlántico intacto (2026-11-02)
+
+El usuario conserva la primera y pide sustituir el resto con direcciones como
+Cyberpunk y Cartoon. Nuevas identidades: Cyberpunk amarillo ácido/cian/fucsia,
+Cartoon azul eléctrico/rojo/amarillo, Arcade verde neón/uva/naranja y Pop Art
+mandarina/violeta/lima, con fondos propios y tonos accesibles para cada modo.
+Conservar identificadores persistidos iris/coral/forest/graphite respectivamente
+para no reiniciar la selección local. No modificar paletas propias ni fuente/modo.
+Nombres y descripciones en AppPaletteCatalog, colores en AppColors.
+
+D127 — Pulsación completa y transiciones compartidas (2026-11-02)
+
+El usuario pide que el toque corto complete el efecto antes de actuar, y más vida
+al cambiar de pantalla. AppButton/AppIconButton/AppCard interactiva usan ciclo
+de presión/retorno compartido y bloquean repeticiones mientras se ejecuta. Cancelar,
+deshabilitar o desmontar no ejecuta el callback pendiente. Movimiento reducido:
+sin escala/espera. Deslizamiento horizontal Material, Apple nativo, y editores,
+paneles y diálogos mediante AppMotion/AppPageTransitions. No tocar reglas de negocio.
+Usar appRoute para páginas Material explícitas del SDK; go_router 18 elegía
+NoTransitionPage en esta instalación por su detección de material_ui. Mantener
+pageKeys, parámetros, padres y guards, también en el visor aislado.
+
+Evidencia y pendientes D125–D127: COLOR_PICKER_PALETTES_MOTION_2026-11-02.md.
+
+D128 — Efectos por contexto y barra continua, priorizando fluidez (2026-11-02)
+
+Tras comunicar tirones y monotonía, el usuario elige expresamente «Efectos más
+marcados» frente a la combinación discreta. Adaptar Material Motion: zoom al
+entrar en grupo, fundido/escala entre secciones, subida en formularios y avance
+corto en otras rutas. Sustituye el deslizamiento uniforme de D127, sin blur ni
+desplazamiento simultáneo de ambas páginas. Pulso completo se acorta a 80 ms por
+tramo, rutas Material a 240 ms, barra a 180 ms; no retrasar selección de pestaña.
+Una shell mantiene la barra y su indicador fuera de las transiciones de contenido,
+también en el visor aislado. No conservar datos/permisos mediante cachés nuevas.
+AppReveal usa hijo estable y fundido breve, evitando entradas duplicadas durante
+la transición de ruta. Mantener navegación/Atrás/guards/movimiento reducido.
+Preparar APK profile para evaluar en móvil; no confundir compilación o test de
+widgets con una medición de rendimiento real. Implementación en biblioteca App*.
+Referencia, evidencia y pendientes: MOTION_PERFORMANCE_2026-11-02.md.
+
+D129 — Laboratorio temporal antes de elegir animaciones (2026-11-03)
+
+El usuario no está convencido por las animaciones y pide una pantalla de pruebas
+con alternativas de rutas y botones; retirarla solo cuando indique qué adoptar.
+Elige acceso visible en Inicio, debug/profile, oculto en release. Catálogo App*
+aislado en design_system/lab, con códigos para rutas, botones y barras, duración
+ajustable y estado efímero; no aplica ni persiste elecciones. No usa datos/SDKs,
+no cambia guards y no incorpora la galería general a producción. Mantener tema,
+texto ampliado y movimiento reducido. La estética D128 permanece provisional.
+Entrar con código vuelve a llevar llave, dejando + en la creación. Este cambio
+se conserva aunque luego se retire la pantalla experimental.
+Evidencia y lista concreta de retirada: MOTION_LAB_2026-11-03.md.
+
+D130 — Aplicar elecciones y conservar el laboratorio (2026-11-03)
+
+El usuario confirma B07 para principales, B08 secundarios/iconos, B04 si faltan
+datos y B05 cuando la acción no esté disponible; N01 para barra, P03 navegación
+y P05 formularios. Pide onda de un segundo al entrar al grupo y zoom desde su
+tarjeta, y entrada de las secciones por su lado según índice. La geometría es
+efímera y no cambia accesos; los botones rechazados no ejecutan acciones. Usar
+validación explícita, protección de envíos y movimiento reducido. La dirección
+entre pestañas sustituye el estilo uniforme de D128. Decide conservar el
+laboratorio por ahora: D129 no autoriza retirarlo automáticamente en esta entrega.
+Implementación App*, evidencia y pendientes: SELECTED_MOTION_2026-11-03.md.
+
+D131 — Separar carga/renderizado y transición de secciones (2026-11-03)
+
+El usuario informa de tirones importantes dentro del grupo y pide resolver la
+causa, mostrando carga cuando falten datos. Mantener efectos D130; aplazar montar
+la feature hasta terminar la entrada propia/exterior, mostrar esqueleto estático
+y congelar brevemente una página ya montada durante la salida. SnapshotWidget
+permisivo y TickerMode, sin caché persistente ni conservar autoridad por pantalla.
+La shell observa acceso fuera del árbol pausado y cambia una clave opaca para
+descartar el cuadro por identidad/permisos. Curvas reversas acompasan la salida.
+No certificar cero tirones con tests: profile puede habilitar TRACE_GROUP_MOTION
+sin datos personales para medir en dispositivo. No sustituye el diagnóstico por
+un indicador de red ni altera escrituras, Rules o las copias diarias.
+Evidencia y pendientes: GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md.

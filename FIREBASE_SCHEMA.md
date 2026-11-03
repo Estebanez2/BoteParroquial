@@ -1,5 +1,13 @@
 Esquema de Firestore
 
+Ampliación 2026-11-02: selección múltiple de primeros meses reutiliza los mismos
+documentos de persona, participationPeriods y auditEvents, con una transacción
+protegida por persona. Sin nuevos campos/colecciones/Rules. No se asignan pagos
+ni se sustituyen etapas existentes. Preferencias de avisos de grupo ausentes ya
+son activas; se conservan false explícitos. Elección inicial por UID/móvil es un
+booleano local independiente del journal/tokens. No hay migración remota.
+Detalle: docs/UX_IMPROVEMENTS_2026-11-02.md.
+
 Copias diarias del 23/10/2026: no se añaden campos, colecciones, índices ni Rules.
 Lectura REST bajo JWT de usuario, membresías filtradas por UID y documentos de
 grupos activos accesibles. Una misma readTime cubre las páginas; acceso releído al

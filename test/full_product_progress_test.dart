@@ -27,6 +27,7 @@ import 'package:bote_parroquial/models/group_member.dart';
 import 'package:bote_parroquial/models/movement.dart';
 import 'package:bote_parroquial/models/user_profile.dart';
 import 'package:bote_parroquial/repositories/economic_report_repository.dart';
+import 'package:bote_parroquial/repositories/movement_repository.dart';
 import 'package:bote_parroquial/repositories/csv_export_repository.dart';
 import 'package:bote_parroquial/repositories/group_management_repository.dart';
 import 'package:bote_parroquial/repositories/profile_editor_repository.dart';
@@ -37,11 +38,13 @@ import 'package:bote_parroquial/services/profile_editor_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'support/idle_daily_copies.dart';
 import 'auth_flow_test.dart' as auth;
 import 'dashboard_test.dart' as dashboard;
 import 'groups_test.dart' as groups;
 import 'movement_history_test.dart' as history;
 import 'audit_history_test.dart' as audit;
+import 'movements_test.dart' as money;
 
 class ManagedGroups extends groups.FakeGroups
     implements GroupManagementService {
@@ -328,8 +331,13 @@ void main() {
           service = ManagedGroups(),
           profiles = Profiles(),
           auditLog = audit.MemoryAudit()..events = [];
+      final cashSource = money.MemoryMovements();
       final container = ProviderContainer(
         overrides: [
+          dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
+          movementRepositoryProvider.overrideWithValue(
+            MovementRepository(cashSource),
+          ),
           firebaseStartupProvider.overrideWithValue(
             FirebaseStartup.ready(auth.FakeApp()),
           ),
@@ -372,6 +380,7 @@ void main() {
         await service.changes.close();
         await service.updates.close();
         await auditLog.changes.close();
+        await cashSource.changes.close();
       });
       await tester.pumpWidget(
         UncontrolledProviderScope(
@@ -391,13 +400,17 @@ void main() {
       }
 
       final router = container.read(routerProvider);
-      await tap('Crear un nuevo grupo');
+      await tester.tap(find.byTooltip('Añadir'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Crear un nuevo grupo'));
+      await tester.pumpAndSettle();
       expect(find.byType(GroupEditorScreen), findsOneWidget);
       await tester.enterText(find.byType(TextFormField).first, 'Mi grupo');
       await tap('Crear mi grupo');
       expect(service.lastCreation?.createOwnerPerson, true);
       expect(service.saved['created-group']?.name, 'Mi grupo');
       expect(find.text('Mi grupo'), findsOneWidget);
+      await tap('Gestionar este espacio');
       await tap('Editar grupo');
       await tester.enterText(
         find.byType(TextFormField).first,
@@ -405,6 +418,7 @@ void main() {
       );
       await tap('Guardar grupo');
       expect(service.saved['created-group']?.name, 'Nombre editado');
+      await tap('Gestionar este espacio');
       await tap('Historial administrativo');
       expect(find.byType(GroupAuditScreen), findsOneWidget);
       expect(find.text('Aquí empieza la trazabilidad'), findsOneWidget);

@@ -1,5 +1,37 @@
 # Guía de pruebas de BoteParroquial con dos o tres móviles
 
+**Selección integrada, 03/11/2026 (D130):** B07/B08 en controles, B04/B05 al
+rechazar intentos, N01 y P03/P05; grupos con onda de un segundo y expansión
+desde la tarjeta. Pestañas entran por izquierda/derecha según su posición.
+Recorrido vigente **SEL-01–SEL-06**, sección 22; sustituye las expectativas de
+movimiento D128 de la sección 20. El laboratorio sigue disponible por tu elección.
+
+**Laboratorio temporal, 03/11/2026:** Inicio → Laboratorio de animaciones, solo
+en debug/profile. Prueba y comunica códigos P/B/N antes de aplicar opciones;
+la elección no se guarda ni cambia el resto de pantallas. Recorrido **LAB-01–05**,
+sección 21. El laboratorio se retirará cuando indiques las animaciones definitivas.
+
+**Movimiento actualizado, 03/11/2026:** sustituye el deslizamiento uniforme por
+efectos según contexto, más marcados por tu elección. La barra del grupo permanece
+montada y su indicador viaja entre pestañas. Recorrido **ANI-01–ANI-04**, sección
+20. Para valorar los tirones, usa el APK **profile** de esta entrega en cada móvil.
+La fluidez física está pendiente; las pruebas de widgets no la certifican.
+
+**Última continuación del 02/11/2026:** selector de color cuadrado/arcoíris/hex,
+Cyberpunk/Cartoon/Arcade/Pop Art y pulsación completa antes de navegar, con
+transiciones compartidas. Recorrido **COL-01–COL-04**, sección 19. Análisis y APK
+comprobados; estos casos físicos siguen pendientes y tú ejecutas la app.
+
+**Continuación visual del 02/11/2026:** carga con brillo, menús, Añadir flotante,
+Copias en cuenta, fuentes y paletas propias. Recorrido **VIS-01–VIS-05**, sección
+18. Copias: menú de tu avatar → Copias guardadas; crear/entrar: Añadir flotante.
+Se actualiza COP-01 por el cambio de ubicación. Casos físicos pendientes.
+
+**Actualización del 02/11/2026:** recorte de portadas 16:9, cambios sin guardar,
+primeros meses con selección múltiple, paletas ampliadas y solicitud inicial de
+avisos. Recorrido **UX-01–UX-06**, sección 17; AVI-01/02 actualizados por D119.
+Usar el APK de esta entrega. No se han ejecutado estos casos físicamente.
+
 **Actualización del 23/10/2026:** incluye copias diarias locales de consulta,
 cifradas y separadas por cuenta. El nuevo recorrido es **COP-01–COP-10**, sección
 16. Requiere instalar el APK nuevo en cada móvil; no basta la compilación del día 20.
@@ -55,10 +87,44 @@ claves, códigos de invitación activos o capturas de credenciales.
 
 ### Instalar sin compilar otra vez
 
-APK preparado: `build/app/outputs/flutter-apk/app-debug.apk`.
-Su SHA-256 en esta entrega es
-Consulta el SHA-256 vigente al final de
-[DAILY_OFFLINE_COPIES_VALIDATION.md](DAILY_OFFLINE_COPIES_VALIDATION.md).
+APK recomendado para valorar fluidez:
+`build/app/outputs/flutter-apk/app-profile.apk`.
+También se ha compilado `build/app/outputs/flutter-apk/app-debug.apk` para depurar.
+Consulta ambos SHA-256 de la entrega cerrada el 03/11/2026 en
+[SELECTED_MOTION_2026-11-03.md](SELECTED_MOTION_2026-11-03.md).
+
+## 23. Fluidez de la barra de grupo (D131)
+
+Usar el APK actualizado de
+[GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md](GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md),
+que sustituye los artefactos anteriores para esta comprobación. Casos físicos
+**PENDIENTES** hasta probarlos. No es necesario crear ni cambiar datos.
+
+- [ ] **FLU-01 — Instalar profile**. Desde la raíz, para A059P conectado,
+  actualizar conservando datos mediante instalación directa en PowerShell:
+  `& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" -s 00166155L000316 install -r "build\app\outputs\flutter-apk\app-profile.apk"`.
+  Debe terminar con Success. Si persiste la duda, comparar SHA-256 del APK
+  instalado con el del informe antes de evaluar la corrección.
+  Preferir `adb install -r` aquí: la CLI Flutter instalada puede desinstalar
+  primero con `flutter install`, retirando datos locales.
+  Abrir manualmente. Para M2 sustituir ID según `flutter devices`. Profile permite
+  valorar fluidez sin el coste de debug; ambas compilaciones tienen la corrección.
+- [ ] **FLU-02 — Entrada y repetición**. Entrar en un grupo y recorrer Inicio →
+  Informes → Actividad → Participantes → Inicio unas diez veces. Deben mantenerse
+  lados e indicador continuo. Durante la preparación de una sección nueva aparece
+  su esqueleto, sin construir todas las filas mientras se desliza. La pantalla que
+  sale conserva su aspecto. Esperar un segundo entre toques para aislar mediciones;
+  después probar toques rápidos, Atrás y cambiar de grupo sin destinos tardíos.
+- [ ] **FLU-03 — Carga real y copia**. Repetir con mala conexión y en una copia
+  local. Carga/error siguen sus estados reales; no aparece información inventada.
+  La copia conserva fecha/solo lectura. Con Quitar animaciones, cambio inmediato;
+  con texto ampliado, barra y contenido siguen utilizables.
+- [ ] **FLU-04 — Medir sin datos personales**. Dejar la app abierta tras FLU-02.
+  En el profile instrumentado se pueden leer los tiempos con:
+  `adb logcat -d -s flutter:I | Select-String 'GROUP_MOTION'` (PowerShell).
+  Comunicar recorrido y si el tirón es durante el deslizamiento o al aparecer los
+  datos. Comparar ambos móviles. Los logs solo contienen índices/tiempos; cero
+  conteos de una ventana no certifica ausencia absoluta de frames perdidos.
 El APK anterior del 20/10 tenía hash
 `030d8d285e701adc68b77933d22b96ca64ed53d451aa0a0f1e17a6b3c9547a73`
 y no incluye las copias diarias.
@@ -69,8 +135,8 @@ En PowerShell, desde el repositorio:
 
 ```powershell
 flutter devices
-flutter install --debug -d ID_M1 --use-application-binary="build/app/outputs/flutter-apk/app-debug.apk"
-flutter install --debug -d ID_M2 --use-application-binary="build/app/outputs/flutter-apk/app-debug.apk"
+flutter install --profile -d ID_M1 --use-application-binary="build/app/outputs/flutter-apk/app-profile.apk"
+flutter install --profile -d ID_M2 --use-application-binary="build/app/outputs/flutter-apk/app-profile.apk"
 ```
 
 Sustituye `ID_M1` e `ID_M2` por los identificadores reales; repite para M3 si lo
@@ -157,6 +223,8 @@ o año completo según el dato; la previsión futura queda separada de deuda ven
   No des por hecho que editar un perfil cambia nombres de personas internas.
 
 ## 3. Crear grupos, separación y persona inicial
+
+Acceso vigente: botón flotante **Añadir → Crear un nuevo grupo** en Inicio.
 
 - [ ] **GRP-01**. Crea G con las opciones indicadas arriba. No aparece una
   persona automática del propietario. Saldo inicial cero e historial vacío.
@@ -480,11 +548,15 @@ a la activación. Una bandeja vacía no demuestra un fallo. Registrar un disposi
 no genera por sí mismo un aviso. El móvil debe tener permiso, registro y conexión.
 
 - [ ] **AVI-01**. Instalación/cuenta sin consentimiento previo: iniciar sesión
-  no muestra el permiso de notificaciones automáticamente. Tu perfil y la
-  campana del dashboard permiten abrir el panel de avisos.
-- [ ] **AVI-02**. Pulsa «Activar avisos en este móvil». Android solicita permiso
-  cuando corresponda. Denegarlo no activa el registro; puedes intentarlo de nuevo
-  o concederlo en Ajustes de Android si el sistema ya no muestra la pregunta.
+  solicita automáticamente el permiso de notificaciones tras identificar la
+  cuenta. Si el SO ya lo concedió, puede no mostrar el diálogo. Con conexión y
+  permiso se registra este móvil, sin activar cada grupo por separado. Una
+  instalación anterior sin elección local guardada también pasa por este inicio.
+- [ ] **AVI-02**. Deniega el permiso y vuelve a abrir: no debe insistir ni activar
+  el registro. En Tu perfil pulsa «Activar avisos en este móvil» para reintentarlo;
+  si Android ya no pregunta, concédelo en sus Ajustes. Retira los avisos y reabre:
+  siguen retirados hasta que los actives expresamente. Los controles por grupo
+  siguen presentes; un «Solo bandeja» guardado no se sobreescribe.
 - [ ] **AVI-03**. Con permiso y conexión, queda activado este móvil. Forzar
   detención y abrir conserva la intención; no pide permiso otra vez. Usa la
   opción de comprobar estado si necesitas confirmar registro.
@@ -766,8 +838,8 @@ app para instalarlo: eliminarías sus archivos locales. Cada teléfono debe hace
 su propia primera descarga. Este recorrido sigue **PENDIENTE** en móviles.
 
 - [ ] **COP-01 — Primera copia en M1**. Con Internet, abre la cuenta A que ya
-  pertenece a los grupos DEMO. En Inicio pulsa «Copias para consultar sin conexión»
-  o «Ver copias guardadas en este móvil». Espera a que aparezca una entrada con
+  pertenece a los grupos DEMO. En Inicio toca tu avatar → «Copias guardadas»
+  (también sigue el acceso desde el aviso de sincronización del grupo). Espera a que aparezca una entrada con
   fecha/hora real, grupos y documentos. No tienes que abrir antes Personas,
   Movimientos ni Informes para que se incluyan. Ver la caché no acredita una copia.
 - [ ] **COP-02 — Comparar el contenido**. Pulsa «Ver copia guardada», entra en un
@@ -776,7 +848,7 @@ su propia primera descarga. Este recorrido sigue **PENDIENTE** en móviles.
   en ella. Copiar datos no registra otro movimiento ni cambia sus importes.
 - [ ] **COP-03 — Ninguna red**. Vuelve a datos actuales, activa modo avión y apaga
   también Wi-Fi. Cierra y vuelve a abrir el proceso conservando la sesión. Desde
-  Inicio abre las copias: puedes navegar por la información descargada, incluso
+  el menú de cuenta de Inicio abre las copias: puedes navegar por la información descargada, incluso
   movimientos que no habías abierto online. La caché normal sigue siendo otra fuente.
 - [ ] **COP-04 — Solo lectura**. Debe permanecer el aviso «COPIA GUARDADA · SOLO
   LECTURA» y su fecha. No hay registrar/anular/corregir, modificar personas/cuotas/
@@ -815,3 +887,258 @@ No desinstales ni borres datos para simular desconexión: puedes perder copias y
 claves. Son archivos privados cifrados de consulta, no el respaldo externo de
 recuperación. La copia semanal del portátil sigue aplazada.
 Evidencia y APK: [DAILY_OFFLINE_COPIES_VALIDATION.md](DAILY_OFFLINE_COPIES_VALIDATION.md).
+
+## 17. Edición, primeros meses, paletas y avisos iniciales
+
+Usar el APK del **02/11/2026** en todos los móviles. Casos **PENDIENTES** de
+ejecución física. No hace falta borrar la app ni sus datos para actualizar.
+
+- [ ] **UX-01 — Portada horizontal**. Como owner en H, toca la portada y elige
+  galería. El marco de recorte debe ser 16:9; prueba mover, zoom y rotación. La
+  vista previa debe coincidir con el resumen. Guarda y consulta desde M2. Repite
+  «Editar foto actual» y prueba cámara. Al cancelar el editor nativo o salir sin
+  guardar no cambia la imagen remota. Una foto antigua solo cambia si la guardas.
+  La foto de perfil/miembro/persona conserva recorte cuadrado y avatar circular.
+- [ ] **UX-02 — No perder cambios**. Edita el nombre/notas de una persona y toca
+  Atrás: aviso con «Seguir editando» y «Descartar cambios». Seguir conserva el
+  texto, descartar sale y no escribe. Prueba también Atrás de Android y Cancelar.
+  Reabre sin modificar y vuelve: no pregunta. Modifica y vuelve al valor original:
+  no pregunta. Guarda un cambio: sale sin otro aviso. Repite una vez en Perfil,
+  editar grupo, un movimiento nuevo sin enviarlo y una foto ajustada sin guardar.
+  Durante un envío no debe dejar salir. No fuerces una operación económica solo
+  para probar la advertencia; no se ha añadido autoguardado ni recuperación de texto.
+- [ ] **UX-03 — Completar varias personas**. En G crea dos personas `[Prueba] UX A`
+  y `[Prueba] UX B` dejando su primer mes en «Más adelante». En Personas aparece
+  «PRIMER MES DE CUOTA», cantidad pendiente y «Completar primer mes». Ábrelo,
+  selecciona ambas con casillas o «Seleccionar todas», elige un mes común y revisa.
+  Antes de confirmar no se escribe nada. Confirma y comprueba ambas fichas/etapas,
+  meses esperados y eventos de auditoría. No se registran pagos ni movimientos.
+  Las personas ya configuradas desaparecen de pendientes; no aparecen inactivas.
+  B como member puede consultar, pero no abrir este guardado múltiple.
+- [ ] **UX-04 — Interrupción y concurrencia**. Solo en datos de prueba, corta red
+  durante la selección/confirmación: no anuncia éxito global sin confirmación.
+  Si algunas ya se guardaron, el resultado indica cuántas y dónde se detuvo.
+  Reconecta y revisa antes de repetir. Con dos gestores, configura una seleccionada
+  desde M2 antes de guardar en M1: no debe sobrescribir la etapa existente ni
+  inventar otra para ocultar el conflicto. Las demás personas ya guardadas se
+  conservan. No cerrar proceso para fingir una anulación.
+- [ ] **UX-05 — Paletas completas**. En Ajustes de apariencia prueba las cinco,
+  al menos una clara y otra oscura: la muestra contiene tres acentos. Revisa
+  botones secundarios, paneles, Participantes y cifras de personas; colores
+  complementarios conviven sin recolorear errores como éxito. Reabre y conserva
+  selección; modo Sistema sigue el móvil. Texto ampliado y movimiento reducido
+  mantienen legibilidad/controles. El visor de copias hereda la apariencia.
+- [ ] **UX-06 — Avisos al entrar**. En un móvil/cuenta sin elección previa de
+  esta versión, entra con Google: aparece la solicitud del SO cuando corresponda.
+  Acepta en M1; sin visitar cada grupo, Perfil confirma el registro. En M2 rechaza:
+  reabrir no insiste. Actívalo después desde Perfil/Ajustes de Android. Retirar
+  desde Perfil y reabrir no vuelve a activarlo. Un grupo con «Solo bandeja» previo
+  conserva su elección; los grupos sin preferencia usan activo. Cerrar sesión
+  sigue exigiendo retirar un registro remoto pendiente y deja avisos retirados
+  al volver hasta activación expresa. No borres datos/cachés de copias para probar
+  el diálogo; usa M2/M3 o cuenta de prueba. Aceptar permiso no demuestra entrega:
+  para push real sigue AVI-10–14 con worker y conexión.
+
+Estado y evidencia: [UX_IMPROVEMENTS_2026-11-02.md](UX_IMPROVEMENTS_2026-11-02.md).
+
+## 18. Biblioteca visual, acciones flotantes, fuentes y paletas locales
+
+Instala el APK de esta continuación en cada móvil. Casos **PENDIENTES**: las
+capturas de tests no acreditan red real ni el comportamiento físico del dispositivo.
+
+- [ ] **VIS-01 — Formas de carga**. Abre sesión, Inicio y un grupo cuando necesiten
+  datos: aparecen formas aproximadas con banda diagonal de brillo de izquierda a
+  derecha, sin círculos ni cifras ficticias. Personas/Miembros e historial muestran
+  filas; una portada o avatar sin imagen carga dentro de su forma. Una foto ya
+  disponible no se sustituye por el esqueleto al navegar/revalidar. Si no hay red,
+  conserva los mensajes reales de caché/error y no anuncia datos actualizados.
+  Con movimiento reducido, las formas quedan estáticas.
+- [ ] **VIS-02 — Muchos grupos**. Desplaza Inicio hacia grupos inferiores. El botón
+  «Añadir» sigue visible y no tapa el último grupo al llegar al final. Abre su menú:
+  «Crear un nuevo grupo» y «Entrar con código» llevan a sus flujos habituales.
+  El título de Tus grupos ya no lleva el antiguo botón Crear. Copias y Código no
+  forman parte del final de la lista. La ruta de invitación mantiene sus permisos.
+- [ ] **VIS-03 — Menús**. Avatar superior → identidad con foto/iniciales, nombre y
+  correo; Mi perfil, Mi foto, Copias guardadas y Cerrar sesión. Copias abre el
+  catálogo habitual, también sin red y con sesión restaurada. Menús de acciones
+  y campos desplegables muestran filas/iconos/selección con el tema. Prueba cancelar,
+  Atrás, nombre largo y texto ampliado. Tras cambiar de cuenta no queda abierto
+  el menú con identidad anterior. Salir mantiene retirada de avisos confirmada.
+- [ ] **VIS-04 — Letras**. Ajustes de apariencia → Tipo de letra. Alterna Manrope,
+  Newsreader y Sistema. Revisa títulos, campos, menús y cantidades sin cambios en
+  su valor. Cierra/reabre: se conserva en este móvil. Con otra cuenta en el mismo
+  teléfono se conserva por ser preferencia de instalación; M2 tiene su propia
+  elección. Revisa también una copia guardada, texto ampliado y modo oscuro.
+- [ ] **VIS-05 — Paleta propia**. «Crear mi propia paleta», escribe un nombre y
+  abre cada uno de los tres colores. Prueba cuadrado, arcoíris y código hexadecimal;
+  un valor incompleto no permite usarlo. Antes de guardar, alterna Claro/Oscuro
+  en el widget de ejemplo: cambia la vista previa sin crear una paleta persistida.
+  Salir con cambios pregunta; descartar conserva la apariencia guardada. Guarda:
+  se aplica y aparece en Ajustes. Reabre la app y edita: no duplica la entrada.
+  Elimina con confirmación: vuelve a la predefinida si estaba activa, conservando
+  modo y letra. Prueba colores muy claros/oscuros y comprueba lectura de texto,
+  etiquetas y botones. M2 no recibe la paleta automáticamente. No hay escrituras
+  de Firestore ni descargas de fuentes para estas elecciones.
+
+Implementación y evidencia: [VISUAL_LIBRARY_2026-11-02.md](VISUAL_LIBRARY_2026-11-02.md).
+
+## 19. Selector intuitivo, paletas expresivas y animaciones
+
+Actualiza con el APK cuyo hash figura al principio de esta guía. No hace falta
+desinstalar ni borrar datos. Casos **PENDIENTES** de comprobación física.
+
+- [ ] **COL-01 — Elegir un color**. Ajustes de apariencia → Crear mi propia paleta
+  → toca un color. Arrastra por el cuadrado: hacia la derecha aumenta intensidad,
+  hacia abajo oscurece. La barra arcoíris cambia el tono. La muestra, el marcador
+  y el hexadecimal se actualizan juntos. Escribe un código completo, por ejemplo
+  `#FF2AB5`: se refleja en el selector. Un valor incompleto impide confirmarlo.
+  «Usar este color» devuelve al formulario; revisa Claro/Oscuro antes de guardar.
+  Cancelar no modifica la paleta persistida. Revisa también texto ampliado.
+- [ ] **COL-02 — Identidades distintas**. Prueba Atlántico, Cyberpunk, Cartoon,
+  Arcade y Pop Art en claro y oscuro. Atlántico conserva su diseño; las otras
+  cuatro tienen combinaciones y fondos distintos. Revisa botones, etiquetas,
+  importes y estados de error. Cierra/reabre: conserva la selección de este móvil.
+  Una selección anterior de Iris/Coral/Bosque/Grafito se corresponde ahora con
+  Cyberpunk/Cartoon/Arcade/Pop Art. Las paletas propias mantienen sus colores.
+- [ ] **COL-03 — Toque completo**. Toca brevemente una tarjeta de grupo: ahora
+  hace la onda de un segundo y expansión de SEL-03. Prueba el brillo/onda de un
+  botón y un icono de navegación. Dos toques rápidos durante el ciclo no deben abrir
+  dos pantallas. Arrastrar para
+  desplazar la lista o cancelar el gesto no abre una tarjeta. Controles deshabilitados
+  siguen sin actuar. Usa navegación o Cancelar; no envíes dinero solo para probar
+  un efecto visual. La retención larga conserva sus acciones habituales.
+- [ ] **COL-04 — Pantallas y accesibilidad**. Entra en un grupo, Personas y su
+  editor; vuelve con Atrás y abre una foto sin guardarla. Debe haber transiciones
+  según contexto al entrar/salir, coherentes con paneles y diálogos. Repite navegación
+  dentro de una copia guardada: conserva aviso fijo y solo lectura. Activa «Quitar
+  animaciones» en los ajustes de accesibilidad de Android: desaparecen escala y
+  espera del toque, sin bloquear la navegación ni perder cambios. Desactívalo para
+  recuperar el efecto. Fluidez real de Android y gesto nativo de iOS se comprueban
+  en sus dispositivos; no están acreditados por la compilación de este APK.
+
+Implementación y evidencia:
+[COLOR_PICKER_PALETTES_MOTION_2026-11-02.md](COLOR_PICKER_PALETTES_MOTION_2026-11-02.md).
+
+## 20. Fluidez, transiciones distintas y barra de grupo
+
+Referencia histórica D128: las expectativas de efectos de esta sección han sido
+sustituidas por la selección D130, sección 22. No exigir fundido/escala en lugar
+del desplazamiento lateral elegido. Los pendientes de fluidez física permanecen.
+
+Casos **PENDIENTES** en móvil. Instala profile desde el comando de la sección 1;
+no hace falta desinstalar ni borrar datos. No confundas la carga de Internet con
+los fotogramas de una transición. La pantalla puede mostrar su esqueleto mientras
+llegan datos; eso no debe impedir el movimiento de navegación.
+
+- [ ] **ANI-01 — Identidades de movimiento**. Toca un grupo en Inicio: pulso breve
+  completo y entrada con zoom. Alterna Actividad/Participantes/Informes: fundido
+  y escala breve, sin barrer toda la pantalla de lado a lado. Abre Añadir persona
+  o un movimiento nuevo sin guardarlo: entrada desde abajo. Abre una foto sin
+  guardarla: mismo lenguaje de edición vertical. Atrás mantiene el recorrido y
+  sigue avisando cuando hay cambios sin guardar. El editor nativo de recorte no
+  se sustituye por una transición de Flutter.
+- [ ] **ANI-02 — Indicador continuo**. Dentro del mismo grupo alterna las cuatro
+  pestañas, primero de una en una y después rápidamente. La barra permanece en
+  su sitio, su indicador viaja al nuevo destino y hay énfasis del icono/texto.
+  No aparecen dos barras ni dos selecciones, y las pulsaciones no se retrasan
+  hasta terminar un pulso. Tocar la pestaña ya seleccionada no duplica páginas.
+  Atrás actualiza la selección; desde una sección va al resumen y después a Tus
+  grupos. Participantes permite abrir Personas/Miembros con sus permisos actuales.
+- [ ] **ANI-03 — Fluidez real**. Repite el recorrido diez veces en profile,
+  incluyendo la primera apertura y posteriores con datos disponibles. Compara
+  M1/M2, al menos uno con fotos y listas más largas. Anota dispositivo, pantalla,
+  si el tirón ocurre al empezar o durante todo el efecto y si sucede siempre o
+  solo en frío. Un APK compilado o un test sin errores no demuestra 60/120 FPS.
+  Si continúa, ese recorrido concreto se medirá con DevTools en profile, sin
+  añadir efectos nuevos ni deducir que todo se debe a la red.
+- [ ] **ANI-04 — Accesibilidad y copias**. Activa «Quitar animaciones» en Android:
+  rutas y pulso dejan de animarse; la selección inferior es inmediata. Con texto
+  ampliado siguen leyéndose las etiquetas. Abre una copia guardada y repite sus
+  secciones: indicador continuo, aviso fijo y ninguna escritura. Vuelve al modo
+  actual. iOS y el gesto nativo de retorno requieren su propia prueba en iPhone;
+  no están validados por estos APK de Android.
+
+Referencia, evidencia y compilaciones:
+[MOTION_PERFORMANCE_2026-11-02.md](MOTION_PERFORMANCE_2026-11-02.md).
+
+## 21. Laboratorio temporal para elegir animaciones
+
+Casos **PENDIENTES** en móvil; usa el APK profile de la entrega del laboratorio
+para valorar los tirones. Los comandos de la sección 1 siguen siendo válidos.
+Este apartado no modifica datos ni configura animaciones definitivas.
+
+- [ ] **LAB-01 — Entrada e icono**. En Inicio abre Añadir: Crear sigue mostrando
+  + y Entrar con código muestra una llave. Cierra el menú y abre el bloque visible
+  Laboratorio de animaciones. Aparecen aviso temporal y categorías inferiores
+  Pantallas/Botones/Barra. El resto de tus grupos conserva sus rutas habituales.
+- [ ] **LAB-02 — Pantallas P01–P24**. Toca Abrir en las variantes que quieras
+  comparar. Todas llevan al mismo contenido ficticio, con el nombre/código de
+  la transición. Atrás invierte la salida y vuelve al catálogo, conservando el
+  desplazamiento; Atrás desde el catálogo sale a Inicio. Compara primero a
+  400 ms y repite las favoritas con el deslizador de duración (150–1.000 ms).
+  P01 es instantánea. Cambiar de categoría no obliga a recorrer toda la lista.
+- [ ] **LAB-03 — Botones B01–B12**. Toca cada muestra: ejecuta un ciclo y vuelve
+  al estado inicial. Prueba doble toque durante el efecto y sal de la pantalla
+  mientras se mueve: no quedan animaciones continuas ni se ejecutan operaciones.
+  Brillo/onda/barrido son efectos de muestra; no indican un envío de dinero.
+- [ ] **LAB-04 — Barras N01–N04**. Toca los cuatro iconos de cada muestra y
+  compara el indicador suave/elástico, el fundido y la línea. Solo cambia esa
+  muestra; no abre tus grupos ni altera la barra del producto. Los códigos
+  probados se cuentan durante esta visita y se olvidan al salir.
+- [ ] **LAB-05 — Elegir y accesibilidad**. Anota, por ejemplo, «P10 al entrar en
+  grupos, P05 para editar, B07 en botones, N02 en la barra, 350 ms». Compara en
+  M1/M2 y comunica dónde notas tirones. Con texto ampliado los controles pueden
+  desplazarse; las categorías siguen visibles. Con Quitar animaciones activado
+  el catálogo avisa y las demostraciones son estáticas; no cambia esa preferencia
+  del móvil. No se da por validado iOS ni rendimiento real por ver una captura.
+
+No se aplica ni elimina automáticamente nada al terminar de probar. La elección
+D130 ya está integrada en la biblioteca; has pedido conservar el apartado por
+ahora. Su retirada requiere otra indicación.
+Estado, catálogo y plan de retirada:
+[MOTION_LAB_2026-11-03.md](MOTION_LAB_2026-11-03.md).
+
+## 22. Animaciones elegidas en toda la aplicación
+
+Casos **PENDIENTES** en móvil. Actualiza todos los dispositivos con el mismo APK
+profile de SELECTED_MOTION_2026-11-03.md, usando el comando de la sección 1.
+
+- [ ] **SEL-01 — Controles compartidos**. En Inicio toca Añadir y el menú de
+  cuenta: brillo B07 en el principal, onda B08 en iconos/disparadores secundarios.
+  Verifica que aparece una sola instancia del menú y que Entrar con código conserva
+  su llave. Revisa también un selector de opciones y un botón secundario del grupo.
+  No debe acumularse el antiguo pulso de escala con el nuevo efecto.
+- [ ] **SEL-02 — Falta de datos y bloqueo**. Intenta guardar una persona o grupo
+  sin nombre, un movimiento sin cantidad o un código de invitación incorrecto:
+  muestra la validación y sacudida B04, sin registrar la operación. Completa datos
+  y guarda una sola vez; doble toque durante el efecto no duplica el envío. Toca
+  un botón visible deshabilitado (por ejemplo, una confirmación sin selección):
+  balanceo B05 y ninguna acción. Los controles ocupados no permiten otro envío.
+  Si un rol oculta un botón, no debe aparecer solo para poder mostrar la animación.
+- [ ] **SEL-03 — Entrar al grupo**. En Inicio pulsa una tarjeta: onda recorriendo
+  la tarjeta durante un segundo y expansión desde su posición real hasta ocupar
+  la pantalla, no desde un centro genérico. Repite con otro grupo tras desplazar
+  Inicio y con el grupo de una copia guardada. Si abres otra ruta durante la onda,
+  no debe llevarte después al grupo. Una entrada directa sin tarjeta no inventa
+  un origen ni añade la espera. El acceso depende de la membresía actual.
+- [ ] **SEL-04 — Lados y barra N01**. Dentro del grupo sigue Inicio → Informes
+  (entra por derecha), Informes → Actividad (izquierda), Actividad → Participantes
+  (derecha) y Participantes → Inicio (izquierda). El indicador se desliza sin
+  rebote/crecimiento del icono, y la barra permanece fija y única. Prueba Atrás:
+  desde una sección vuelve al resumen, después a Tus grupos. Saltar varias
+  posiciones o pulsar la pestaña actual no duplica rutas ni cambia de cuenta/grupo.
+- [ ] **SEL-05 — Pantallas, formularios y paneles**. Abre una pantalla de consulta:
+  P03 desde la derecha. Abre Nueva persona, Mi perfil, movimiento, foto, paleta o
+  primeros meses: P05 desde abajo, a pantalla completa donde corresponda. Atrás
+  conserva el aviso de cambios sin guardar. En Personas abre la reactivación/primer
+  mes y revisa que el panel cubre la barra y todos sus controles son pulsables.
+- [ ] **SEL-06 — Accesibilidad y límites**. Con Quitar animaciones, acciones y
+  rutas son inmediatas, incluida la entrada sin esperar un segundo; las validaciones
+  y bloqueos siguen vigentes. Con texto ampliado los controles no quedan tapados.
+  En una copia sigue el aviso fijo y el bloqueo de escrituras. Compara fluidez
+  en ambos móviles con profile; apunta recorrido y si el tirón es en frío o repetido.
+  Ni compilación ni pruebas de widgets certifican FPS o comportamiento de iPhone.
+
+El laboratorio permanece para seguir comparando; no cambia por sí mismo lo
+elegido. Evidencia, límites e identificadores del APK actual:
+[SELECTED_MOTION_2026-11-03.md](SELECTED_MOTION_2026-11-03.md).

@@ -44,3 +44,9 @@ abstract interface class PushRegistrationService {
   Future<void> write(PushRegistration registration);
   Future<void> clear();
 }
+
+/// Local per-account choice, independent of transient token registration.
+abstract interface class PushConsentService {
+  Future<bool?> read(String uid);
+  Future<void> write(String uid, bool enabled);
+}

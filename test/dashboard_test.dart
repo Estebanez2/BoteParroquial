@@ -12,15 +12,20 @@ import 'package:bote_parroquial/features/persons/providers/person_providers.dart
 import 'package:bote_parroquial/models/dashboard_summary.dart';
 import 'package:bote_parroquial/models/movement.dart';
 import 'package:bote_parroquial/models/person.dart';
+import 'package:bote_parroquial/features/movements/presentation/movements_screen.dart';
+import 'package:bote_parroquial/design_system/platform/app_deferred_section.dart';
 import 'package:bote_parroquial/repositories/dashboard_repository.dart';
 import 'package:bote_parroquial/repositories/movement_repository.dart';
 import 'package:bote_parroquial/repositories/movement_history_repository.dart';
+import 'package:bote_parroquial/repositories/person_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'support/idle_daily_copies.dart';
 import 'auth_flow_test.dart' as auth;
 import 'groups_test.dart' as groups;
 import 'movements_test.dart' as money;
+import 'persons_test.dart' as people;
 
 Movement movement(
   String id,
@@ -48,12 +53,12 @@ Movement movement(
       ? DateTime.utc(2026, 10, day)
       : null,
   cancelledBy: 'alice',
-  cancellationReason: 'Anulado',
+  cancellationReason: status == MovementStatus.cancelled ? 'Anulado' : null,
   correctedAt: status == MovementStatus.corrected
       ? DateTime.utc(2026, 10, day)
       : null,
   correctedBy: 'alice',
-  correctionReason: 'Corregido',
+  correctionReason: status == MovementStatus.corrected ? 'Corregido' : null,
   correctedByMovementId: replacement,
   correctionOfMovementId: original,
 );
@@ -155,10 +160,12 @@ void main() {
       final session = auth.FakeAuthRepository(auth.alice),
           membership = groups.FakeGroups(),
           service = money.MemoryMovements();
+      final personService = people.MemoryPersons();
       service.current = [movement('income', 1000)];
       final confirmation = StreamController<bool>.broadcast();
       final container = ProviderContainer(
         overrides: [
+          dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
           groupServerConfirmedProvider.overrideWith((ref, groupId) async* {
             yield false;
             yield* confirmation.stream;
@@ -172,6 +179,9 @@ void main() {
             auth.FakeProfileRepository(),
           ),
           groupRepositoryProvider.overrideWithValue(membership),
+          personRepositoryProvider.overrideWithValue(
+            PersonRepository(personService),
+          ),
           personsProvider.overrideWith(
             (ref, groupId) => Stream.value([person('p', true)]),
           ),
@@ -185,6 +195,7 @@ void main() {
         await session.changes.close();
         await membership.changes.close();
         await service.changes.close();
+        await personService.changes.close();
         await confirmation.close();
       });
       await tester.pumpWidget(
@@ -214,12 +225,124 @@ void main() {
         await tester.pumpAndSettle();
       }
 
+      expect(find.text('Ver movimientos'), findsNothing);
+      expect(find.text('Ver personas'), findsNothing);
+      expect(find.text('Ver miembros'), findsNothing);
+      expect(find.text('Informes del grupo'), findsNothing);
+      final cover = tester.widget<AppCover>(find.byType(AppCover));
+      expect(cover.panoramic, true);
+      expect(tester.getSize(find.byType(AppCover)).width, 360);
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: false);
+      await tester.pumpAndSettle();
+      final indicator = find.byKey(const ValueKey('navigation-indicator'));
+      final indicatorElement = tester.element(indicator);
+      final initialIndicator = tester
+          .widget<AnimatedAlign>(indicator)
+          .alignment;
+      for (final tab in ['Actividad', 'Informes', 'Participantes']) {
+        final pill = find.descendant(
+          of: indicator,
+          matching: find.byType(DecoratedBox),
+        );
+        final previousX = tester.getCenter(pill).dx;
+        await tester.tap(
+          find.descendant(
+            of: find.byType(AppBottomNavigation),
+            matching: find.text(tab),
+          ),
+        );
+        await tester.pump();
+        expect(identical(tester.element(indicator), indicatorElement), true);
+        expect(
+          tester.widget<AnimatedAlign>(indicator).alignment,
+          isNot(initialIndicator),
+        );
+        await tester.pump(const Duration(milliseconds: 40));
+        final intermediateX = tester.getCenter(pill).dx;
+        expect(intermediateX, greaterThan(previousX));
+        await tester.pumpAndSettle();
+        expect(tester.getCenter(pill).dx, greaterThan(intermediateX));
+        expect(router.canPop(), true);
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(router.routeInformationProvider.value.uri.path, '/groups/a');
+      }
+      Future<void> selectSection(String label) async {
+        await tester.tap(
+          find.descendant(
+            of: find.byType(AppBottomNavigation),
+            matching: find.text(label),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 40));
+      }
+
+      double incomingX(int index) => tester
+          .widget<SlideTransition>(
+            find
+                .ancestor(
+                  of: find.byWidgetPredicate(
+                    (widget) =>
+                        widget is AppDeferredSection &&
+                        widget.sectionIndex == index,
+                  ),
+                  matching: find.byType(SlideTransition),
+                )
+                .first,
+          )
+          .position
+          .value
+          .dx;
+      await selectSection('Informes');
+      await tester.pumpAndSettle();
+      await selectSection('Actividad');
+      expect(incomingX(1), lessThan(0));
+      expect(find.byType(MovementsScreen), findsNothing);
+      expect(incomingX(1) + 1, closeTo(incomingX(3), .02));
+      await tester.pumpAndSettle();
+      expect(find.byType(MovementsScreen), findsOneWidget);
+      await selectSection('Informes');
+      expect(incomingX(3), greaterThan(0));
+      await tester.pumpAndSettle();
+      await selectSection('Inicio');
+      expect(incomingX(0), lessThan(0));
+      await tester.pumpAndSettle();
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AppBottomNavigation),
+          matching: find.text('Participantes'),
+        ),
+      );
+      await tester.pumpAndSettle();
       await tap('Ver personas');
       expect(find.text('Añadir persona'), findsOneWidget);
-      router.go('/groups/a');
+      await tap('Añadir persona');
+      expect(find.byType(AppBottomNavigation), findsNothing);
+      expect(find.text('Guardar persona'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(AppBottomNavigation), findsOneWidget);
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       await tap('Ver miembros');
       expect(find.text('Tú'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(
+        router.routeInformationProvider.value.uri.path,
+        '/groups/a/participants',
+      );
+      router.go('/groups/a');
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/');
+      expect(find.text('CADA APORTE CUENTA'), findsNothing);
       router.go('/groups/a');
       await tester.pumpAndSettle();
       service.current = [
@@ -245,6 +368,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(BalanceCard), findsNothing);
       expect(find.text('Este espacio no está disponible'), findsOneWidget);
+      expect(find.byType(AppBottomNavigation), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );

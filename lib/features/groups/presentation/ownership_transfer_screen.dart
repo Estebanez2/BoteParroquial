@@ -157,6 +157,7 @@ class _OwnershipTransferState extends ConsumerState<OwnershipTransferScreen> {
                 const SizedBox(height: AppSpacing.xl),
                 AppButton(
                   label: 'Verificar Google y transferir',
+                  validate: () => _form.currentState?.validate() ?? false,
                   leadingIcon: Icons.verified_user_outlined,
                   loading: action.isLoading,
                   onPressed: chosen == null

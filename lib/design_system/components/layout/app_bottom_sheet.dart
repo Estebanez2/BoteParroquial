@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_motion.dart';
+import '../navigation/app_navigation_host.dart';
 
 abstract final class AppBottomSheet {
   static Future<T?> show<T>(
@@ -10,9 +12,15 @@ abstract final class AppBottomSheet {
     bool isDismissible = true,
     bool enableDrag = true,
   }) => showModalBottomSheet<T>(
-    context: context,
+    context: AppNavigationHost.modalContextOf(context),
     useSafeArea: true,
     isScrollControlled: true,
+    sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
+        ? AnimationStyle.noAnimation
+        : const AnimationStyle(
+            duration: AppMotion.durationSlow,
+            reverseDuration: AppMotion.durationNormal,
+          ),
     isDismissible: isDismissible,
     enableDrag: enableDrag,
     constraints: const BoxConstraints(maxWidth: AppSpacing.readingMax),

@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
 
 class AppAdaptiveRow extends StatelessWidget {
-  const AppAdaptiveRow({super.key, required this.children});
+  const AppAdaptiveRow({
+    super.key,
+    required this.children,
+    this.minChildWidth = AppSpacing.coverLarge,
+  });
   final List<Widget> children;
+  final double minChildWidth;
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      if (constraints.maxWidth < children.length * AppSpacing.coverLarge ||
+      if (constraints.maxWidth < children.length * minChildWidth ||
           MediaQuery.textScalerOf(context).scale(1) > 1.3) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_colors.dart';
 
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopBar({
@@ -18,11 +19,21 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(AppSpacing.topBarHeight);
   @override
   Widget build(BuildContext context) => AppBar(
-    title: Text(
-      title,
+    title: Text.rich(
+      title == 'BoteParroquial'
+          ? TextSpan(
+              children: [
+                const TextSpan(text: 'Bote'),
+                TextSpan(
+                  text: 'Parroquial',
+                  style: TextStyle(color: AppColors.of(context).primary),
+                ),
+              ],
+            )
+          : TextSpan(text: title),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: editorial ? AppTypography.of(context).editorialTitle : null,
+      style: AppTypography.of(context).headingSmall,
     ),
     leadingWidth: leading == null ? null : AppSpacing.topBarHeight,
     leading: leading == null

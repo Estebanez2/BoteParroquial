@@ -6,17 +6,20 @@ import '../features/auth/providers/auth_providers.dart';
 import '../features/groups/providers/group_providers.dart';
 import '../features/notifications/providers/notification_providers.dart';
 import '../features/offline/providers/daily_snapshot_providers.dart';
+import '../features/settings/providers/appearance_providers.dart';
+import '../models/appearance_settings.dart';
 
 import 'router.dart';
 
 class BoteParroquialApp extends ConsumerWidget {
-  const BoteParroquialApp({super.key, this.themeMode = ThemeMode.dark});
-  final ThemeMode themeMode;
+  const BoteParroquialApp({super.key, this.themeMode});
+  final ThemeMode? themeMode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(pushDeviceControllerProvider);
     ref.watch(dailyCopyControllerProvider);
+    final appearance = ref.watch(appearanceProvider).settings;
     void openNotification() {
       final event = ref.read(notificationOpenProvider);
       final memberships = ref.read(membershipsProvider);
@@ -43,9 +46,24 @@ class BoteParroquialApp extends ConsumerWidget {
       child: MaterialApp.router(
         title: 'BoteParroquial',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: themeMode,
+        theme: AppTheme.forSettings(appearance, Brightness.light),
+        darkTheme: AppTheme.forSettings(appearance, Brightness.dark),
+        themeMode:
+            themeMode ??
+            switch (appearance.mode) {
+              AppearanceMode.system => ThemeMode.system,
+              AppearanceMode.light => ThemeMode.light,
+              AppearanceMode.dark => ThemeMode.dark,
+            },
+        themeAnimationDuration:
+            MediaQuery.maybeOf(context)?.disableAnimations == true ||
+                WidgetsBinding
+                    .instance
+                    .platformDispatcher
+                    .accessibilityFeatures
+                    .disableAnimations
+            ? Duration.zero
+            : AppMotion.durationNormal,
         locale: const Locale('es'),
         supportedLocales: const [Locale('es')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,

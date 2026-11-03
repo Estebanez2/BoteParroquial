@@ -3,13 +3,20 @@ import '../theme/app_colors.dart';
 
 /// Native image editor behind the application's visual API.
 abstract final class AppImageCropper {
-  static Future<String?> edit(String path, {required bool darkTheme}) async {
+  static Future<String?> edit(
+    String path, {
+    required bool darkTheme,
+    bool panoramic = false,
+  }) async {
     final colors = darkTheme ? AppColors.dark : AppColors.light;
     final result = await ImageCropper().cropImage(
       sourcePath: path,
       maxWidth: 1024,
-      maxHeight: 1024,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      maxHeight: panoramic ? 576 : 1024,
+      aspectRatio: CropAspectRatio(
+        ratioX: panoramic ? 16 : 1,
+        ratioY: panoramic ? 9 : 1,
+      ),
       compressFormat: ImageCompressFormat.jpg,
       compressQuality: 90,
       uiSettings: [
@@ -31,6 +38,7 @@ abstract final class AppImageCropper {
           doneButtonTitle: 'Usar foto',
           cancelButtonTitle: 'Cancelar',
           aspectRatioLockEnabled: true,
+          aspectRatioLockDimensionSwapEnabled: false,
           resetAspectRatioEnabled: false,
           rotateButtonsHidden: false,
           rotateClockwiseButtonHidden: false,

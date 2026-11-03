@@ -67,6 +67,78 @@ docs/firebase-setup.md
 
 Estado actual
 
+Corrección de tirones de navegación, D131 (03/11/2026): contenido de nuevas
+secciones aplazado hasta acabar su entrada, esqueleto ligero durante el movimiento,
+pantalla saliente temporalmente congelada y curvas acompasadas. Se conservan las
+animaciones elegidas, la barra y los controles de acceso. Cinco casos dirigidos
+superados y análisis limpio; medición física del APK actualizado pendiente.
+[Estado, APK y comprobación de fluidez](docs/GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md).
+
+Animaciones elegidas e integradas el 2026-11-03: B07/B08 en controles compartidos,
+B04/B05 al rechazar intentos, N01 en la barra, P03/P05 en pantallas. La entrada a
+un grupo hace una onda de un segundo y crece desde su tarjeta; las secciones
+entran por el lado correspondiente a la pestaña. El usuario conserva el
+laboratorio para seguir comparando. Nueve casos dirigidos superados, análisis
+limpio y APK debug/profile compilados; validación física pendiente.
+[Cambios, APK y evidencia](docs/SELECTED_MOTION_2026-11-03.md).
+
+Laboratorio temporal del 2026-11-03: acceso visible en Inicio de debug/profile
+para comparar 24 transiciones, 12 efectos de botón y 4 barras, con velocidad
+ajustable. La selección posterior se aplica según el informe anterior, sin
+guardar ajustes de prueba. El laboratorio se conserva por petición del usuario. Entrar con código vuelve
+a mostrar llave. Cuatro casos dirigidos, análisis limpio y APK debug/profile
+compilados; pendiente de prueba física.
+[Estado, APK y retirada](docs/MOTION_LAB_2026-11-03.md).
+
+Continuación de movimiento cerrada el 2026-11-03: efectos más marcados elegidos por el
+usuario, distintos por contexto, entradas simplificadas y pulso más breve. Barra
+inferior persistente con indicador que se desplaza entre secciones del grupo,
+también en copias. Mantiene movimiento reducido y permisos. La fluidez real se
+comprueba en móvil con APK profile; el usuario ejecuta. Siete casos dirigidos
+superados, análisis limpio y APK debug/profile compilados.
+[Cambios, comprobaciones y APK](docs/MOTION_PERFORMANCE_2026-11-02.md).
+
+Último cambio visual del 2026-11-02: selector de color con cuadrado/arcoíris y
+hexadecimal; Atlántico conservado y nuevas Cyberpunk, Cartoon, Arcade y Pop Art.
+Pulsación completa antes de actuar y transiciones de pantalla compartidas,
+respetando movimiento reducido. Trece pruebas dirigidas, tres capturas simuladas,
+análisis limpio y APK debug compilado. Prueba física pendiente, usuario ejecuta.
+[Entrega y evidencia](docs/COLOR_PICKER_PALETTES_MOTION_2026-11-02.md).
+
+Continuación visual del 2026-11-02: carga con formas y brillo, menús renovados,
+Añadir flotante y Copias en cuenta. Ajustes de apariencia añade fuente elegible y
+paletas propias locales de tres colores con vista previa clara/oscura antes de
+guardar. Once pruebas dirigidas distintas y análisis limpio, cuatro capturas
+simuladas revisadas y APK debug compilado. Prueba física pendiente; usuario ejecuta la app.
+[Biblioteca visual y personalización](docs/VISUAL_LIBRARY_2026-11-02.md).
+
+Ampliación del 2026-11-02: recorte panorámico para portadas, aviso al salir con
+cambios sin guardar en los editores afectados, primer mes de cuota con selección
+múltiple desde Personas y cinco paletas con varios acentos. Solicitud inicial de
+notificaciones tras login, manteniendo preferencias y controles de desactivación.
+Sin cambios de Rules o despliegues. Validación física pendiente; el usuario ejecuta.
+23 pruebas dirigidas distintas superadas, análisis limpio y APK debug compilado.
+[Cambios, comprobaciones y límites](docs/UX_IMPROVEMENTS_2026-11-02.md).
+
+Entrega visual vigente, 2026-10-30: v0.4 sustituye el resultado v0.3 rechazado por
+el usuario. Cinco paletas con claro/oscuro y modo Sistema, elegibles desde Ajustes
+de apariencia y guardadas en este móvil. Inicio sin recuadro promocional; portada
+panorámica de ancho completo en el grupo y nombre/descripción debajo. Participantes
+agrupa Personas/Miembros, acciones económicas unificadas y accesos redundantes
+retirados del resumen. Atrás de una sección vuelve al resumen; de este, a Tus grupos.
+37 pruebas dirigidas distintas, análisis limpio, 19 capturas simuladas revisadas y
+APK debug compilado. Revisión en móvil pendiente, el usuario ejecuta la app.
+[Entrega y evidencia v0.4](docs/VISUAL_REDESIGN_V04_VALIDATION.md).
+
+Entrega visual anterior v0.3 (histórica): Design System carbón y menta, según las dos
+nuevas referencias y la dirección «Más expresivo» elegida por el usuario. Tipografía
+sans, tarjetas renovadas, cabeceras con órbitas, feedback de pulsación y entradas
+escalonadas. Inicio/resumen reorganizados y barra inferior en las cuatro vistas
+principales del grupo, también en el visor de copias. Las pantallas existentes
+heredan los nuevos componentes y temas. 33 pruebas dirigidas, análisis limpio,
+ocho capturas simuladas revisadas y APK debug compilado. Revisión en móvil por el
+usuario pendiente. [Entrega y evidencia](docs/VISUAL_REDESIGN_V03_VALIDATION.md).
+
 Actualización 2026-10-23: copias diarias completas de los datos consultables,
 cifradas por cuenta/móvil. Siete capturas, Wi-Fi y datos móviles; fotos según caché.
 Inicio y aviso de sincronización ofrecen el catálogo. Visor con pantallas habituales,
@@ -125,7 +197,7 @@ un flujo de grupos y seis de backend superados. El usuario confirma en A059P fot
 en Miembros, sin parpadeo y editor funcionando. Otros roles e iOS siguen pendientes.
 No se repitió la suite completa.
 
-Fecha de referencia: 2026-10-20.
+Fecha de referencia: 2026-10-30.
 
 Continuación: cálculo de recordatorios de servidor y lector REST readOnly con
 instantánea consistente por grupo, preparados y comprobados localmente. Comparte
@@ -365,7 +437,7 @@ Tras instalar el APK de Phase 6, el usuario confirma que al activar la conexión
 vuelven a aparecer los grupos. Comprobación online confirmada; caché sin conexión
 y recuperación tras cierre siguen pendientes de validación física.
 
-Design System v0.2: rediseño basado en las ocho referencias del usuario.
+Design System v0.2 (histórico, sustituido por v0.3 arriba): rediseño basado en las ocho referencias del usuario.
 Verde casi negro, acentos menta/coral, degradados, tarjetas con contorno y títulos
 serif. Inicio, resumen, historial, formularios, Personas, Miembros y login usan App*.
 Tema oscuro predeterminado; el tema claro se conserva y se revisa en vistas simuladas.

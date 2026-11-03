@@ -4,6 +4,7 @@ import '../../theme/app_gradients.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../feedback/app_skeleton.dart';
 
 /// A group cover with an optional image and initials fallback.
 class AppCover extends StatelessWidget {
@@ -13,11 +14,14 @@ class AppCover extends StatelessWidget {
     this.image,
     this.large = false,
     this.loading = false,
+    this.panoramic = false,
+    this.edgeToEdge = false,
   });
   final String name;
   final ImageProvider? image;
   final bool large;
   final bool loading;
+  final bool panoramic, edgeToEdge;
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
@@ -41,25 +45,41 @@ class AppCover extends StatelessWidget {
         ),
       ),
     );
+    final cover = Container(
+      width: panoramic
+          ? double.infinity
+          : large
+          ? AppSpacing.coverLarge
+          : AppSpacing.coverSmall,
+      height: panoramic
+          ? null
+          : large
+          ? AppSpacing.coverLarge
+          : AppSpacing.coverSmall,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: c.primaryContainer,
+        borderRadius: edgeToEdge ? BorderRadius.zero : AppRadius.control,
+      ),
+      child: image == null
+          ? (loading
+                ? const AppShimmer(
+                    label: 'Cargando portada',
+                    child: SizedBox.expand(child: AppSkeletonBlock()),
+                  )
+                : fallback)
+          : Image(
+              image: image!,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stack) => fallback,
+            ),
+    );
     return Semantics(
       label: 'Imagen de $name',
       image: true,
-      child: Container(
-        width: large ? AppSpacing.coverLarge : AppSpacing.coverSmall,
-        height: large ? AppSpacing.coverLarge : AppSpacing.coverSmall,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.card,
-          border: Border.all(color: c.outline.withValues(alpha: .5)),
-        ),
-        child: image == null
-            ? (loading ? ColoredBox(color: c.surfaceVariant) : fallback)
-            : Image(
-                image: image!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => fallback,
-              ),
-      ),
+      child: panoramic
+          ? AspectRatio(aspectRatio: AppSpacing.coverAspectRatio, child: cover)
+          : cover,
     );
   }
 }

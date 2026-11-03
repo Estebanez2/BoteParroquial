@@ -47,10 +47,24 @@ class _Photos implements PhotoService {
 class _Picker implements PhotoPickerService {
   Future<Uint8List?> next = Future.value(null);
   Uint8List? lastEdited;
+  bool? panoramicPicked, panoramicEdited;
   @override
-  Future<Uint8List?> pick(PhotoSource source, {bool darkTheme = true}) => next;
+  Future<Uint8List?> pick(
+    PhotoSource source, {
+    bool darkTheme = true,
+    bool panoramic = false,
+  }) {
+    panoramicPicked = panoramic;
+    return next;
+  }
+
   @override
-  Future<Uint8List?> edit(Uint8List bytes, {bool darkTheme = true}) {
+  Future<Uint8List?> edit(
+    Uint8List bytes, {
+    bool darkTheme = true,
+    bool panoramic = false,
+  }) {
+    panoramicEdited = panoramic;
     lastEdited = bytes;
     return next;
   }
@@ -81,6 +95,32 @@ const _target = PhotoTarget.account('alice');
 const _alice = AuthUser(uid: 'alice', displayName: 'DEMO Alice');
 
 void main() {
+  test(
+    'Portadas recortan en horizontal al elegir y reeditar; avatares en cuadrado',
+    () async {
+      final photos = _Photos();
+      final picker = _Picker()
+        ..next = Future.value(Uint8List.fromList([1, 2, 3]));
+      final repository = PhotoRepository(photos, picker);
+      const cover = PhotoTarget.group('g');
+      await repository.pick(PhotoSource.gallery, target: cover);
+      expect(picker.panoramicPicked, isTrue);
+      await repository.editCurrent(
+        'alice',
+        cover,
+        draft: Uint8List.fromList([1]),
+      );
+      expect(picker.panoramicEdited, isTrue);
+      await repository.pick(PhotoSource.camera, target: _target);
+      expect(picker.panoramicPicked, isFalse);
+      await repository.editCurrent(
+        'alice',
+        _target,
+        draft: Uint8List.fromList([1]),
+      );
+      expect(picker.panoramicEdited, isFalse);
+    },
+  );
   test(
     'Private disk/memory cache reuses unchanged bytes and clears account scope',
     () async {

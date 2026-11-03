@@ -92,8 +92,15 @@ class PhotoRepository {
     }
   }
 
-  Future<Uint8List?> pick(PhotoSource source, {bool darkTheme = true}) =>
-      _picker.pick(source, darkTheme: darkTheme);
+  Future<Uint8List?> pick(
+    PhotoSource source, {
+    bool darkTheme = true,
+    PhotoTarget? target,
+  }) => _picker.pick(
+    source,
+    darkTheme: darkTheme,
+    panoramic: target?.kind == PhotoKind.group,
+  );
 
   Future<Uint8List?> editCurrent(
     String uid,
@@ -116,7 +123,11 @@ class PhotoRepository {
         'Todavía no hay una foto que editar.',
       );
     }
-    return _picker.edit(bytes, darkTheme: darkTheme);
+    return _picker.edit(
+      bytes,
+      darkTheme: darkTheme,
+      panoramic: target.kind == PhotoKind.group,
+    );
   }
 
   Future<void> upload(String uid, PhotoTarget target, Uint8List bytes) async {

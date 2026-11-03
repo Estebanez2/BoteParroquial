@@ -1,4 +1,165 @@
-# BoteParroquial — Design System v0.2
+# BoteParroquial — Design System v0.4
+
+## Renderizado durante navegación de grupo (D131)
+
+AppDeferredSection muestra AppSkeleton estático durante la primera entrada y
+monta la feature al acabar las animaciones propia/exterior. Una sección ya montada
+se congela solo durante la transición con SnapshotWidget permisivo y TickerMode;
+se libera al acabar, desmontar o invalidar acceso. En web no capturar. La shell
+publica AppSectionRenderScope con decisión/clave opaca de permisos, sin dominio
+en los componentes visuales. Reversas easeIn acompañan entradas easeOut para
+evitar aceleración tardía y separación de las páginas. Mantener D130, accesibilidad
+y laboratorio. Ver [evidencia y límites](docs/GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md).
+
+## Elección vigente de movimiento (D130)
+
+03/11/2026: AppControlFeedback aplica B07 a principales/destructivos, B08 a
+secundarios/iconos/menús y barras de elección, B04 a validación fallida y B05 a
+deshabilitados visibles. No ejecutar acciones rechazadas; loading evita nuevos
+ciclos. AppButton.validate es explícito y revalida al acabar. Tokens: controles
+320 ms, ruta 240 ms, indicador N01 180 ms. Sin antiguo pulso de escala acumulado.
+AppGroupEntry: onda de 1 s y AppGroupOrigin para crecer desde la tarjeta real;
+sin origen usa P03. AppMotionPage/AppSectionMotionScope definen dirección por
+índice dentro del grupo; formularios P05 con formRoute compartida. Movimiento
+reducido inmediato. AppBottomSheet se aloja con modalContextOf del host sin
+salir del ámbito de cuenta/copia. Laboratorio se conserva por decisión expresa.
+[Estado y evidencia](docs/SELECTED_MOTION_2026-11-03.md). Lo inferior registra
+las etapas anteriores, no reemplaza esta elección.
+
+## Laboratorio temporal de movimiento
+
+D129, 03/11/2026: las animaciones vigentes no tienen aprobación visual. El usuario
+pide comparar antes de decidir. design_system/lab contiene un catálogo efímero
+de rutas P01–P24, botones B01–B12 y barras N01–N04, con velocidad ajustable y
+contenido ficticio. Acceso por Inicio, solo debug/profile; no aplicar elecciones
+al tema ni incorporarlo a release. La galería general continúa separada/debug.
+Respetar accesibilidad y aspecto actual. La retirada exige selección expresa y
+se documenta en [MOTION_LAB_2026-11-03.md](docs/MOTION_LAB_2026-11-03.md).
+AppFloatingActions acepta iconos por opción; Entrar con código muestra llave.
+
+## Movimiento vigente: expresivo y por contexto
+
+D128, 02/11/2026: sustituye el deslizamiento uniforme inferior. AppMotionPage
+declara intención: grupo (zoom), sección (fundido/escala), formulario (vertical),
+resto (avance corto). AppContextPageTransitionsBuilder/AppPageTransitions y
+AppMotion centralizan estilo y tiempos: ruta 240 ms, indicador 180 ms, pulso
+80 ms por tramo. No añadir blur ni animar también la página anterior.
+AppReveal usa FadeTransition con hijo estable, sin otra entrada si la ruta anima.
+GroupNavigationShell compone AppNavigationHost: barra fuera del Navigator, con
+una sola selección que viaja entre pestañas y pequeño énfasis del icono/texto.
+AppScaffold no duplica su slot inferior cuando existe host. Mantener uso standalone,
+texto ampliado, movimiento reducido y navegación nativa Apple.
+[Evidencia y pendientes](docs/MOTION_PERFORMANCE_2026-11-02.md).
+
+## Última dirección: color visual y movimiento completo
+
+D125–D127, 02/11/2026: AppColorPlane/AppHueSlider sustituyen deslizadores por
+cuadrado y espectro, con hexadecimal sincronizado en AppColorField. Atlántico
+conserva colores; nuevas Cyberpunk/Cartoon/Arcade/Pop Art en AppPaletteCatalog y
+AppColors. IDs antiguos persisten, paletas propias y letras no se alteran.
+
+AppPressFeedback.builder completa el pulso antes de actuar en AppButton,
+AppIconButton y AppCard interactiva, impide repetir y cancela al deshabilitar o
+desmontar. Movimiento reducido es inmediato. AppPageTransitions define la
+transición Material; Apple mantiene la nativa. AppDialog/AppBottomSheet y editores
+usan tokens centrales. Rutas appRoute crean MaterialPage explícitas para que el
+tema se aplique con go_router 18 en este SDK. No repetir estilos en features.
+Trece pruebas dirigidas y tres capturas simuladas; revisión móvil pendiente:
+[COLOR_PICKER_PALETTES_MOTION_2026-11-02.md](docs/COLOR_PICKER_PALETTES_MOTION_2026-11-02.md).
+
+## Biblioteca ampliada: carga y apariencia personal
+
+D120–D124, 02/11/2026: AppShimmer/AppSkeleton/AppSkeletonBlock centralizan banda
+diagonal, formas de contenido y semántica. LoadingIndicator usa skeleton genérico
+o compacto para botones; AppAvatar/AppCover heredan brillo sin reemplazar imágenes
+disponibles. Sin animación al reducir movimiento y sin círculos de espera.
+Las features eligen composición de carga desde esta biblioteca, sin copiar estilos.
+
+AppMenuRow y PopupMenuTheme renuevan cuenta/contextos; AppDropdown muestra filas
+con selección y conserva foco/cancelación nativos. AppFloatingActions y el slot de
+AppScaffold soportan acciones visibles al desplazar. Inicio decide callbacks:
+Añadir para grupo/código, Copias en cuenta. No crear controles de dominio en DS.
+
+AppTheme/AppTypography reciben Manrope/Newsreader/Sistema. Colores personales se
+derivan de tres semillas RGB y tonos ajustados para contraste claro/oscuro y de
+etiquetas sobre alpha. AppColorField ofrece HSV/hex y AppThemePreview compone App*
+sin acciones reales; no estilos paralelos. Identificadores predefinidos siguen
+vigentes. Apariencia local conserva fuente/modo/paletas propias sin dependencias
+nuevas. Once pruebas dirigidas y cuatro capturas simuladas; móvil pendiente:
+[VISUAL_LIBRARY_2026-11-02.md](docs/VISUAL_LIBRARY_2026-11-02.md).
+
+## Ampliación 02/11/2026
+
+D116–D119: tokens secundarios/terciarios con contenedores, copyWith/lerp y
+ColorScheme completos. Atlántico azul/ámbar/lavanda; Iris violeta/lima/rosa;
+Coral coral/turquesa/violeta; Bosque verde/frambuesa/ocre; Grafito tinta/cobre/
+petróleo. Las vistas previas muestran los tres acentos. Botones secundarios,
+paneles con degradados suaves y tonos de Participantes/estadísticas los utilizan
+sin alterar éxito/aviso/error. Conserva claro/oscuro/Sistema y preferencias locales.
+
+AppImageCropper admite portada horizontal 16:9, manteniendo cuadrado para avatares.
+AppFormGuard muestra AppDialog al abandonar cambios pendientes y bloquea salida
+durante envíos; no guarda datos. Primeros meses se presentan con AppCard/AppBadge,
+casillas y AppMonthField, con confirmación explícita de conjunto. No se declaran
+cubiertos todos los formularios históricos ni probado el editor nativo en móvil.
+Evidencia: [UX_IMPROVEMENTS_2026-11-02.md](docs/UX_IMPROVEMENTS_2026-11-02.md).
+
+## Dirección vigente — apariencia elegible, 2026-10-30
+
+El usuario rechaza el resultado v0.3 y pide rehacer la estética y la navegación.
+v0.4 introduce superficies planas, paneles tonales, radios más amplios, controles
+rellenos y protagonismo de las portadas. Se retira el panel promocional de Inicio
+y la ornamentación orbital de los paneles. La tipografía sigue siendo Manrope,
+con titulares y cifras de mayor peso.
+
+Cinco paletas: **Atlántico, Iris, Coral, Bosque y Grafito**, cada una con variante
+clara y oscura. Ajustes de apariencia está disponible desde el icono de paleta de
+Inicio y desde Tu perfil. Ofrece Sistema/Claro/Oscuro y vista previa de ambas
+variantes de cada paleta. Se aplica al momento y se recuerda en este móvil,
+independientemente de la cuenta. La base inicial es Atlántico y modo Sistema.
+
+En el resumen, portada panorámica 16:9 de ancho completo y nombre/descripción
+debajo. En las secciones se usa identidad compacta para dejar espacio al contenido.
+Barra inferior de ancho completo: Inicio, Actividad, Participantes e Informes.
+Participantes permite abrir Personas o Miembros. Ingreso/retirada comparten
+`MovementActions` en resumen e historial. Los accesos generales duplicados a
+movimientos, personas, miembros e informes se retiran del resumen.
+
+Las rutas tienen padres reales: Atrás desde una sección principal vuelve al
+resumen del grupo; desde el resumen, a Tus grupos. El visor de copias mantiene
+ese recorrido y recibe el tema elegido desde fuera de su contenedor aislado.
+
+37 pruebas dirigidas distintas superadas, análisis limpio, APK debug compilado
+y 19 capturas simuladas revisadas. Aprobación en móvil pendiente.
+Estado y evidencia: [VISUAL_REDESIGN_V04_VALIDATION.md](docs/VISUAL_REDESIGN_V04_VALIDATION.md).
+
+## Dirección anterior — carbón y menta, histórico v0.3
+
+El usuario aporta dos nuevas referencias móviles y elige **«Más expresivo»**
+(D113): fondos carbón, acento menta, tipografía sans, tarjetas contorneadas,
+cabeceras con profundidad y animaciones perceptibles con propósito. Sustituye
+la dirección tipográfica serif de v0.2. Manrope se usa ahora también en titulares
+y saldos; Newsreader sigue en los assets históricos, sin uso en los tokens actuales.
+
+La base compartida actualiza las pantallas existentes, incluidos formularios,
+cuotas, informes, avisos, perfil, auditoría y copias. Inicio y dashboard cambian
+además su composición. El grupo ofrece barra inferior flotante de Inicio,
+Actividad, Personas e Informes. La gestión del grupo se despliega desde
+«Gestionar este espacio»; Miembros y Cuotas siguen accesibles desde el resumen.
+La navegación también funciona en el visor aislado de copias.
+
+Referencias externas consultadas: [Forui](https://forui.dev),
+[Flutter Animate](https://github.com/gskinner/flutter_animate) y
+[animaciones de Flutter](https://docs.flutter.dev/ui/animations).
+Se adaptan sus ideas de superficies mínimas, feedback de estado y entradas
+escalonadas a App*, con implementación propia sobre el SDK existente.
+
+Comprobaciones: 33 pruebas dirigidas, análisis limpio y APK debug compilado;
+ocho capturas simuladas exportadas y revisadas. Aprobación estética en el móvil
+pendiente del usuario. Detalles y comandos:
+[VISUAL_REDESIGN_V03_VALIDATION.md](docs/VISUAL_REDESIGN_V03_VALIDATION.md).
+
+Los apartados fechados de entregas anteriores conservan su contexto histórico.
 
 Implementación y galería disponibles. v0.2 adapta las ocho referencias visuales
 aportadas por el usuario el 2026-10-15. Inicio, grupos, resumen, personas, miembros,
@@ -66,15 +227,15 @@ movimiento reducido. Los cálculos y advertencias financieras vienen de provider
 no se añade lógica a MoneyText/StatusChip. Validación:
 docs/PHASE8_ALLOCATIONS_VALIDATION.md.
 
-Verde casi negro, menta luminosa y coral en retiradas. Degradados suaves, contornos
-verdes, paneles con anillos y jerarquía fuerte para las cifras. El modo claro mantiene
-marfil y verdes. La marca
+Superficies planas con matiz de la paleta elegida y paneles tonales, sin órbitas.
+Las acciones e importes de movimientos mantienen tonos semánticos verde/rojo,
+además de iconos y etiquetas, independientemente del acento. La marca
 vectorial representa dos formas que comparten un centro; es una propuesta de
 interfaz, no un logotipo definitivo. No incorpora símbolos religiosos explícitos.
 
-Manrope para lectura, acciones y cifras; Newsreader para titulares editoriales.
-Usar serif en títulos editoriales e importe destacado; campos de texto y tablas
-usan Manrope. Las fuentes se incluyen localmente en
+Manrope para lectura, acciones, titulares y cifras, también en el saldo destacado.
+Los nombres semánticos editorialTitle/moneyHero se conservan como API.
+Las fuentes se incluyen localmente en
 `assets/fonts/` con sus licencias SIL OFL, sin descargas al abrir la app.
 Iconografía Material outlined/rounded coherente, sin otra dependencia de iconos.
 
@@ -102,27 +263,19 @@ la implementación Material de inputs, calendario, diálogos, paneles y tipograf
 
 ### Color
 
-| Token | Claro | Oscuro |
-| --- | --- | --- |
-| primary | #22594D | #A6F1D0 |
-| primaryContainer | #E0EEE6 | #123E2D |
-| onPrimary | #FFFFFF | #032117 |
-| secondary | #9A503A | #FFA190 |
-| secondaryContainer | #F5E6DE | #54372D |
-| background | #F7F6F1 | #020E09 |
-| surface | #FFFEFA | #081C14 |
-| surfaceVariant | #EEEFE8 | #153B2B |
-| textPrimary | #20372F | #F5F7F1 |
-| textSecondary | #52645B | #C0CFC4 |
-| textMuted | #66736B | #9DB3A5 |
-| success | #236749 | #92E7C2 |
-| warning | #88591A | #F0CB88 |
-| danger | #B23E3E | #FF9987 |
-| info | #345F87 | #A9CEEE |
-| divider | #E2E5DC | #264C3B |
-| outline | #818D82 | #4E8D70 |
-| hero | #193F35 | #104A34 |
-| onHero | #F5F5E9 | #F5F9F0 |
+| Paleta | Primary claro | Primary oscuro | Fondo claro | Fondo oscuro |
+| --- | --- | --- | --- | --- |
+| Atlántico | #2459C4 | #AAC5FF | #F4F6FA | #11151E |
+| Iris | #713BC1 | #D4B8FF | #F8F5FD | #19131F |
+| Coral | #B7472A | #FFB497 | #FFF7F1 | #211715 |
+| Bosque | #25694F | #ABD3B7 | #F2F7F3 | #111A16 |
+| Grafito | #3D475A | #C5CEDF | #F3F4F6 | #0C0D11 |
+
+`AppColors.forPalette` resuelve todos los tokens, también superficies, variantes,
+contornos y hero. `AppTheme.forPalette` construye el tema Material completo.
+hero es ahora tonal y onHero es texto primario, también en claro; no conservar
+el supuesto histórico de texto siempre blanco sobre hero. La fuente exacta de
+tokens es `lib/design_system/theme/app_colors.dart`.
 
 Primary identifica acciones, secondary aporta acento cálido, hero distingue el
 saldo, surface contiene cards/formularios, divider separa y outline delimita
@@ -133,11 +286,11 @@ conceden permisos ni interpretan estados persistidos.
 
 | Estilos | Tamaños base |
 | --- | --- |
-| displayLarge / editorialTitle | 36 / 28, Newsreader |
+| displayLarge / editorialTitle | 32 / 26, Manrope extra-bold / bold |
 | headingLarge / Medium / Small | 30 / 24 / 19, Manrope |
 | bodyLarge / Medium / Small | 16 / 14 / 12 |
 | labelLarge / Medium / Small | 14 / 12 / 11 |
-| moneyHero / Large / Medium | 44 / 30 / 20, cifras tabulares; hero en Newsreader |
+| moneyHero / Large / Medium | 46 / 30 / 18, Manrope con cifras tabulares |
 | sectionTitle / statisticValue / movementAmount | Alias de headingSmall / moneyLarge / moneyMedium |
 
 Usar estilos semánticos, no TextStyle arbitrarios por pantalla. Las cifras usan
@@ -145,21 +298,27 @@ Usar estilos semánticos, no TextStyle arbitrarios por pantalla. Las cifras usan
 
 ### Espaciado, radios y sombras
 
-- AppSpacing: xs 4, sm 8, md 12, lg 16, xl 24, xxl 32, xxxl 48. Página 16,
-  separación de secciones 28, contenido máximo 1080.
+- AppSpacing: xs 4, sm 8, md 12, lg 16, xl 24, xxl 32, xxxl 48. Página 20,
+  separación de secciones 24, contenido máximo 1080.
 - Botón normal: mínimo 52; compacto e icon button: mínimo 48 de alto.
-- AppRadius: small 8, medium 12, large 20, extraLarge 28, pill 999.
-  Controles y cards 20, hero/overlays 28. Cubiertas 88/112; avatar de editor 112.
+- AppRadius: small 8, medium 16, large 24, extraLarge 32, pill 999.
+  Controles 16, cards 24, hero/overlays 32. Cubiertas pequeñas 88/112; portada
+  panorámica 16:9. Avatar de editor 112.
 - AppShadows.soft: elevación ligera; floating: preparada para superficies
   flotantes. Las cards base usan borde, sin sombra. No inventar sombras por feature.
 
 ### Movimiento
 
 AppMotion: fast 140 ms, normal 220 ms, slow 320 ms; easeOutCubic/easeInOutCubic.
-AppReveal combina fade y desplazamiento de 8 puntos; MoneyText ofrece
-AnimatedSwitcher opcional. Evitar rebotes y animar cada cambio. AppMotion,
-AppReveal y LoadingIndicator respetan movimiento reducido; el loader usa un
-icono estático accesible cuando ese ajuste está activo.
+AppReveal combina fade, desplazamiento de 18 puntos y escala .985 → 1 en 540 ms;
+order permite hasta cinco escalones de 65 ms. AppPressFeedback aplica escala .975
+mientras se pulsa, sin gestionar las acciones del control Material. Cancelar no
+confirma acciones. Con movimiento reducido se omiten la entrada y la escala.
+AppAtmosphere queda como pieza histórica de v0.3, sin uso en los paneles actuales.
+Desplegables y barra inferior usan
+las duraciones comunes. MoneyText conserva AnimatedSwitcher opcional, sin animar
+valores financieros intermedios. LoadingIndicator usa un icono estático accesible
+con movimiento reducido.
 
 ## Componentes implementados
 
@@ -177,6 +336,7 @@ sin conocer el dominio. Nuevas pantallas reutilizan formularios, cards y App*.
 | AppDropdown<T> | Opciones tipadas, valor controlado, error y deshabilitado |
 | AppDateField | Fecha controlada, límites opcionales y calendario localizado |
 | AppCard | standard (por defecto), elevated, outlined, interactive |
+| AppPaletteTile | Nombre/descripción, muestras clara/oscura, selección y callback; sin persistencia propia |
 | BalanceCard | Saldo/moneda proporcionados; ingresos/retiradas opcionales; pie y motivo decorativo |
 | StatisticCard | Etiqueta, valor ya preparado, icono y pie opcional |
 | AppAvatar | ImageProvider con fallback a iniciales de nombre y apellidos; small/medium/large/editor; indicador con etiqueta |

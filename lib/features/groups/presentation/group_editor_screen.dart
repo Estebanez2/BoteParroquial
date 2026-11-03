@@ -18,6 +18,7 @@ class GroupEditorScreen extends ConsumerStatefulWidget {
 }
 
 class _GroupEditorScreenState extends ConsumerState<GroupEditorScreen> {
+  final _guard = GlobalKey<AppFormGuardState>();
   late final String _id;
   @override
   void initState() {
@@ -33,16 +34,24 @@ class _GroupEditorScreenState extends ConsumerState<GroupEditorScreen> {
       leading: AppIconButton(
         icon: Icons.arrow_back_rounded,
         label: 'Volver',
-        onPressed: () =>
-            context.go(widget.groupId == null ? '/' : '/groups/$_id'),
+        onPressed: () => _guard.currentState == null
+            ? context.go(widget.groupId == null ? '/' : '/groups/$_id')
+            : _guard.currentState!.requestExit(
+                () => context.go(widget.groupId == null ? '/' : '/groups/$_id'),
+              ),
       ),
     ),
     child: widget.groupId == null
-        ? _GroupForm(key: ValueKey(_id), id: _id)
+        ? _GroupForm(key: ValueKey(_id), id: _id, guard: _guard)
         : GroupAccessBody(
             groupId: _id,
             builder: (group, _) => ref.watch(canEditGroupProvider(_id))
-                ? _GroupForm(key: ValueKey(_id), id: _id, original: group)
+                ? _GroupForm(
+                    key: ValueKey(_id),
+                    id: _id,
+                    original: group,
+                    guard: _guard,
+                  )
                 : const EmptyState(
                     icon: Icons.lock_outline,
                     title: 'Solo gestión autorizada',
@@ -54,7 +63,13 @@ class _GroupEditorScreenState extends ConsumerState<GroupEditorScreen> {
 }
 
 class _GroupForm extends ConsumerStatefulWidget {
-  const _GroupForm({super.key, required this.id, this.original});
+  const _GroupForm({
+    super.key,
+    required this.id,
+    this.original,
+    required this.guard,
+  });
+  final GlobalKey<AppFormGuardState> guard;
   final String id;
   final Group? original;
   @override
@@ -96,6 +111,7 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
                 ),
         );
     if (!mounted || !saved) return;
+    widget.guard.currentState?.saved();
     context.go('/groups/${widget.id}');
     AppSnackbar.show(
       context,
@@ -109,122 +125,137 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
     final provider = groupManagementControllerProvider(widget.id);
     final action = ref.watch(provider),
         controller = ref.read(provider.notifier);
-    return Form(
-      key: _form,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          GroupOpening(
-            eyebrow: _original == null
-                ? 'UN NUEVO COMIENZO'
-                : 'LA IDENTIDAD DE TU ESPACIO',
-            title: _original == null
-                ? 'Dale un lugar\na lo que compartís.'
-                : 'Un grupo con\nnombre propio.',
-            description: _original == null
-                ? 'Crea un fondo independiente. Tú serás su propietario y decidirás quién forma parte.'
-                : 'Ajusta el nombre y la descripción conservando su historia.',
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                AppTextField(
-                  label: 'Nombre del grupo',
-                  controller: _name,
-                  validator: controller.validateName,
-                  enabled: !action.isLoading,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                AppTextField(
-                  label: 'Descripción · opcional',
-                  controller: _description,
-                  maxLines: 3,
-                  validator: controller.validateDescription,
-                  enabled: !action.isLoading,
-                ),
-              ],
+    return AppFormGuard(
+      key: widget.guard,
+      busy: action.isLoading,
+      changes: Listenable.merge([_name, _description]),
+      isDirty: () =>
+          _name.text != (_original?.name ?? '') ||
+          _description.text != (_original?.description ?? '') ||
+          (_original == null &&
+              (_currency != 'EUR' ||
+                  _timeZone != 'Europe/Madrid' ||
+                  !_createPerson)),
+      child: Form(
+        key: _form,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            GroupOpening(
+              eyebrow: _original == null
+                  ? 'UN NUEVO COMIENZO'
+                  : 'LA IDENTIDAD DE TU ESPACIO',
+              title: _original == null
+                  ? 'Dale un lugar\na lo que compartís.'
+                  : 'Un grupo con\nnombre propio.',
+              description: _original == null
+                  ? 'Crea un fondo independiente. Tú serás su propietario y decidirás quién forma parte.'
+                  : 'Ajusta el nombre y la descripción conservando su historia.',
             ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          if (_original == null)
+            const SizedBox(height: AppSpacing.xl),
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  AppDropdown<String>(
-                    label: 'Moneda · no podrá cambiarse',
-                    value: _currency,
-                    options: ref.watch(groupCurrenciesProvider),
+                  AppTextField(
+                    label: 'Nombre del grupo',
+                    controller: _name,
+                    validator: controller.validateName,
                     enabled: !action.isLoading,
-                    onChanged: (value) {
-                      if (value != null) setState(() => _currency = value);
-                    },
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  AppDropdown<String>(
-                    label: 'Calendario del grupo',
-                    value: _timeZone,
-                    options: ref.watch(groupTimeZonesProvider),
+                  AppTextField(
+                    label: 'Descripción · opcional',
+                    controller: _description,
+                    maxLines: 3,
+                    validator: controller.validateDescription,
                     enabled: !action.isLoading,
-                    onChanged: (value) {
-                      if (value != null) setState(() => _timeZone = value);
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  AppDropdown<bool>(
-                    label: 'Tu persona interna',
-                    hint: 'Elige cómo quieres comenzar',
-                    value: _createPerson,
-                    options: const {
-                      true: 'Crear una persona vinculada a mí',
-                      false: 'Empezar sin mi persona interna',
-                    },
-                    enabled: !action.isLoading,
-                    onChanged: (value) {
-                      if (value != null) setState(() => _createPerson = value);
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'La persona interna permite asociarte aportaciones. Es distinta de tu cuenta y conserva su propio historial.',
-                    style: AppTypography.of(context).bodySmall,
                   ),
                 ],
               ),
-            )
-          else
-            AppCard(
-              child: Text(
-                'Moneda: ${_original.currency} · Zona: ${_original.timeZone}',
-                style: AppTypography.of(context).bodyMedium,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            if (_original == null)
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppDropdown<String>(
+                      label: 'Moneda · no podrá cambiarse',
+                      value: _currency,
+                      options: ref.watch(groupCurrenciesProvider),
+                      enabled: !action.isLoading,
+                      onChanged: (value) {
+                        if (value != null) setState(() => _currency = value);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    AppDropdown<String>(
+                      label: 'Calendario del grupo',
+                      value: _timeZone,
+                      options: ref.watch(groupTimeZonesProvider),
+                      enabled: !action.isLoading,
+                      onChanged: (value) {
+                        if (value != null) setState(() => _timeZone = value);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    AppDropdown<bool>(
+                      label: 'Tu persona interna',
+                      hint: 'Elige cómo quieres comenzar',
+                      value: _createPerson,
+                      options: const {
+                        true: 'Crear una persona vinculada a mí',
+                        false: 'Empezar sin mi persona interna',
+                      },
+                      enabled: !action.isLoading,
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _createPerson = value);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'La persona interna permite asociarte aportaciones. Es distinta de tu cuenta y conserva su propio historial.',
+                      style: AppTypography.of(context).bodySmall,
+                    ),
+                  ],
+                ),
+              )
+            else
+              AppCard(
+                child: Text(
+                  'Moneda: ${_original.currency} · Zona: ${_original.timeZone}',
+                  style: AppTypography.of(context).bodyMedium,
+                ),
               ),
-            ),
-          if (action.hasError)
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.lg),
-              child: Text(failureMessage(action.error!)),
-            ),
-          const SizedBox(height: AppSpacing.xl),
-          AppButton(
-            label: _original == null ? 'Crear mi grupo' : 'Guardar grupo',
-            leadingIcon: Icons.check_rounded,
-            fullWidth: true,
-            loading: action.isLoading,
-            onPressed: _save,
-          ),
-          if (_original != null &&
-              ref.watch(canDeleteGroupProvider(widget.id))) ...[
+            if (action.hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.lg),
+                child: Text(failureMessage(action.error!)),
+              ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: 'Eliminar grupo definitivamente',
-              leadingIcon: Icons.delete_forever_outlined,
-              variant: AppButtonVariant.ghost,
-              onPressed: () => context.push('/groups/${widget.id}/delete'),
+              label: _original == null ? 'Crear mi grupo' : 'Guardar grupo',
+              validate: () => _form.currentState?.validate() ?? false,
+              leadingIcon: Icons.check_rounded,
+              fullWidth: true,
+              loading: action.isLoading,
+              onPressed: _save,
             ),
+            if (_original != null &&
+                ref.watch(canDeleteGroupProvider(widget.id))) ...[
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: 'Eliminar grupo definitivamente',
+                leadingIcon: Icons.delete_forever_outlined,
+                variant: AppButtonVariant.ghost,
+                onPressed: () => context.push('/groups/${widget.id}/delete'),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

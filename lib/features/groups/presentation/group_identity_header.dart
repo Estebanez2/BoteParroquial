@@ -10,76 +10,61 @@ class GroupIdentityHeader extends StatelessWidget {
     super.key,
     required this.group,
     required this.membership,
+    this.panoramic = false,
   });
   final Group group;
   final GroupMember membership;
+  final bool panoramic;
   @override
   Widget build(BuildContext context) {
     final t = AppTypography.of(context);
-    final text = Column(
+    final identity = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'NUESTRO GRUPO',
-          style: t.labelSmall.copyWith(
-            color: AppColors.of(context).textSecondary,
+        Text(group.name, style: panoramic ? t.displayLarge : t.headingSmall),
+        if (group.description?.isNotEmpty == true) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            group.description!,
+            style: t.bodyMedium.copyWith(
+              color: AppColors.of(context).textSecondary,
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(group.name, style: t.displayLarge),
-        const SizedBox(height: AppSpacing.sm),
+        ],
+        const SizedBox(height: AppSpacing.md),
         Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.sm,
           children: [
-            AppBadge(
-              roleLabel(membership.role),
-              tone: AppTone.primary,
-              icon: membership.role == GroupRole.owner
-                  ? Icons.workspace_premium_outlined
-                  : Icons.people_outline,
-            ),
+            AppBadge(roleLabel(membership.role), tone: AppTone.primary),
             AppBadge(group.currency),
           ],
         ),
-        if (group.description?.isNotEmpty == true) ...[
-          const SizedBox(height: AppSpacing.sm),
-          Text(group.description!, style: t.bodyMedium),
-        ],
       ],
     );
-    return AppReveal(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (MediaQuery.textScalerOf(context).scale(1) > 1.3 ||
-              constraints.maxWidth < AppSpacing.coverSmall * 3) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PhotoCover(
-                  groupId: group.id,
-                  name: group.name,
-                  interactive: true,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                text,
-              ],
-            );
-          }
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PhotoCover(
-                groupId: group.id,
-                name: group.name,
-                interactive: true,
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(child: text),
-            ],
-          );
-        },
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (panoramic) ...[
+          PhotoCover(
+            groupId: group.id,
+            name: group.name,
+            interactive: true,
+            panoramic: true,
+            edgeToEdge: true,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.page,
+              AppSpacing.xl,
+              AppSpacing.page,
+              0,
+            ),
+            child: identity,
+          ),
+        ] else
+          identity,
+      ],
     );
   }
 }

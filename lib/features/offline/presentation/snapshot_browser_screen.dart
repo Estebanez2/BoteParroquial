@@ -1,3 +1,4 @@
+import '../../../core/routing/app_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,6 +12,8 @@ import '../../../services/file_snapshot_storage.dart' show snapshotAccessStamp;
 import '../../auth/providers/auth_providers.dart';
 import '../../dashboard/presentation/dashboard_screen.dart';
 import '../../groups/presentation/group_members_screen.dart';
+import '../../groups/presentation/group_navigation_shell.dart';
+import '../../groups/presentation/participants_screen.dart';
 import '../../groups/presentation/audit_event_detail.dart'
     show auditDetailsText;
 import '../../movements/presentation/movements_screen.dart';
@@ -90,6 +93,7 @@ class _BrowserState extends ConsumerState<SnapshotBrowserScreen> {
           key: ValueKey('${copy.uid}/${copy.day}/${copy.groupIds.join(',')}'),
           data: SnapshotDataRepository(copy),
           onExit: () => context.go('/'),
+          appearanceTheme: Theme.of(context),
         );
       },
     );
@@ -101,9 +105,11 @@ class SnapshotSessionView extends StatefulWidget {
     super.key,
     required this.data,
     required this.onExit,
+    this.appearanceTheme,
   });
   final SnapshotDataRepository data;
   final VoidCallback onExit;
+  final ThemeData? appearanceTheme;
   @override
   State<SnapshotSessionView> createState() => _SessionState();
 }
@@ -119,44 +125,76 @@ class _SessionState extends State<SnapshotSessionView> {
     _router = GoRouter(
       initialLocation: '/',
       routes: [
-        GoRoute(
+        appRoute(
           path: '/',
           builder: (c, s) =>
               _SnapshotHome(data: widget.data, onExit: widget.onExit),
+          routes: [
+            ShellRoute(
+              pageBuilder: (context, state, child) => AppMotionPage<void>(
+                key: state.pageKey,
+                motion: AppPageMotion.group,
+                origin: state.extra is AppGroupOrigin
+                    ? (state.extra as AppGroupOrigin).rect
+                    : null,
+                child: GroupNavigationShell(state: state, child: child),
+              ),
+              routes: [
+                appRoute(
+                  path: 'groups/:groupId',
+                  motion: AppPageMotion.section,
+                  sectionIndex: 0,
+                  builder: (c, s) => DashboardScreen(groupId: id(s)),
+                  routes: [
+                    appRoute(
+                      path: 'participants',
+                      motion: AppPageMotion.section,
+                      sectionIndex: 2,
+                      builder: (c, s) => ParticipantsScreen(groupId: id(s)),
+                    ),
+                    appRoute(
+                      path: 'persons',
+                      motion: AppPageMotion.section,
+                      sectionIndex: 2,
+                      builder: (c, s) => PersonsScreen(groupId: id(s)),
+                    ),
+                    appRoute(
+                      path: 'members',
+                      motion: AppPageMotion.section,
+                      sectionIndex: 2,
+                      builder: (c, s) => GroupMembersScreen(groupId: id(s)),
+                    ),
+                    appRoute(
+                      path: 'reports',
+                      motion: AppPageMotion.section,
+                      sectionIndex: 3,
+                      builder: (c, s) => EconomicReportScreen(groupId: id(s)),
+                    ),
+                    appRoute(
+                      path: 'movements',
+                      motion: AppPageMotion.section,
+                      sectionIndex: 1,
+                      builder: (c, s) => MovementsScreen(
+                        groupId: id(s),
+                        focusId: s.uri.queryParameters['focus'],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
-        GoRoute(
-          path: '/groups/:groupId',
-          builder: (c, s) => DashboardScreen(groupId: id(s)),
-        ),
-        GoRoute(
-          path: '/groups/:groupId/persons',
-          builder: (c, s) => PersonsScreen(groupId: id(s)),
-        ),
-        GoRoute(
+        appRoute(
           path: '/groups/:groupId/persons/:personId',
           builder: (c, s) => PersonDetailsScreen(
             groupId: id(s),
             personId: s.pathParameters['personId']!,
           ),
         ),
-        GoRoute(
-          path: '/groups/:groupId/movements',
-          builder: (c, s) => MovementsScreen(
-            groupId: id(s),
-            focusId: s.uri.queryParameters['focus'],
-          ),
-        ),
-        GoRoute(
+        appRoute(
           path: '/groups/:groupId/quotas',
           builder: (c, s) => QuotaScreen(groupId: id(s)),
-        ),
-        GoRoute(
-          path: '/groups/:groupId/reports',
-          builder: (c, s) => EconomicReportScreen(groupId: id(s)),
-        ),
-        GoRoute(
-          path: '/groups/:groupId/members',
-          builder: (c, s) => GroupMembersScreen(groupId: id(s)),
         ),
         for (final collection in [
           'auditEvents',
@@ -164,7 +202,7 @@ class _SessionState extends State<SnapshotSessionView> {
           'joinRequests',
           'persons',
         ])
-          GoRoute(
+          appRoute(
             path: '/records/:groupId/$collection',
             builder: (c, s) => _SnapshotRecords(
               data: widget.data,
@@ -172,7 +210,7 @@ class _SessionState extends State<SnapshotSessionView> {
               collection: collection,
             ),
           ),
-        GoRoute(
+        appRoute(
           path: '/groups/:groupId/notifications',
           builder: (c, s) => _SnapshotRecords(
             data: widget.data,
@@ -214,9 +252,8 @@ class _SessionState extends State<SnapshotSessionView> {
     child: MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'BoteParroquial · Copia',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      theme: widget.appearanceTheme ?? AppTheme.light,
+      themeMode: ThemeMode.light,
       locale: const Locale('es'),
       supportedLocales: const [Locale('es')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
@@ -286,47 +323,52 @@ class _SnapshotHome extends StatelessWidget {
           ),
         for (final group in data.groups) ...[
           AppReveal(
-            child: AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    group.name,
-                    style: AppTypography.of(context).editorialTitle,
-                  ),
-                  if (group.description != null)
+            child: AppGroupEntry(
+              onOpen: (origin) =>
+                  context.go('/groups/${group.id}', extra: origin),
+              builder: (context, activate) => AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                     Text(
-                      group.description!,
-                      style: AppTypography.of(context).bodyMedium,
+                      group.name,
+                      style: AppTypography.of(context).editorialTitle,
                     ),
-                  const SizedBox(height: AppSpacing.md),
-                  AppButton(
-                    label: 'Entrar en el grupo guardado',
-                    trailingIcon: Icons.chevron_right_rounded,
-                    onPressed: () => context.go('/groups/${group.id}'),
-                  ),
-                  for (final item in [
-                    ('auditEvents', 'Historial administrativo guardado'),
-                    ('notifications', 'Mis avisos guardados'),
-                    ('joinRequests', 'Solicitudes guardadas'),
-                    ('persons', 'Papelera guardada'),
-                  ])
-                    if ((item.$1 == 'notifications' ||
-                            data.canReadManagement(group.id)) &&
-                        data
-                            .rows('groups/${group.id}', item.$1)
-                            .any(
-                              (r) =>
-                                  item.$1 != 'persons' ||
-                                  r.data['trashedAt'] != null,
-                            ))
-                      AppButton(
-                        label: item.$2,
-                        variant: AppButtonVariant.ghost,
-                        onPressed: () =>
-                            context.push('/records/${group.id}/${item.$1}'),
+                    if (group.description != null)
+                      Text(
+                        group.description!,
+                        style: AppTypography.of(context).bodyMedium,
                       ),
-                ],
+                    const SizedBox(height: AppSpacing.md),
+                    AppButton(
+                      label: 'Entrar en el grupo guardado',
+                      tapEffect: AppTapEffect.none,
+                      trailingIcon: Icons.chevron_right_rounded,
+                      onPressed: activate,
+                    ),
+                    for (final item in [
+                      ('auditEvents', 'Historial administrativo guardado'),
+                      ('notifications', 'Mis avisos guardados'),
+                      ('joinRequests', 'Solicitudes guardadas'),
+                      ('persons', 'Papelera guardada'),
+                    ])
+                      if ((item.$1 == 'notifications' ||
+                              data.canReadManagement(group.id)) &&
+                          data
+                              .rows('groups/${group.id}', item.$1)
+                              .any(
+                                (r) =>
+                                    item.$1 != 'persons' ||
+                                    r.data['trashedAt'] != null,
+                              ))
+                        AppButton(
+                          label: item.$2,
+                          variant: AppButtonVariant.ghost,
+                          onPressed: () =>
+                              context.push('/records/${group.id}/${item.$1}'),
+                        ),
+                  ],
+                ),
               ),
             ),
           ),

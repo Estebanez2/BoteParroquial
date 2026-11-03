@@ -137,6 +137,17 @@ class JoinGroupController extends Notifier<JoinState> {
     if (!state.loading) state = const JoinState();
   }
 
+  bool validateCode(String code) {
+    if (state.loading) return false;
+    try {
+      ref.read(groupInvitationRepositoryProvider).parse(code);
+      return true;
+    } catch (error) {
+      state = JoinState(error: error);
+      return false;
+    }
+  }
+
   Future<void> preview(String code) async {
     if (state.loading) return;
     final uid = ref.read(authStateProvider).asData?.value?.uid;

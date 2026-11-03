@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../feedback/app_skeleton.dart';
 
 enum AppAvatarSize { small, medium, large, editor }
 
@@ -55,7 +56,11 @@ class AppAvatar extends StatelessWidget {
             ),
           );
     return Semantics(
-      label: showIndicator ? '$name, $indicatorLabel' : name,
+      label: loading && image == null
+          ? 'Cargando imagen de $name'
+          : showIndicator
+          ? '$name, $indicatorLabel'
+          : name,
       excludeSemantics: true,
       child: SizedBox(
         width: diameter,
@@ -77,7 +82,14 @@ class AppAvatar extends StatelessWidget {
                       ),
                     )
                   : loading
-                  ? const SizedBox.expand()
+                  ? AppShimmer(
+                      label: 'Cargando imagen',
+                      child: AppSkeletonBlock(
+                        width: diameter,
+                        height: diameter,
+                        circle: true,
+                      ),
+                    )
                   : initialsWidget,
             ),
             if (showIndicator)

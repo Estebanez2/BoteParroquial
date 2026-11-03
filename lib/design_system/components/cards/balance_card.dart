@@ -12,7 +12,7 @@ class BalanceCard extends StatelessWidget {
     super.key,
     required this.balanceCents,
     required this.currency,
-    this.title = 'SALDO DISPONIBLE',
+    this.title = 'Saldo disponible',
     this.incomeCents,
     this.withdrawalCents,
     this.caption,
@@ -31,15 +31,9 @@ class BalanceCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: AppGradients.hero(context),
           borderRadius: AppRadius.hero,
-          border: Border.all(color: c.outline),
         ),
         child: Stack(
           children: [
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(painter: _CommunityRings(c.onHero)),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: Column(
@@ -51,14 +45,26 @@ class BalanceCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           title,
-                          style: t.labelSmall.copyWith(color: c.onHero),
+                          style: t.bodyMedium.copyWith(
+                            color: c.onHero.withValues(alpha: .8),
+                          ),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
-                      Icon(
-                        Icons.account_balance_wallet_outlined,
-                        color: c.onHero,
-                        size: AppSpacing.iconLarge,
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        decoration: BoxDecoration(
+                          color: c.onHero.withValues(alpha: .08),
+                          borderRadius: AppRadius.control,
+                          border: Border.all(
+                            color: c.onHero.withValues(alpha: .12),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: c.onHero,
+                          size: AppSpacing.iconLarge,
+                        ),
                       ),
                     ],
                   ),
@@ -74,7 +80,9 @@ class BalanceCard extends StatelessWidget {
                     const SizedBox(height: AppSpacing.md),
                     Text(
                       caption!,
-                      style: t.bodySmall.copyWith(color: c.onHero),
+                      style: t.bodySmall.copyWith(
+                        color: c.onHero.withValues(alpha: .8),
+                      ),
                     ),
                   ],
                   if (incomeCents != null || withdrawalCents != null) ...[
@@ -140,26 +148,4 @@ class BalanceCard extends StatelessWidget {
       ],
     );
   }
-}
-
-class _CommunityRings extends CustomPainter {
-  const _CommunityRings(this.color);
-  final Color color;
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = color.withValues(alpha: .08);
-    for (var i = 0; i < 4; i++) {
-      canvas.drawCircle(
-        Offset(size.width * .96, size.height * .12),
-        70 + i * 30,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_CommunityRings oldDelegate) => oldDelegate.color != color;
 }

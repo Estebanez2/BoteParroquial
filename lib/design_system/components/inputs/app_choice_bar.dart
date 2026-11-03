@@ -5,6 +5,7 @@ import '../../theme/app_motion.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../feedback/app_control_feedback.dart';
 
 class AppChoiceBar<T> extends StatelessWidget {
   const AppChoiceBar({
@@ -31,19 +32,33 @@ class AppChoiceBar<T> extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: AppRadius.control,
                 gradient: value == entry.key
-                    ? AppGradients.primary(context)
+                    ? AppGradients.surface(context)
                     : null,
-              ),
-              child: TextButton(
-                onPressed: enabled ? () => onChanged(entry.key) : null,
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(0, AppSpacing.controlHeight),
-                  foregroundColor: value == entry.key
-                      ? c.onPrimary
-                      : c.textPrimary,
-                  textStyle: AppTypography.of(context).labelLarge,
+                border: Border.all(
+                  color: value == entry.key ? c.outline : Colors.transparent,
                 ),
-                child: Text(entry.value, textAlign: TextAlign.center),
+              ),
+              child: AppControlFeedback(
+                enabled: enabled,
+                onActivate: () => onChanged(entry.key),
+                builder: (_, activate) => TextButton(
+                  onPressed: enabled ? activate : null,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.md,
+                    ),
+                    minimumSize: const Size(0, AppSpacing.controlHeight),
+                    foregroundColor: value == entry.key
+                        ? c.primary
+                        : c.textSecondary,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.control,
+                    ),
+                    textStyle: AppTypography.of(context).labelLarge,
+                  ),
+                  child: Text(entry.value, textAlign: TextAlign.center),
+                ),
               ),
             ),
           ),
@@ -53,7 +68,8 @@ class AppChoiceBar<T> extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
         borderRadius: AppRadius.control,
-        border: Border.all(color: c.outline),
+        color: c.background,
+        border: Border.all(color: c.divider),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,

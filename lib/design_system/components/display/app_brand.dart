@@ -26,8 +26,16 @@ class AppBrand extends StatelessWidget {
         if (!compact) ...[
           const SizedBox(width: AppSpacing.md),
           Flexible(
-            child: Text(
-              'BoteParroquial',
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: 'Bote'),
+                  TextSpan(
+                    text: 'Parroquial',
+                    style: TextStyle(color: c.primary),
+                  ),
+                ],
+              ),
               style: AppTypography.of(context).headingSmall,
             ),
           ),

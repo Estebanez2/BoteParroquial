@@ -152,13 +152,6 @@ class _DashboardQuotas extends ConsumerWidget {
                       ],
                     ),
                   ),
-              const SizedBox(height: AppSpacing.lg),
-              AppButton(
-                label: 'Ver informe de cuotas',
-                variant: AppButtonVariant.outline,
-                leadingIcon: Icons.insights_outlined,
-                onPressed: () => context.push('/groups/$groupId/reports'),
-              ),
             ],
           ),
         ),

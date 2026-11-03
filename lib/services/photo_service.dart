@@ -24,6 +24,14 @@ abstract interface class VersionedPhotoService implements PhotoService {
 }
 
 abstract interface class PhotoPickerService {
-  Future<Uint8List?> pick(PhotoSource source, {bool darkTheme = true});
-  Future<Uint8List?> edit(Uint8List bytes, {bool darkTheme = true});
+  Future<Uint8List?> pick(
+    PhotoSource source, {
+    bool darkTheme = true,
+    bool panoramic = false,
+  });
+  Future<Uint8List?> edit(
+    Uint8List bytes, {
+    bool darkTheme = true,
+    bool panoramic = false,
+  });
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../theme/app_motion.dart';
 
 class AppExpandableRow extends StatelessWidget {
   const AppExpandableRow({
@@ -20,6 +21,11 @@ class AppExpandableRow extends StatelessWidget {
     final c = AppColors.of(context);
     return ExpansionTile(
       initiallyExpanded: expanded,
+      expansionAnimationStyle: AnimationStyle(
+        duration: AppMotion.duration(context, AppMotion.durationSlow),
+        reverseDuration: AppMotion.duration(context, AppMotion.durationNormal),
+        curve: AppMotion.curveStandard,
+      ),
       tilePadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       childrenPadding: const EdgeInsets.only(bottom: AppSpacing.lg),
       iconColor: c.primary,

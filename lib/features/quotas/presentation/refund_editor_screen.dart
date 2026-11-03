@@ -417,6 +417,7 @@ class _RefundEditorFormState extends ConsumerState<RefundEditorForm> {
           const SizedBox(height: AppSpacing.xl),
           AppButton(
             label: 'Revisar devolución',
+            validate: () => _form.currentState?.validate() ?? false,
             leadingIcon: Icons.assignment_return_outlined,
             loading: _busy || state.isLoading,
             onPressed: busy ? null : _save,

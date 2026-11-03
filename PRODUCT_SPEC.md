@@ -158,6 +158,14 @@ y confirmar. «Hoy» se determina por la zona del grupo, no por la zona del móv
 
 Presentación del MVP
 
+Vigente 2026-10-30, D114–D115: el usuario rechaza v0.3 y pide otro aspecto global.
+Paletas elegibles con claro/oscuro, guardadas en este móvil. Inicio pierde el panel
+promocional; el grupo presenta foto panorámica y nombre/descripción debajo.
+Participantes agrupa acceso a Personas/Miembros. Acciones económicas iguales en
+resumen e historial; navegación general concentrada en la barra inferior.
+Atrás desde una sección vuelve al resumen y desde este a Tus grupos. La revisión
+física del nuevo resultado sigue pendiente. Ver docs/VISUAL_REDESIGN_V04_VALIDATION.md.
+
 2026-10-16: editar la foto actual desde su imagen guardada, sin elegirla de nuevo;
 cancelar conserva la anterior, guardar confirma los cambios. Aviso de actualización
 sin confirmar oculto durante comprobaciones iniciales breves, sin afirmar que no

@@ -9,21 +9,14 @@ Future<void> showPhotoEditor(
   BuildContext context, {
   required PhotoTarget target,
   required String name,
-}) => Navigator.of(context).push<void>(
-  PageRouteBuilder<void>(
-    transitionDuration: AppMotion.duration(context, AppMotion.durationNormal),
-    reverseTransitionDuration: AppMotion.duration(
-      context,
-      AppMotion.durationNormal,
-    ),
-    pageBuilder: (context, animation, secondaryAnimation) =>
-        PhotoEditorScreen(target: target, name: name),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-        FadeTransition(opacity: animation, child: child),
+}) => Navigator.of(context, rootNavigator: true).push<void>(
+  AppPageTransitions.formRoute(
+    context,
+    PhotoEditorScreen(target: target, name: name),
   ),
 );
 
-class PhotoEditorScreen extends ConsumerWidget {
+class PhotoEditorScreen extends ConsumerStatefulWidget {
   const PhotoEditorScreen({
     super.key,
     required this.target,
@@ -32,7 +25,15 @@ class PhotoEditorScreen extends ConsumerWidget {
   final PhotoTarget target;
   final String name;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PhotoEditorScreen> createState() => _PhotoEditorScreenState();
+}
+
+class _PhotoEditorScreenState extends ConsumerState<PhotoEditorScreen> {
+  final _guard = GlobalKey<AppFormGuardState>();
+  PhotoTarget get target => widget.target;
+  String get name => widget.name;
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(photoControllerProvider(target));
     final access = ref.watch(photoAccessProvider(target));
     final photo = ref.watch(photoProvider(target));
@@ -48,8 +49,10 @@ class PhotoEditorScreen extends ConsumerWidget {
       ref.read(photoRefreshProvider)(target);
     }
 
-    return PopScope(
-      canPop: !state.busy,
+    return AppFormGuard(
+      key: _guard,
+      busy: state.busy,
+      isDirty: () => state.draft != null,
       child: AppScaffold(
         maxWidth: AppSpacing.readingMax,
         appBar: AppTopBar(
@@ -57,7 +60,9 @@ class PhotoEditorScreen extends ConsumerWidget {
           leading: AppIconButton(
             icon: Icons.arrow_back_rounded,
             label: 'Volver',
-            onPressed: state.busy ? null : () => Navigator.pop(context),
+            onPressed: state.busy
+                ? null
+                : () => _guard.currentState?.requestExit(),
           ),
         ),
         child: Column(
@@ -85,6 +90,7 @@ class PhotoEditorScreen extends ConsumerWidget {
                       name: name,
                       image: image,
                       large: true,
+                      panoramic: true,
                       loading: presentation.loading,
                     )
                   : AppAvatar(

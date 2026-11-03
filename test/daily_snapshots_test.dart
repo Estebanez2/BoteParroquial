@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:bote_parroquial/core/firebase/firebase_providers.dart';
 import 'package:bote_parroquial/core/errors/app_failure.dart';
+import 'package:bote_parroquial/design_system/design_system.dart';
+import 'package:bote_parroquial/models/appearance_settings.dart';
+import 'package:flutter/material.dart' show Brightness;
 import 'package:bote_parroquial/features/dashboard/providers/dashboard_providers.dart';
 import 'package:bote_parroquial/features/movements/providers/movement_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_management_providers.dart';
@@ -434,19 +437,52 @@ void main() {
   testWidgets(
     'La copia abre el dashboard habitual y conserva aviso fijo y acciones bloqueadas',
     (tester) async {
+      Future<void> settleCopy() async {
+        // Let the private cache's actual filesystem futures complete between
+        // frames; an animated placeholder cannot settle while fake I/O is held.
+        for (var i = 0; i < 20; i++) {
+          await tester.pump(const Duration(milliseconds: 250));
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 10)),
+          );
+        }
+        await tester.pumpAndSettle();
+      }
+
       await tester.pumpWidget(
         SnapshotSessionView(
           data: SnapshotDataRepository(fixture()),
           onExit: () {},
+          appearanceTheme: AppTheme.forPalette(
+            AppPalette.coral,
+            Brightness.dark,
+          ),
         ),
       );
-      await tester.pumpAndSettle();
+      await settleCopy();
       expect(find.text('COPIA GUARDADA · SOLO LECTURA'), findsOneWidget);
       await tester.ensureVisible(find.text('Entrar en el grupo guardado'));
       await tester.tap(find.text('Entrar en el grupo guardado'));
-      await tester.pumpAndSettle();
+      await settleCopy();
       expect(find.text('BoteParroquial'), findsOneWidget);
+      expect(
+        AppColors.of(tester.element(find.text('BoteParroquial'))).primary,
+        AppColors.forPalette(AppPalette.coral, Brightness.dark).primary,
+      );
       expect(find.text('Registrar ingreso'), findsNothing);
+      expect(find.text('COPIA GUARDADA · SOLO LECTURA'), findsOneWidget);
+      await tester.tap(find.text('Actividad'));
+      await settleCopy();
+      expect(find.text('Historial de movimientos'), findsOneWidget);
+      expect(find.text('Registrar ingreso'), findsNothing);
+      expect(find.text('COPIA GUARDADA · SOLO LECTURA'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await settleCopy();
+      expect(find.text('BoteParroquial'), findsOneWidget);
+      await tester.tap(find.text('Participantes').last);
+      await settleCopy();
+      expect(find.text('Ver personas'), findsOneWidget);
+      expect(find.text('Ver miembros'), findsOneWidget);
       expect(find.text('COPIA GUARDADA · SOLO LECTURA'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

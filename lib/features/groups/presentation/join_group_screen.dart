@@ -83,6 +83,7 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen> {
           const SizedBox(height: AppSpacing.lg),
           AppButton(
             label: 'Ver invitación',
+            validate: () => controller.validateCode(_code.text),
             leadingIcon: Icons.search_rounded,
             loading: state.loading,
             onPressed: () => controller.preview(_code.text),
@@ -94,45 +95,51 @@ class _JoinGroupScreenState extends ConsumerState<JoinGroupScreen> {
             ),
           if (state.preview != null) ...[
             const SizedBox(height: AppSpacing.xl),
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    state.preview!.groupName,
-                    style: AppTypography.of(context).editorialTitle,
-                  ),
-                  AppBadge(state.preview!.currency),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    state.preview!.isReadmission
-                        ? 'Tu vuelta necesita aprobación. Volverás como miembro, conservando tu vinculación e historial anteriores.'
-                        : 'Entrarás como miembro con acceso a la información económica. La persona interna se vincula por separado.',
-                    style: AppTypography.of(context).bodyMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  if (state.result == JoinRequestStatus.pending)
-                    const EmptyState(
-                      icon: Icons.hourglass_top_rounded,
-                      title: 'Tu solicitud está enviada',
-                      description:
-                          'Un administrador tiene que aprobarla. Puedes volver a comprobar este código más adelante.',
-                    )
-                  else if (state.result == JoinRequestStatus.approved)
-                    AppButton(
-                      label: 'Abrir grupo',
-                      onPressed: () =>
-                          context.go('/groups/${state.preview!.code.groupId}'),
-                    )
-                  else
-                    AppButton(
-                      label: state.preview!.requiresApproval
-                          ? 'Solicitar entrada'
-                          : 'Entrar como miembro',
-                      loading: state.loading,
-                      onPressed: () => controller.submit(),
+            AppGroupEntry(
+              onOpen: (origin) => context.go(
+                '/groups/${state.preview!.code.groupId}',
+                extra: origin,
+              ),
+              builder: (_, activate) => AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      state.preview!.groupName,
+                      style: AppTypography.of(context).editorialTitle,
                     ),
-                ],
+                    AppBadge(state.preview!.currency),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      state.preview!.isReadmission
+                          ? 'Tu vuelta necesita aprobación. Volverás como miembro, conservando tu vinculación e historial anteriores.'
+                          : 'Entrarás como miembro con acceso a la información económica. La persona interna se vincula por separado.',
+                      style: AppTypography.of(context).bodyMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    if (state.result == JoinRequestStatus.pending)
+                      const EmptyState(
+                        icon: Icons.hourglass_top_rounded,
+                        title: 'Tu solicitud está enviada',
+                        description:
+                            'Un administrador tiene que aprobarla. Puedes volver a comprobar este código más adelante.',
+                      )
+                    else if (state.result == JoinRequestStatus.approved)
+                      AppButton(
+                        label: 'Abrir grupo',
+                        tapEffect: AppTapEffect.none,
+                        onPressed: activate,
+                      )
+                    else
+                      AppButton(
+                        label: state.preview!.requiresApproval
+                            ? 'Solicitar entrada'
+                            : 'Entrar como miembro',
+                        loading: state.loading,
+                        onPressed: () => controller.submit(),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],

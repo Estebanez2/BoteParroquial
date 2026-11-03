@@ -14,15 +14,20 @@ class GroupAccessBody extends ConsumerWidget {
     super.key,
     required this.groupId,
     required this.builder,
+    this.edgeToEdge = false,
   });
   final String groupId;
   final Widget Function(Group group, GroupMember membership) builder;
+  final bool edgeToEdge;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final memberships = ref.watch(membershipsProvider);
     final member = ref.watch(currentMembershipProvider(groupId));
     if (memberships.isLoading) {
-      return const LoadingIndicator(label: 'Comprobando tu acceso…');
+      return const AppSkeleton(
+        layout: AppSkeletonLayout.group,
+        label: 'Comprobando tu acceso…',
+      );
     }
     if (memberships.hasError) {
       return EmptyState(
@@ -47,8 +52,10 @@ class GroupAccessBody extends ConsumerWidget {
         .when(
           skipLoadingOnRefresh: false,
           skipLoadingOnReload: false,
-          loading: () =>
-              const LoadingIndicator(label: 'Preparando tu espacio…'),
+          loading: () => const AppSkeleton(
+            layout: AppSkeletonLayout.group,
+            label: 'Preparando tu espacio…',
+          ),
           error: (error, _) => EmptyState(
             icon: Icons.cloud_off_outlined,
             title: 'No pudimos abrir el espacio',
@@ -65,10 +72,31 @@ class GroupAccessBody extends ConsumerWidget {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    GroupSyncNotice(groupId: groupId),
-                    GroupIdentityHeader(group: group, membership: member),
-                    const SizedBox(height: AppSpacing.xl),
-                    builder(group, member),
+                    Padding(
+                      padding: edgeToEdge
+                          ? const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.page,
+                            )
+                          : EdgeInsets.zero,
+                      child: GroupSyncNotice(groupId: groupId),
+                    ),
+                    GroupIdentityHeader(
+                      group: group,
+                      membership: member,
+                      panoramic: edgeToEdge,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Padding(
+                      padding: edgeToEdge
+                          ? const EdgeInsets.fromLTRB(
+                              AppSpacing.page,
+                              0,
+                              AppSpacing.page,
+                              AppSpacing.page,
+                            )
+                          : EdgeInsets.zero,
+                      child: builder(group, member),
+                    ),
                   ],
                 ),
         );

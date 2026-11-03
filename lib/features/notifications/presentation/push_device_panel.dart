@@ -22,7 +22,7 @@ class PushDevicePanel extends ConsumerWidget {
             Text(
               registered
                   ? 'Este móvil está registrado para tu cuenta.'
-                  : 'Tú decides cuándo activar los avisos en este móvil. En la pantalla bloqueada no mostraremos importes.',
+                  : 'Al entrar por primera vez te pedimos permiso para los avisos. Aquí puedes activarlos de nuevo; en la pantalla bloqueada no mostramos importes.',
               style: type.bodyMedium,
             ),
             if (state.hasError) ...[

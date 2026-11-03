@@ -291,6 +291,17 @@ class _AllocationBodyState extends ConsumerState<_AllocationBody> {
                 if (_unconfirmed == null)
                   AppButton(
                     label: 'Revisar este mes',
+                    validate: () {
+                      final valid = parseMoneyCents(_amount.text) != null;
+                      if (!valid) {
+                        AppSnackbar.show(
+                          context,
+                          'Introduce una cantidad válida.',
+                          variant: AppSnackbarVariant.error,
+                        );
+                      }
+                      return valid;
+                    },
                     leadingIcon: Icons.fact_check_outlined,
                     loading: _busy,
                     onPressed: _busy ? null : () => _save(),

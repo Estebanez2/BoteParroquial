@@ -1,6 +1,18 @@
 # Fotos con Supabase — preparación
 
-Actualizado el 2026-10-15.
+Actualizado el 2026-11-02; las entregas inferiores conservan su fecha histórica.
+
+Ampliación 02/11/2026: editor de portadas de grupo y vista previa pasan a 16:9,
+también al reeditar la foto actual. Avatares siguen cuadrados. Sustituye el recorte
+cuadrado de portadas descrito en la entrega histórica v0.4 inferior. Solo se aplica
+cuando el usuario elige/edita y guarda; no se migran imágenes ni cambia backend,
+permisos o despliegue. Prueba nativa en móvil pendiente. Evidencia:
+[UX_IMPROVEMENTS_2026-11-02.md](UX_IMPROVEMENTS_2026-11-02.md).
+
+Presentación v0.4 (2026-10-30): el resumen muestra la foto de grupo en 16:9 y ancho
+completo, con nombre/descripción debajo. PhotoCover/AppCover usan los mismos bytes
+privados y BoxFit.cover. No se reescribe la imagen, no cambia el recorte cuadrado
+guardado ni los permisos del editor/backend. En copias sigue sin ser interactiva.
 
 Separación vigente, 2026-10-20: este documento describe **fotos**, proyecto
 ietnizafvtovelyuxbvk. El worker de avisos está en otro Supabase Free,

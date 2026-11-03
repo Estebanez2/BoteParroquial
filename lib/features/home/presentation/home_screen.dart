@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
+import '../../../design_system/lab/motion_lab_screen.dart';
 import '../../../models/group_member.dart';
 import '../../../models/photo_target.dart';
 import '../../photos/presentation/photo_view.dart';
@@ -12,7 +13,6 @@ import '../../groups/providers/group_providers.dart';
 import '../../groups/presentation/group_widgets.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
 import 'pending_lifecycle_panel.dart';
-import '../../offline/presentation/daily_copies_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -31,11 +31,26 @@ class HomeScreen extends ConsumerWidget {
     final ownProfile = savedProfile?.uid == user?.uid ? savedProfile : null;
     return AppScaffold(
       maxWidth: AppSpacing.readingMax,
+      floatingAction: AppFloatingActions<String>(
+        label: 'Añadir',
+        items: const {
+          'create': 'Crear un nuevo grupo',
+          'join': 'Entrar con código',
+        },
+        icons: const {'join': Icons.key_rounded},
+        onSelected: (action) =>
+            context.push(action == 'create' ? '/groups/new' : '/join'),
+      ),
       appBar: AppTopBar(
         title: 'BoteParroquial',
         editorial: true,
-        leading: const Icon(Icons.groups_outlined),
         actions: [
+          AppIconButton(
+            icon: Icons.palette_outlined,
+            label: 'Ajustes de apariencia',
+            variant: AppIconButtonVariant.ghost,
+            onPressed: () => context.push('/settings/appearance'),
+          ),
           PhotoView(
             target: PhotoTarget.account(user?.uid ?? ''),
             builder: (context, image, loading) => AppAvatarMenu(
@@ -58,6 +73,7 @@ class HomeScreen extends ConsumerWidget {
               onSignOut: () =>
                   ref.read(authControllerProvider.notifier).signOut(),
               onProfile: () => context.push('/profile'),
+              onCopies: () => context.push('/offline'),
             ),
           ),
         ],
@@ -67,7 +83,6 @@ class HomeScreen extends ConsumerWidget {
         children: [
           if (action.hasError) Text(failureMessage(action.error!)),
           const PendingLifecyclePanel(),
-          const DailyCopyEntryButton(),
           profile.when(
             skipLoadingOnRefresh: false,
             skipLoadingOnReload: false,
@@ -83,28 +98,21 @@ class HomeScreen extends ConsumerWidget {
             ),
             data: (user) => const SizedBox.shrink(),
           ),
-          const SizedBox(height: AppSpacing.xl),
-          GroupOpening(
-            eyebrow: 'JUNTOS HACEMOS MÁS',
-            title: 'Gestiona el bote\nde tu parroquia.',
-            description:
-                'Una forma sencilla y transparente de organizar los fondos de tu comunidad para actividades y proyectos.',
-            footer: AppButton(
-              label: 'Crear un nuevo grupo',
-              leadingIcon: Icons.add_rounded,
-              onPressed: () => context.push('/groups/new'),
+          if (motionLabEnabled) ...[
+            const SizedBox(height: AppSpacing.md),
+            AppNavigationTile(
+              label: 'Laboratorio de animaciones',
+              description:
+                  'Temporal · Compara pantallas, botones y barra inferior.',
+              icon: Icons.science_outlined,
+              tone: AppTone.tertiary,
+              onTap: () => context.push(motionLabPath),
             ),
-          ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+          const SizedBox(height: AppSpacing.sm),
+          Text('Tus grupos', style: type.displayLarge),
           const SizedBox(height: AppSpacing.md),
-          AppButton(
-            label: 'Entrar con código',
-            leadingIcon: Icons.key_outlined,
-            variant: AppButtonVariant.outline,
-            onPressed: () => context.push('/join'),
-          ),
-          const SizedBox(height: AppSpacing.section),
-          Text('Tus espacios', style: type.editorialTitle),
-          const SizedBox(height: AppSpacing.lg),
           const _GroupList(),
         ],
       ),
@@ -120,7 +128,10 @@ class _GroupList extends ConsumerWidget {
       .when(
         skipLoadingOnRefresh: false,
         skipLoadingOnReload: false,
-        loading: () => const LoadingIndicator(label: 'Buscando tus espacios…'),
+        loading: () => const AppSkeleton(
+          layout: AppSkeletonLayout.groups,
+          label: 'Buscando tus espacios…',
+        ),
         error: (error, _) => EmptyState(
           icon: Icons.cloud_off_outlined,
           title: 'Tus grupos están a un reintento',
@@ -137,10 +148,14 @@ class _GroupList extends ConsumerWidget {
               )
             : Column(
                 children: [
-                  for (final membership in memberships)
+                  for (var i = 0; i < memberships.length; i++)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                      child: _GroupTile(membership: membership),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: AppReveal(
+                        key: ValueKey(memberships[i].groupId),
+                        order: i + 1,
+                        child: _GroupTile(membership: memberships[i]),
+                      ),
                     ),
                 ],
               ),
@@ -159,7 +174,10 @@ class _GroupTile extends ConsumerWidget {
         .when(
           skipLoadingOnRefresh: false,
           skipLoadingOnReload: false,
-          loading: () => const LoadingIndicator(label: 'Abriendo espacio…'),
+          loading: () => const AppSkeleton(
+            layout: AppSkeletonLayout.group,
+            label: 'Abriendo espacio…',
+          ),
           error: (error, _) => AppCard(
             child: Column(
               children: [
@@ -177,7 +195,16 @@ class _GroupTile extends ConsumerWidget {
             final details = Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(group.name, style: t.editorialTitle),
+                Row(
+                  children: [
+                    Expanded(child: Text(group.name, style: t.headingSmall)),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.of(context).textMuted,
+                      size: AppSpacing.icon,
+                    ),
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Wrap(
                   spacing: AppSpacing.sm,
@@ -185,26 +212,28 @@ class _GroupTile extends ConsumerWidget {
                   children: [
                     AppBadge(
                       roleLabel(membership.role),
-                      tone: AppTone.primary,
+                      tone: membership.role == GroupRole.member
+                          ? AppTone.neutral
+                          : AppTone.info,
                       icon: membership.role == GroupRole.owner
                           ? Icons.workspace_premium_outlined
                           : Icons.people_outline,
                     ),
-                    AppBadge(group.currency),
                   ],
                 ),
-                if (group.description?.isNotEmpty == true) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(group.description!, style: t.bodySmall),
-                ],
                 const SizedBox(height: AppSpacing.md),
                 ref
                     .watch(dashboardProvider(groupId))
                     .when(
                       skipLoadingOnReload: false,
                       skipLoadingOnRefresh: false,
-                      loading: () =>
-                          Text('Actualizando saldo…', style: t.bodySmall),
+                      loading: () => const AppShimmer(
+                        label: 'Actualizando saldo',
+                        child: AppSkeletonBlock(
+                          width: AppSpacing.coverLarge,
+                          height: AppSpacing.xxl,
+                        ),
+                      ),
                       error: (error, _) =>
                           Text('Saldo no disponible', style: t.bodySmall),
                       data: (summary) => Column(
@@ -218,42 +247,34 @@ class _GroupTile extends ConsumerWidget {
                         ],
                       ),
                     ),
-                const SizedBox(height: AppSpacing.sm),
-                AppButton(
-                  label: 'Entrar',
-                  trailingIcon: Icons.chevron_right_rounded,
-                  size: AppButtonSize.compact,
-                  onPressed: () =>
-                      context.go('/groups/${Uri.encodeComponent(groupId)}'),
-                ),
               ],
             );
-            return AppReveal(
-              child: AppCard(
+            return AppGroupEntry(
+              onOpen: (origin) => context.go(
+                '/groups/${Uri.encodeComponent(groupId)}',
+                extra: origin,
+              ),
+              builder: (context, activate) => AppCard(
+                padding: const EdgeInsets.all(AppSpacing.md),
                 variant: AppCardVariant.interactive,
-                onTap: () =>
-                    context.go('/groups/${Uri.encodeComponent(groupId)}'),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    if (MediaQuery.textScalerOf(context).scale(1) > 1.3) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PhotoCover(groupId: groupId, name: group.name),
-                          const SizedBox(height: AppSpacing.lg),
-                          details,
-                        ],
-                      );
-                    }
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PhotoCover(groupId: groupId, name: group.name),
-                        const SizedBox(width: AppSpacing.lg),
-                        Expanded(child: details),
-                      ],
-                    );
-                  },
+                tapEffect: AppTapEffect.none,
+                onTap: activate,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PhotoCover(
+                      groupId: groupId,
+                      name: group.name,
+                      panoramic: true,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xs,
+                      ),
+                      child: details,
+                    ),
+                  ],
                 ),
               ),
             );

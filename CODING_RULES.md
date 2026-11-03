@@ -1,5 +1,27 @@
 Reglas de código
 
+Navegación de grupo: no construir nuevas features ni iniciar sus suscripciones
+dentro del deslizamiento; reutilizar AppDeferredSection y esqueletos compartidos.
+No usar keepAlive/caché persistente para ocultar tirones. Cualquier congelación de
+pantalla exige invalidación reactiva de cuenta/permisos fuera del árbol pausado,
+y liberación al acabar/desmontar. Respetar visor aislado y movimiento reducido.
+Los tiempos de widgets/build no acreditan fluidez física; medir en profile.
+
+Animaciones elegidas: reutilizar AppControlFeedback/AppButton.validate; no
+validar automáticamente toda acción por encontrar un Form, ni animar envíos
+ocupados como si fueran reintentos. B04/B05 nunca conceden acción/permisos.
+AppGroupOrigin y los índices de AppSectionMotionScope son solo geometría/estado
+visual efímero, no datos persistidos. Alojar paneles mediante el contexto modal
+de AppNavigationHost, sin escapar del ProviderContainer de una copia.
+
+Carga/apariencia: componer AppSkeleton/AppShimmer sin inventar datos ni animar
+cifras financieras. Conservar fotos disponibles y respetar movimiento reducido.
+Fuentes y contraste de paletas propias se derivan en AppTheme/AppTypography,
+no en features. RGB de colores son enteros del modelo visual, sin relación con
+céntimos. AppThemePreview usa App* y no dispara acciones de dominio. Apariencia
+v2 local lee preferencias anteriores; mantener ID al editar y fuente/modo al
+eliminar. Menús compartidos no resuelven permisos ni llaman a SDKs.
+
 Copias locales: solo lectura del ámbito de cuenta, readTime consistente, int64 y
 timestamps originales. No publicar capturas parciales, mezclar caché/servidor/copia,
 ni permitir escrituras porque la membresía archivada tenía rol admin. Separar el

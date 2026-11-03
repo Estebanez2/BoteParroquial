@@ -126,6 +126,69 @@ void main() {
     expect(cents, isNull);
   });
 
+  testWidgets(
+    'Cancelar un gesto no ejecuta y movimiento reducido permite acción inmediata',
+    (tester) async {
+      var actions = 0;
+      for (final reduced in [false, true]) {
+        await tester.pumpWidget(
+          host(
+            AppButton(label: 'Confirmar', onPressed: () => actions++),
+            reduceMotion: reduced,
+          ),
+        );
+        final gesture = await tester.startGesture(
+          tester.getCenter(find.text('Confirmar')),
+        );
+        await tester.pump();
+        await tester.pump(AppMotion.durationFast);
+        await gesture.cancel();
+        await tester.pumpAndSettle();
+        expect(actions, 0);
+      }
+      await tester.tap(find.text('Confirmar'));
+      await tester.pumpAndSettle();
+      expect(actions, 1);
+    },
+  );
+
+  testWidgets(
+    'Entrada usa transición eficiente y es inmediata al reducir movimiento',
+    (tester) async {
+      for (final reduced in [false, true]) {
+        await tester.pumpWidget(
+          host(
+            AppReveal(
+              key: ValueKey(reduced),
+              order: 5,
+              child: const Text('Contenido'),
+            ),
+            reduceMotion: reduced,
+          ),
+        );
+        if (reduced) {
+          expect(find.byType(Opacity), findsNothing);
+          expect(find.text('Contenido'), findsOneWidget);
+        } else {
+          await tester.pumpAndSettle();
+          expect(
+            tester
+                .widget<FadeTransition>(
+                  find.descendant(
+                    of: find.byType(AppReveal),
+                    matching: find.byType(FadeTransition),
+                  ),
+                )
+                .opacity
+                .value,
+            1,
+          );
+        }
+        expect(tester.hasRunningAnimations, false);
+      }
+    },
+  );
+
   testWidgets('Cancelar diálogo devuelve false sin confirmar la acción', (
     tester,
   ) async {

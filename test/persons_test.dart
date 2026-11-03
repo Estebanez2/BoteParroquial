@@ -20,6 +20,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'auth_flow_test.dart' as auth;
 import 'groups_test.dart' as groups;
+import 'support/idle_daily_copies.dart';
+import 'package:bote_parroquial/features/reports/providers/quota_report_providers.dart';
 
 class MemoryPersons implements PersonService, ParticipationService {
   @override
@@ -159,6 +161,10 @@ void main() {
       final service = MemoryPersons();
       final container = ProviderContainer(
         overrides: [
+          dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
+          groupQuotaPeriodsProvider.overrideWith(
+            (ref, groupId) => service.watchPeriods(groupId, 'all'),
+          ),
           groupServerConfirmedProvider.overrideWith(
             (ref, groupId) => Stream.value(true),
           ),
@@ -202,6 +208,7 @@ void main() {
             ? find.byTooltip('Editar').last
             : find.text(label).last;
         await tester.ensureVisible(target);
+        await tester.pumpAndSettle();
         await tester.tap(target);
         await tester.pumpAndSettle();
       }
@@ -214,6 +221,17 @@ void main() {
       await tap('Guardar persona');
       expect(find.text('Ana'), findsOneWidget);
       expect(service.current.single.notes, 'Nota');
+      await tap('Editar');
+      await tester.enterText(find.byType(TextFormField).first, 'Sin guardar');
+      await tap('Cancelar');
+      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+      await tap('Seguir editando');
+      expect(service.current.single.displayName, 'Ana');
+      expect(find.text('Sin guardar'), findsOneWidget);
+      await tester.tap(find.byTooltip('Volver a personas'));
+      await tester.pumpAndSettle();
+      await tap('Descartar cambios');
+      expect(service.current.single.displayName, 'Ana');
       await tap('Editar');
       await tester.enterText(find.byType(TextFormField).first, 'Ana María');
       await tap('Guardar persona');

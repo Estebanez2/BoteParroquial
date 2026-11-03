@@ -189,6 +189,19 @@ class _QuotaBodyState extends ConsumerState<_QuotaBody> {
                 const SizedBox(height: AppSpacing.lg),
                 AppButton(
                   label: 'Revisar cuota',
+                  validate: () {
+                    final error = ref
+                        .read(quotaControllerProvider(widget.id).notifier)
+                        .validateAmount(parseMoneyCents(_amount.text));
+                    if (error != null) {
+                      AppSnackbar.show(
+                        context,
+                        error,
+                        variant: AppSnackbarVariant.error,
+                      );
+                    }
+                    return error == null;
+                  },
                   leadingIcon: Icons.calendar_month_outlined,
                   loading: action.isLoading,
                   onPressed: _save,

@@ -91,7 +91,7 @@ class _DesignSystemShowcaseState extends State<DesignSystemShowcase> {
                 Divider(color: c.divider),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  'BoteParroquial / Design System v0.1',
+                  'BoteParroquial / Design System v0.4 · A tu manera',
                   style: t.labelSmall.copyWith(color: c.textMuted),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -629,12 +629,9 @@ class _DesignSystemShowcaseState extends State<DesignSystemShowcase> {
       const AppSection(
         title: 'Cargando',
         child: AppCard(
-          child: Row(
-            children: [
-              LoadingIndicator(),
-              SizedBox(width: AppSpacing.lg),
-              Expanded(child: Text('Preparando la información…')),
-            ],
+          child: AppSkeleton(
+            layout: AppSkeletonLayout.group,
+            label: 'Preparando la información',
           ),
         ),
       ),

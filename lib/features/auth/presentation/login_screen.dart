@@ -13,9 +13,13 @@ class LoginScreen extends ConsumerWidget {
     final action = ref.watch(authControllerProvider);
     final session = ref.watch(authStateProvider);
     final t = AppTypography.of(context);
+    final onHero = AppColors.of(context).onHero;
     return AppScaffold(
       maxWidth: AppSpacing.readingMax,
-      appBar: const AppTopBar(title: 'BoteParroquial', editorial: true),
+      appBar: const AppTopBar(
+        title: 'BoteParroquial',
+        leading: AppBrand(compact: true),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -25,15 +29,25 @@ class LoginScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.groups_outlined, size: AppSpacing.xxxl),
+                  Icon(
+                    Icons.diversity_1_outlined,
+                    size: AppSpacing.xxxl,
+                    color: onHero,
+                  ),
                   const SizedBox(height: AppSpacing.xl),
-                  Text('LO NUESTRO, EN COMÚN', style: t.labelSmall),
+                  Text(
+                    'LO NUESTRO, EN COMÚN',
+                    style: t.labelSmall.copyWith(color: onHero),
+                  ),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Bienvenido a BoteParroquial', style: t.displayLarge),
+                  Text(
+                    'Un pequeño gesto.\nUna gran comunidad.',
+                    style: t.displayLarge.copyWith(color: onHero),
+                  ),
                   const SizedBox(height: AppSpacing.lg),
                   Text(
                     'Un espacio para cuidar los fondos y las actividades de tu comunidad.',
-                    style: t.bodyLarge,
+                    style: t.bodyLarge.copyWith(color: onHero),
                   ),
                 ],
               ),

@@ -15,6 +15,7 @@ import 'package:bote_parroquial/services/group_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'support/idle_daily_copies.dart';
 import 'auth_flow_test.dart' as fixtures;
 
 GroupMember member(
@@ -123,6 +124,7 @@ void main() {
         final groups = FakeGroups();
         final container = ProviderContainer(
           overrides: [
+            dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
             groupServerConfirmedProvider.overrideWith(
               (ref, groupId) => Stream.value(true),
             ),
@@ -214,6 +216,7 @@ void main() {
     final groups = FakeGroups()..failMemberships = true;
     final container = ProviderContainer(
       overrides: [
+        dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
         firebaseStartupProvider.overrideWithValue(
           FirebaseStartup.ready(fixtures.FakeApp()),
         ),

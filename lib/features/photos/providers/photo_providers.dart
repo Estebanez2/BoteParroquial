@@ -154,7 +154,8 @@ class PhotoController extends Notifier<PhotoEditorState> {
   }
 
   Future<void> select(PhotoSource source, {bool darkTheme = true}) => _prepare(
-    (repository, actor, draft) => repository.pick(source, darkTheme: darkTheme),
+    (repository, actor, draft) =>
+        repository.pick(source, darkTheme: darkTheme, target: target),
   );
 
   Future<void> editCurrent({bool darkTheme = true}) => _prepare(

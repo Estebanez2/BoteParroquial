@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'support/idle_daily_copies.dart';
 import 'package:bote_parroquial/app/app.dart';
 import 'package:bote_parroquial/app/router.dart';
 import 'package:bote_parroquial/core/firebase/firebase_bootstrap.dart';
@@ -16,12 +17,14 @@ import 'package:bote_parroquial/features/reports/providers/report_providers.dart
 import 'package:bote_parroquial/models/economic_report.dart';
 import 'package:bote_parroquial/repositories/quota_report_repository.dart';
 import 'package:bote_parroquial/repositories/group_calendar_repository.dart';
+import 'package:bote_parroquial/repositories/movement_repository.dart';
 import 'package:bote_parroquial/features/reports/providers/report_comparison_providers.dart';
 import 'package:bote_parroquial/services/group_clock_service.dart';
 import 'auth_flow_test.dart' as auth;
 import 'groups_test.dart' as groups;
 import 'quota_allocations_test.dart' as quota;
 import 'quota_reports_test.dart' as fixtures;
+import 'movements_test.dart' as money;
 
 class _ReportClock implements GroupClockService {
   @override
@@ -48,8 +51,14 @@ void main() {
       final service = fixtures.MemoryGroupQuotas()
         ..periods = fixtures.periods
         ..allocations = List.of(fixtures.allocations);
+      final cashSource = money.MemoryMovements()
+        ..current = fixtures.money.where((m) => m.groupId == 'a').toList();
       final container = ProviderContainer(
         overrides: [
+          dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
+          movementRepositoryProvider.overrideWithValue(
+            MovementRepository(cashSource),
+          ),
           firebaseStartupProvider.overrideWithValue(
             FirebaseStartup.ready(auth.FakeApp()),
           ),
@@ -94,6 +103,7 @@ void main() {
         await session.changes.close();
         await membership.changes.close();
         await service.changes.close();
+        await cashSource.changes.close();
       });
       Future<void> pumpApp(ThemeMode mode) async {
         await tester.pumpWidget(
@@ -126,7 +136,7 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      await tap('Ver informe de cuotas');
+      await tap('Informes');
       container
           .read(reportSelectionProvider('a').notifier)
           .select(period: ReportPeriod.year, year: 2026, month: 6);

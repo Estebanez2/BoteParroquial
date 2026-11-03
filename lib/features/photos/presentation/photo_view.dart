@@ -93,16 +93,25 @@ class PhotoCover extends ConsumerWidget {
     required this.groupId,
     required this.name,
     this.interactive = false,
+    this.panoramic = false,
+    this.edgeToEdge = false,
   });
   final String groupId, name;
   final bool interactive;
+  final bool panoramic, edgeToEdge;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final readOnly = ref.watch(offlineReadOnlyProvider);
     return PhotoView(
       target: PhotoTarget.group(groupId),
       builder: (context, image, loading) {
-        final cover = AppCover(name: name, image: image, loading: loading);
+        final cover = AppCover(
+          name: name,
+          image: image,
+          loading: loading,
+          panoramic: panoramic,
+          edgeToEdge: edgeToEdge,
+        );
         if (!interactive || readOnly) return cover;
         return Semantics(
           button: true,
