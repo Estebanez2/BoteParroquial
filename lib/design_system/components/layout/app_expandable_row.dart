@@ -3,6 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_motion.dart';
+import '../../theme/app_radius.dart';
 
 class AppExpandableRow extends StatelessWidget {
   const AppExpandableRow({
@@ -26,14 +27,37 @@ class AppExpandableRow extends StatelessWidget {
         reverseDuration: AppMotion.duration(context, AppMotion.durationNormal),
         curve: AppMotion.curveStandard,
       ),
-      tilePadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      childrenPadding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      tilePadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      childrenPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.lg,
+      ),
+      collapsedBackgroundColor: c.primaryContainer.withValues(alpha: .18),
+      backgroundColor: c.primaryContainer.withValues(alpha: .10),
+      clipBehavior: Clip.antiAlias,
       iconColor: c.primary,
       collapsedIconColor: c.textSecondary,
       textColor: c.textPrimary,
       collapsedTextColor: c.textPrimary,
-      shape: const Border(),
-      collapsedShape: const Border(),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.control,
+        side: BorderSide(
+          color: c.primary.withValues(alpha: .75),
+          width: AppSpacing.actionBorder,
+        ),
+      ),
+      collapsedShape: RoundedRectangleBorder(
+        borderRadius: AppRadius.control,
+        side: BorderSide(
+          color: c.primary.withValues(alpha: .75),
+          width: AppSpacing.actionBorder,
+        ),
+      ),
       leading: MediaQuery.textScalerOf(context).scale(1) > 1.3 ? null : leading,
       title: DefaultTextStyle(
         style: AppTypography.of(context).bodyMedium,

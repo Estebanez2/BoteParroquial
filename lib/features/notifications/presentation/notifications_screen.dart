@@ -92,7 +92,9 @@ class _Inbox extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Los avisos permanecen en la bandeja aunque desactives el push.',
+                  category == ActivityNotificationCategory.economic
+                      ? 'Ingresos, retiradas o anulaciones asociados a tu persona, y cambios en la cuota del grupo. Normalmente no se avisa al autor de su propia operación. Activados muestra avisos en el móvil; desactivados los conserva solo en esta bandeja.'
+                      : 'Solicitudes y nuevas entradas para gestores; aceptación, vínculo y rol para la persona afectada; transferencias y cambios del código según tus permisos. Activados muestra avisos en el móvil; desactivados los conserva solo en esta bandeja.',
                   style: type.bodySmall,
                 ),
                 const SizedBox(height: AppSpacing.md),

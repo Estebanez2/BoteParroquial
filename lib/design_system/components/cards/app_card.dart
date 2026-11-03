@@ -43,11 +43,18 @@ class AppCard extends StatelessWidget {
             gradient: AppGradients.surface(context),
             borderRadius: AppRadius.card,
             border: Border.all(
-              color: variant == AppCardVariant.outlined
+              color: variant == AppCardVariant.interactive && onTap != null
+                  ? c.primary.withValues(alpha: .75)
+                  : variant == AppCardVariant.outlined
                   ? c.outline
                   : c.divider.withValues(alpha: .65),
+              width: variant == AppCardVariant.interactive && onTap != null
+                  ? AppSpacing.actionBorder
+                  : 1,
             ),
-            boxShadow: variant == AppCardVariant.elevated
+            boxShadow: variant == AppCardVariant.interactive && onTap != null
+                ? AppShadows.action(context)
+                : variant == AppCardVariant.elevated
                 ? AppShadows.soft(context)
                 : null,
           ),

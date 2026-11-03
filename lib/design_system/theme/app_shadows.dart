@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 abstract final class AppShadows {
+  static List<BoxShadow> action(BuildContext context) => [
+    BoxShadow(
+      color: AppColors.of(context).textPrimary.withValues(alpha: .10),
+      blurRadius: 8,
+      offset: const Offset(0, 2),
+    ),
+  ];
   static List<BoxShadow> soft(BuildContext context) => [
     BoxShadow(
       color: AppColors.of(context).hero.withValues(alpha: 0.07),

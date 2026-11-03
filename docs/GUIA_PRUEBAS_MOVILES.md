@@ -90,53 +90,17 @@ claves, códigos de invitación activos o capturas de credenciales.
 APK recomendado para valorar fluidez:
 `build/app/outputs/flutter-apk/app-profile.apk`.
 También se ha compilado `build/app/outputs/flutter-apk/app-debug.apk` para depurar.
-Consulta ambos SHA-256 de la entrega cerrada el 03/11/2026 en
-[SELECTED_MOTION_2026-11-03.md](SELECTED_MOTION_2026-11-03.md).
-
-## 23. Fluidez de la barra de grupo (D131)
-
-Usar el APK actualizado de
-[GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md](GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md),
-que sustituye los artefactos anteriores para esta comprobación. Casos físicos
-**PENDIENTES** hasta probarlos. No es necesario crear ni cambiar datos.
-
-- [ ] **FLU-01 — Instalar profile**. Desde la raíz, para A059P conectado,
-  actualizar conservando datos mediante instalación directa en PowerShell:
-  `& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" -s 00166155L000316 install -r "build\app\outputs\flutter-apk\app-profile.apk"`.
-  Debe terminar con Success. Si persiste la duda, comparar SHA-256 del APK
-  instalado con el del informe antes de evaluar la corrección.
-  Preferir `adb install -r` aquí: la CLI Flutter instalada puede desinstalar
-  primero con `flutter install`, retirando datos locales.
-  Abrir manualmente. Para M2 sustituir ID según `flutter devices`. Profile permite
-  valorar fluidez sin el coste de debug; ambas compilaciones tienen la corrección.
-- [ ] **FLU-02 — Entrada y repetición**. Entrar en un grupo y recorrer Inicio →
-  Informes → Actividad → Participantes → Inicio unas diez veces. Deben mantenerse
-  lados e indicador continuo. Durante la preparación de una sección nueva aparece
-  su esqueleto, sin construir todas las filas mientras se desliza. La pantalla que
-  sale conserva su aspecto. Esperar un segundo entre toques para aislar mediciones;
-  después probar toques rápidos, Atrás y cambiar de grupo sin destinos tardíos.
-- [ ] **FLU-03 — Carga real y copia**. Repetir con mala conexión y en una copia
-  local. Carga/error siguen sus estados reales; no aparece información inventada.
-  La copia conserva fecha/solo lectura. Con Quitar animaciones, cambio inmediato;
-  con texto ampliado, barra y contenido siguen utilizables.
-- [ ] **FLU-04 — Medir sin datos personales**. Dejar la app abierta tras FLU-02.
-  En el profile instrumentado se pueden leer los tiempos con:
-  `adb logcat -d -s flutter:I | Select-String 'GROUP_MOTION'` (PowerShell).
-  Comunicar recorrido y si el tirón es durante el deslizamiento o al aparecer los
-  datos. Comparar ambos móviles. Los logs solo contienen índices/tiempos; cero
-  conteos de una ventana no certifica ausencia absoluta de frames perdidos.
-El APK anterior del 20/10 tenía hash
-`030d8d285e701adc68b77933d22b96ca64ed53d451aa0a0f1e17a6b3c9547a73`
-y no incluye las copias diarias.
-Si se genera otro APK después, registra su hash y usa ese mismo archivo en todos.
-La etiqueta `1.0.0+1` por sí sola no identifica una compilación concreta.
+Consulta las huellas del APK actual en
+[ACTION_SPACING_AND_PUSH_2026-11-03.md](ACTION_SPACING_AND_PUSH_2026-11-03.md).
+Los informes anteriores conservan hashes históricos. Usa el mismo archivo en
+todos los móviles; la etiqueta 1.0.0+1 por sí sola no identifica la compilación.
 
 En PowerShell, desde el repositorio:
 
 ```powershell
 flutter devices
-flutter install --profile -d ID_M1 --use-application-binary="build/app/outputs/flutter-apk/app-profile.apk"
-flutter install --profile -d ID_M2 --use-application-binary="build/app/outputs/flutter-apk/app-profile.apk"
+& "C:\Users\aleja\AppData\Local\Android\Sdk\platform-tools\adb.exe" -s ID_M1 install -r "build\app\outputs\flutter-apk\app-profile.apk"
+& "C:\Users\aleja\AppData\Local\Android\Sdk\platform-tools\adb.exe" -s ID_M2 install -r "build\app\outputs\flutter-apk\app-profile.apk"
 ```
 
 Sustituye `ID_M1` e `ID_M2` por los identificadores reales; repite para M3 si lo
@@ -1142,3 +1106,121 @@ profile de SELECTED_MOTION_2026-11-03.md, usando el comando de la sección 1.
 El laboratorio permanece para seguir comparando; no cambia por sí mismo lo
 elegido. Evidencia, límites e identificadores del APK actual:
 [SELECTED_MOTION_2026-11-03.md](SELECTED_MOTION_2026-11-03.md).
+
+## 23. Fluidez de la barra de grupo (D131)
+
+Usar el APK actualizado de
+[GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md](GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md),
+que sustituye los artefactos anteriores para esta comprobación. Casos físicos
+**PENDIENTES** hasta probarlos. No es necesario crear ni cambiar datos.
+
+- [ ] **FLU-01 — Instalar profile**. Desde la raíz, para A059P conectado,
+  actualizar conservando datos mediante instalación directa en PowerShell:
+  `& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" -s 00166155L000316 install -r "build\app\outputs\flutter-apk\app-profile.apk"`.
+  Debe terminar con Success. Si persiste la duda, comparar SHA-256 del APK
+  instalado con el del informe antes de evaluar la corrección.
+  Preferir `adb install -r` aquí: la CLI Flutter instalada puede desinstalar
+  primero con `flutter install`, retirando datos locales.
+  Abrir manualmente. Para M2 sustituir ID según `flutter devices`. Profile permite
+  valorar fluidez sin el coste de debug; ambas compilaciones tienen la corrección.
+- [ ] **FLU-02 — Entrada y repetición**. Entrar en un grupo y recorrer Inicio →
+  Informes → Actividad → Participantes → Inicio unas diez veces. Deben mantenerse
+  lados e indicador continuo. Durante la preparación de una sección nueva aparece
+  su esqueleto, sin construir todas las filas mientras se desliza. La pantalla que
+  sale conserva su aspecto. Esperar un segundo entre toques para aislar mediciones;
+  después probar toques rápidos, Atrás y cambiar de grupo sin destinos tardíos.
+- [ ] **FLU-03 — Carga real y copia**. Repetir con mala conexión y en una copia
+  local. Carga/error siguen sus estados reales; no aparece información inventada.
+  La copia conserva fecha/solo lectura. Con Quitar animaciones, cambio inmediato;
+  con texto ampliado, barra y contenido siguen utilizables.
+- [ ] **FLU-04 — Medir sin datos personales**. Dejar la app abierta tras FLU-02.
+  En el profile instrumentado se pueden leer los tiempos con:
+  `adb logcat -d -s flutter:I | Select-String 'GROUP_MOTION'` (PowerShell).
+  Comunicar recorrido y si el tirón es durante el deslizamiento o al aparecer los
+  datos. Comparar ambos móviles. Los logs solo contienen índices/tiempos; cero
+  conteos de una ventana no certifica ausencia absoluta de frames perdidos.
+
+FLU-02 confirmado por el usuario en A059P el 03/11/2026: «ahora sí va fluido»,
+después de instalar el APK correcto. No equivale a probar todos los móviles.
+
+## 24. Formulario compacto, cuota al ingresar y avisos (D132–D134)
+
+APK y estado: [MOVEMENT_ENTRY_AND_NOTIFICATIONS_2026-11-03.md](MOVEMENT_ENTRY_AND_NOTIFICATIONS_2026-11-03.md).
+Pruebas físicas nuevas **PENDIENTES**. Actualizar con `adb install -r` como en
+FLU-01; no desinstalar para conservar sesión/copias locales.
+
+- [ ] **ING-01 — Campos visibles**. Abrir Registrar ingreso y Registrar retirada.
+  Con teclado cerrado y tamaño de texto habitual, ver tipo, cantidad, persona,
+  fecha, descripción y guardado sin recorrer tarjetas grandes. Con teclado abierto,
+  pantalla pequeña o texto ampliado se permite scroll: ningún control debe quedar
+  inaccesible. Atrás tras cambiar datos sigue preguntando antes de descartarlos.
+- [ ] **ING-02 — Un ingreso, una cuota**. Elegir persona con etapa ya configurada,
+  importe 3,00 €, abrir Elegir cuota, seleccionar un mes de su etapa e indicar
+  1,00 €. Revisar y confirmar Guardar ambos: existe un único ingreso de 3,00 €,
+  1,00 € aplicado al mes y 2,00 € recibido sin asignar. El saldo aumenta 3,00 €.
+  La fecha efectiva no elige por sí sola la cuota. Cancelar la confirmación no
+  crea nada. Volver a abrir el reparto posterior y comprobar que sigue editable.
+- [ ] **ING-03 — Validación y retirada**. Cuota mayor que ingreso o mes fuera de
+  participación: no guardar. Sobrepago: advertir antes de aceptar. Quitar la cuota
+  con la X: todo queda sin asignar. Cambiar persona/tipo limpia esa elección.
+  Una retirada normal reduce caja y conserva pagos de cuotas; para revertirlos
+  se usa Devolución, no este selector. Corregir un ingreso conserva el flujo de
+  revisión posterior de meses y el original histórico.
+- [ ] **ING-04 — Interrupción**. Si se pierde conexión/respuesta durante el envío,
+  revisar el pendiente y su cuota antes de repetir. Comprobar resultado con
+  conexión; recupera ambos o mantiene conflicto, sin duplicar ingreso. No basta
+  ver un movimiento para dar por comprobado el reparto. Este caso exige cuidado
+  y queda pendiente de ejecución real, sin fingir que ocurrió en las pruebas.
+- [ ] **ACT-01 — Acciones visibles**. Comparar Registrar ingreso con las tarjetas
+  de cifras: borde de acción/relieve en botones y tarjetas pulsables; neutro en
+  información. Repetir en tema claro/oscuro y otra paleta, con texto ampliado.
+  Disabled sigue bloqueando y B07/B08/B04/B05 conservan su significado.
+- [ ] **NOT-PRUEBA — Programación inicial, sustituida por la sección 25**. No
+  repetir este destino: se detectó que era la cuenta DEMO anterior. Mantener la cuenta de
+  Alejandro que es propietaria de los grupos DEMO, permiso nativo e Internet,
+  app en segundo plano o móvil bloqueado. Deben llegar «Prueba 1 de 2» y
+  «Prueba 2 de 2». Son push puntuales solicitados, no recordatorios mensuales:
+  no cambian interruptores ni crean avisos económicos en bandeja. Se usa el
+  registro más reciente de la cuenta; iniciar esa cuenta en otro móvil antes
+  de la hora puede hacer que la prueba llegue allí. Anotar dispositivo y hora.
+  Programación/aceptación FCM no acreditan que el sistema lo haya mostrado.
+- [ ] **NOT-OPCIONES — Entender el panel**. Revisar textos de Recordatorios,
+  Movimientos/cuota, Miembros/accesos, Comprobar registro y Retirar avisos. Desactivar
+  una categoría conserva bandeja; retirar móvil afecta a todos sus grupos, no
+  otros dispositivos. Marcar leído no cambia cuotas; Abrir comprueba acceso.
+
+## 25. Separaciones, zonas pulsables y push confirmado (D135–D137)
+
+Estado y APK: [ACTION_SPACING_AND_PUSH_2026-11-03.md](ACTION_SPACING_AND_PUSH_2026-11-03.md).
+Instalar el profile actual con `adb install -r` como en la sección 1 para los
+cambios visuales. No hace falta otra instalación para recibir push que el APK
+actual ya admite. Mantener la sesión que realmente estés usando, no una cuenta
+DEMO histórica con el mismo nombre visible.
+
+- [ ] **ESP-01 — Desplegables**. En Inicio del grupo abrir Gestionar este espacio:
+  borde/fondo de acción visibles estando cerrado y abierto, Editar grupo e
+  Historial administrativo separados. Revisar también un movimiento desplegado.
+- [ ] **ESP-02 — Aire entre acciones**. Revisar Añadir persona/Abrir papelera,
+  Por persona → Ver ficha, Su recorrido → Ver ficha de X, Repartir por meses →
+  Corregir/Anular y Ajustar este mes. Debe haber espacio entre bordes y respecto
+  al texto; no confundirlos con tarjetas informativas. Con texto ampliado se
+  permite scroll, pero no recortes ni superposiciones.
+- [ ] **HIT-01 — Tocar fuera de las letras**. En Nuevo movimiento pulsar cerca de
+  ambos extremos del área interior de Ingreso/Retirada. Debe cambiar, igual que
+  otras barras de selección y botones expandidos. No hace falta acertar en el
+  texto. Un control deshabilitado continúa sin ejecutar acciones.
+- [ ] **REG-01 — Confirmación de registro**. En campana → Comprobar registro,
+  comprobar loading y mensaje de éxito/no registrado/error. Un éxito no manda
+  otra notificación. Retirar avisos sigue desactivando el registro del móvil,
+  sin cambiar los interruptores por grupo ni los demás móviles.
+- [x] **PUSH-1920 — Recepción confirmada el 03/11/2026**. Cuenta propietaria de
+  Catequesis, registro renovado, cron ejecutado 19:20:00 y FCM sent 19:20:03.
+  Usuario indica «Sí, ha llegado». Título BoteParroquial · Prueba 19:20 en Android.
+  No equivale a prueba de otro móvil/cuenta/iOS ni de recordatorios automáticos.
+- [ ] **PUSH-2000 — 03/11/2026 20:00 Madrid**. Se conserva esta prueba con destino
+  corregido a la cuenta propietaria de Catequesis y el registro más reciente.
+  Con permiso e Internet, dejar la app en segundo plano o bloquear el móvil.
+  Esperado en notificaciones Android: BoteParroquial · Prueba 20:00. Texto
+  «Este es el aviso de prueba que pediste. No cambia cuotas ni movimientos.»
+  No añade una cuota ficticia ni un mensaje a la bandeja de la app. Pendiente.
+El APK anterior del 20/10 tenía hash

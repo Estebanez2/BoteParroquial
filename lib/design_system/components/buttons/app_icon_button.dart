@@ -37,9 +37,16 @@ class AppIconButton extends StatelessWidget {
               ? c.danger
               : c.textPrimary,
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.control),
-          side: variant == AppIconButtonVariant.standard
-              ? BorderSide(color: c.divider)
-              : null,
+          side: BorderSide(
+            color: onPressed == null
+                ? c.divider
+                : variant == AppIconButtonVariant.danger
+                ? c.danger
+                : c.primary.withValues(alpha: .75),
+            width: AppSpacing.actionBorder,
+          ),
+          elevation: onPressed == null ? 0 : 1,
+          shadowColor: c.textPrimary.withValues(alpha: .14),
         ),
       ),
     );

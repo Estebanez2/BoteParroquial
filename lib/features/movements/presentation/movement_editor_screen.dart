@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/movement.dart';
+import '../../../models/initial_quota_assignment.dart';
+import '../../quotas/presentation/initial_quota_picker.dart';
 import '../../groups/providers/group_providers.dart';
 import '../../groups/presentation/group_sync_notice.dart';
 import '../../persons/providers/person_providers.dart';
@@ -123,6 +125,37 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
   int? _cents;
   String? _validation;
   bool _submitting = false;
+  InitialQuotaAssignment? _initialQuota;
+
+  Future<void> _pickQuota(String currency) async {
+    if (_personId == null || (_cents ?? 0) <= 0) {
+      AppSnackbar.show(
+        context,
+        'Indica primero la persona y el importe del ingreso.',
+      );
+      return;
+    }
+    FocusScope.of(context).unfocus();
+    final person = _personId!;
+    final assignment = await AppBottomSheet.show<InitialQuotaAssignment>(
+      context,
+      title: 'Qué cuota paga este ingreso',
+      builder: (_) => InitialQuotaPicker(
+        groupId: widget.groupId,
+        personId: person,
+        incomeCents: _cents!,
+        currency: currency,
+        initial: _initialQuota,
+      ),
+    );
+    if (mounted &&
+        _personId == person &&
+        _type == MovementType.income &&
+        assignment != null) {
+      setState(() => _initialQuota = assignment);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -173,7 +206,8 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
         : controller.validateInput(input) ??
               (_original == null
                   ? null
-                  : controller.validateReason(_reason.text));
+                  : controller.validateReason(_reason.text)) ??
+              controller.validateInitialQuota(input, _initialQuota);
     setState(() => _validation = error);
     return error == null;
   }
@@ -203,6 +237,16 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
       if (!mounted || review == null) return;
       final confirmed = await confirmMovementReview(context, review, currency);
       if (!mounted || !confirmed) return;
+      if (_initialQuota != null) {
+        final quotaConfirmed = await AppDialog.show(
+          context,
+          title: 'Guardar ingreso y cuota',
+          description:
+              'Ingreso: ${formatMoneyCents(input.amountCents, currency: currency)}.\nCuota ${_initialQuota!.month}: ${formatMoneyCents(_initialQuota!.amountCents, currency: currency)}.\nRecibido sin asignar: ${formatMoneyCents(input.amountCents - _initialQuota!.amountCents, currency: currency)}.\n\nSe guardarán juntos. No se crea otro ingreso.',
+          confirmLabel: 'Guardar ambos',
+        );
+        if (!mounted || !quotaConfirmed) return;
+      }
       if (!widget.cancel && _original?.input.type == MovementType.income) {
         final reviewed = await AppDialog.show(
           context,
@@ -249,6 +293,7 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
               original: _original,
               reason: _original == null ? null : _reason.text,
               expectedActorUid: actor,
+              initialQuota: _initialQuota,
             );
       if (!mounted || !saved) return;
       _guard.currentState?.saved();
@@ -283,7 +328,8 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
           _reason.text.isNotEmpty ||
           _date != _initialDate ||
           _type != (_original?.input.type ?? widget.initialType) ||
-          _personId != _original?.input.personId,
+          _personId != _original?.input.personId ||
+          _initialQuota != null,
       child: AppScaffold(
         maxWidth: AppSpacing.readingMax,
         appBar: AppTopBar(
@@ -317,15 +363,13 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     GroupSyncNotice(groupId: groupId),
-                    AppReveal(child: Text(title, style: type.editorialTitle)),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      widget.cancel
-                          ? 'El movimiento original y su motivo quedarán conservados.'
-                          : 'Registra un ingreso o una retirada en el fondo común de tu comunidad.',
-                      style: type.bodyMedium,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
+                    if (widget.cancel) ...[
+                      Text(
+                        'El movimiento original y su motivo quedarán conservados.',
+                        style: type.bodyMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
                     if (_original != null) ...[
                       AppCard(
                         child: Column(
@@ -353,98 +397,112 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
                       const SizedBox(height: AppSpacing.xl),
                     ],
                     if (!widget.cancel) ...[
-                      AppCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                      AppChoiceBar<MovementType>(
+                        value: _type,
+                        options: const {
+                          MovementType.income: 'Ingreso',
+                          MovementType.withdrawal: 'Retirada',
+                        },
+                        enabled: !busy,
+                        onChanged: (value) => setState(() {
+                          _type = value;
+                          if (value != MovementType.income) {
+                            _initialQuota = null;
+                          }
+                        }),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppMoneyField(
+                        currency: group.currency,
+                        controller: _amount,
+                        prominent: false,
+                        enabled: !busy,
+                        onChangedCents: (value) =>
+                            setState(() => _cents = value),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      people.when(
+                        skipLoadingOnRefresh: false,
+                        skipLoadingOnReload: false,
+                        loading: () =>
+                            const LoadingIndicator(label: 'Cargando personas…'),
+                        error: (error, _) => EmptyState(
+                          icon: Icons.cloud_off_outlined,
+                          title: 'No se pudieron cargar las personas',
+                          description: failureMessage(error),
+                          actionLabel: 'Reintentar personas',
+                          onAction: () =>
+                              ref.invalidate(personsProvider(groupId)),
+                        ),
+                        data: (persons) => AppDropdown<String>(
+                          label: _type == MovementType.income
+                              ? 'Persona del ingreso'
+                              : 'Persona o grupo',
+                          value: _personId ?? '',
+                          enabled: !busy,
+                          options: {
+                            '': _type == MovementType.income
+                                ? 'Selecciona una persona'
+                                : 'El grupo (retirada general)',
+                            for (final person in persons)
+                              person.id:
+                                  '${person.displayName}${person.isActive ? '' : ' · Inactiva'}',
+                          },
+                          onChanged: (value) => setState(() {
+                            _personId = value == null || value.isEmpty
+                                ? null
+                                : value;
+                            _initialQuota = null;
+                          }),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppDateField(
+                        label: 'Fecha efectiva',
+                        lastDate: controller.today(),
+                        value: _date,
+                        onChanged: (value) => setState(() => _date = value),
+                        enabled: !busy,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppTextField(
+                        label: _type == MovementType.income
+                            ? 'Descripción (opcional)'
+                            : 'Motivo de la retirada',
+                        controller: _description,
+                        icon: Icons.description_outlined,
+                        enabled: !busy,
+                      ),
+                      if (_original == null &&
+                          _type == MovementType.income) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Row(
                           children: [
-                            Text('TIPO DE MOVIMIENTO', style: type.labelSmall),
-                            const SizedBox(height: AppSpacing.md),
-                            AppChoiceBar<MovementType>(
-                              value: _type,
-                              options: const {
-                                MovementType.income: 'Ingreso',
-                                MovementType.withdrawal: 'Retirada',
-                              },
-                              enabled: !busy,
-                              onChanged: (value) =>
-                                  setState(() => _type = value),
+                            Expanded(
+                              child: AppButton(
+                                label: _initialQuota == null
+                                    ? 'Elegir cuota (opcional)'
+                                    : 'Cuota ${_initialQuota!.month} · ${formatMoneyCents(_initialQuota!.amountCents, currency: group.currency)}',
+                                leadingIcon: Icons.calendar_month_outlined,
+                                size: AppButtonSize.compact,
+                                variant: AppButtonVariant.outline,
+                                onPressed: busy
+                                    ? null
+                                    : () => _pickQuota(group.currency),
+                              ),
                             ),
-                            const SizedBox(height: AppSpacing.sm),
-                            Text(
-                              'Los ingresos aumentan el saldo del fondo. Las retiradas lo disminuyen.',
-                              style: type.bodySmall,
-                            ),
+                            if (_initialQuota != null)
+                              AppIconButton(
+                                icon: Icons.close_rounded,
+                                label: 'Dejar todo sin asignar',
+                                onPressed: busy
+                                    ? null
+                                    : () =>
+                                          setState(() => _initialQuota = null),
+                              ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      AppCard(
-                        child: AppMoneyField(
-                          currency: group.currency,
-                          controller: _amount,
-                          enabled: !busy,
-                          onChangedCents: (value) => _cents = value,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      AppCard(
-                        child: people.when(
-                          skipLoadingOnRefresh: false,
-                          skipLoadingOnReload: false,
-                          loading: () => const LoadingIndicator(
-                            label: 'Cargando personas…',
-                          ),
-                          error: (error, _) => EmptyState(
-                            icon: Icons.cloud_off_outlined,
-                            title: 'No se pudieron cargar las personas',
-                            description: failureMessage(error),
-                            actionLabel: 'Reintentar personas',
-                            onAction: () =>
-                                ref.invalidate(personsProvider(groupId)),
-                          ),
-                          data: (persons) => AppDropdown<String>(
-                            label: _type == MovementType.income
-                                ? 'Persona del ingreso'
-                                : 'Persona o grupo',
-                            value: _personId ?? '',
-                            enabled: !busy,
-                            options: {
-                              '': _type == MovementType.income
-                                  ? 'Selecciona una persona'
-                                  : 'El grupo (retirada general)',
-                              for (final person in persons)
-                                person.id:
-                                    '${person.displayName}${person.isActive ? '' : ' · Inactiva'}',
-                            },
-                            onChanged: (value) => setState(
-                              () => _personId = value == null || value.isEmpty
-                                  ? null
-                                  : value,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      AppCard(
-                        child: AppDateField(
-                          label: 'Fecha efectiva',
-                          lastDate: controller.today(),
-                          value: _date,
-                          onChanged: (value) => setState(() => _date = value),
-                          enabled: !busy,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      AppCard(
-                        child: AppTextField(
-                          label: _type == MovementType.income
-                              ? 'Descripción (opcional)'
-                              : 'Motivo de la retirada',
-                          controller: _description,
-                          icon: Icons.description_outlined,
-                          enabled: !busy,
-                        ),
-                      ),
+                      ],
                     ],
                     if (_original != null) ...[
                       const SizedBox(height: AppSpacing.lg),

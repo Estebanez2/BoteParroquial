@@ -92,3 +92,9 @@ del profile actualizado antes de atribuir ese resultado al código corregido.
 
 Guía manual: sección 23 de [GUIA_PRUEBAS_MOVILES.md](GUIA_PRUEBAS_MOVILES.md).
 No hay validación física iOS ni entrega push acreditadas por este cambio.
+
+Confirmación posterior del usuario, 03/11/2026: tras corregir la ruta de
+instalación indica «ahora sí va fluido». Se da por comprobada su navegación
+de grupo en A059P con el profile corregido. Los pendientes anteriores de esta
+prueba quedan resueltos por esa confirmación, sin certificar FPS generales,
+todos los dispositivos, otros efectos ni iOS.

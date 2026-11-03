@@ -1259,3 +1259,58 @@ No certificar cero tirones con tests: profile puede habilitar TRACE_GROUP_MOTION
 sin datos personales para medir en dispositivo. No sustituye el diagnóstico por
 un indicador de red ni altera escrituras, Rules o las copias diarias.
 Evidencia y pendientes: GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md.
+
+D132 — Elegir una cuota al ingresar y guardado conjunto (2026-11-03)
+
+El usuario elige un mes con importe editable, remanente sin asignar y posibilidad
+de repartir después. Prefiere ingreso/asignación en una operación indivisible,
+con ajuste mínimo de reglas y respaldo remoto previo, frente a dos pasos con
+posible fallo parcial. Formulario compacto con selector en panel, sin cabecera
+repetida ni envoltorios por campo; conservar scroll de seguridad para teclado,
+errores y accesibilidad. Cuota inicial solo al crear ingreso; no copiar repartos
+en correcciones ni alterar cuotas mediante retiradas normales. Journal v3 y
+recuperación de ambos testigos; reglas publicadas tras emulador y respaldo.
+
+D133 — Distinguir acciones e información por biblioteca (2026-11-03)
+
+El usuario elige borde más marcado y relieve suave frente al doble borde.
+Aplicar a botones/iconos/tarjetas interactivas con callback desde App*, usando
+colores y tokens semánticos; información conserva acabado neutro. Mantener
+objetivos táctiles, foco, disabled y efectos D130, sin perjudicar D131.
+
+D134 — Ayuda de avisos y dos pruebas puntuales (2026-11-03)
+
+El usuario pide explicar todas las opciones y programar dos avisos hoy. Se
+programan 18:00/20:00 Europe/Madrid en Supabase Notificaciones, independientes
+de preferencias que estaban apagadas, sin modificarlas. Endpoint privado {},
+destinatario/fechas fijos, último registro válido de la cuenta, revalidación y
+reserva duradera sin reintento incierto. Jobs se retiran tras solicitar envío;
+ventanas caducan hoy. Sin avisos falsos de cuotas ni escrituras económicas.
+Cuenta activa del móvil únicamente; logout retira su registro, pero un envío
+ya aceptado puede llegar tarde. No afirmar entrega física sin confirmación.
+Evidencia D132–D134: MOVEMENT_ENTRY_AND_NOTIFICATIONS_2026-11-03.md.
+
+D135 — Separar acciones y cubrir desplegables (2026-11-03)
+
+El usuario señala bordes pegados y falta de borde en Gestionar este espacio.
+Centralizar márgenes externos de AppButton y borde/fondo de AppExpandableRow;
+se aplica a acciones de personas, informes, administración, movimientos y cuotas.
+Mantener el estilo D133 y separadores de sección, sin copias de estilos en features.
+
+D136 — Toda la superficie asignada debe responder al toque (2026-11-03)
+
+El usuario rechaza tener que tocar el texto. Propagar las restricciones del padre
+en AppControlFeedback y llenar segmentos AppChoiceBar con su botón; conservar
+disabled, selected, foco y efectos. No cambiar callbacks ni permitir acciones
+rechazadas solo por ampliar el área. Tests con toques lejos de las letras.
+
+D137 — Prueba 19:20 y destino real de notificaciones (2026-11-03)
+
+El usuario pide priorizar un aviso 19:20 tras fallar el de 18:00. Cron anterior
+funcionó pero FCM rechazó un token antiguo; se había usado además la cuenta DEMO
+histórica. Identificar su cuenta por ser propietaria de Catequesis y usar el
+registro recién comprobado. Prueba 19:20 enviada y recepción confirmada por el
+usuario. Prueba 20:00 conservada para ese mismo destino. Sin preferencias,
+dinero, IAM, claves ni Rules nuevos. Un APK nuevo no era necesario para recibir
+push, sí para aplicar estos cambios de UI y la confirmación de Comprobar registro.
+Evidencia D135–D137: ACTION_SPACING_AND_PUSH_2026-11-03.md.

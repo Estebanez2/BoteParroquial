@@ -1,5 +1,36 @@
 BoteParroquial — Instrucciones para agentes
 
+Continuación 2026-11-03 D135–D137: AppButton reserva márgenes exteriores centrales;
+AppExpandableRow tiene borde/fondo de acción (incluye Gestionar este espacio).
+AppControlFeedback usa StackFit.passthrough para conservar todo el hueco asignado;
+AppChoiceBar llena cada segmento, sin limitar el toque a la etiqueta. No perder
+disabled/foco/animaciones ni el scroll de seguridad. Comprobar registro muestra
+loading y confirmación/error, sin enviar una prueba desde Flutter.
+Aviso 18:00 falló: token unregistered de antigua cuenta DEMO, además destino
+distinto de la cuenta que el usuario usaba. La cuenta actual fue identificada por
+su propiedad de Catequesis; no reutilizar UID histórico para envíos manuales.
+Prueba 19:20 programada y enviada a Catequesis: FCM sent y usuario confirma
+«Sí, ha llegado». La de 20:00 se conserva con ese destino; recepción pendiente.
+Cinco casos dirigidos superados, análisis limpio, sin Rules/dinero/secretos nuevos.
+Estado y evidencia: docs/ACTION_SPACING_AND_PUSH_2026-11-03.md. Usuario ejecuta
+el nuevo APK para cambios visuales; no fue necesario instalarlo para recibir push.
+
+Entrega 2026-11-03 D132–D134: formulario compacto de movimientos y cuota inicial
+opcional de un mes/importe explícito para ingresos nuevos. Guardar juntos ingreso,
+asignación, contador, testigos y auditoría, nunca dos escrituras consecutivas.
+Journal v3 compatible con v1/v2, conserva y recupera el reparto; reintento mantiene
+plan/ID. Correcciones mantienen reparto posterior explícito; retiradas normales
+no alteran cuotas. AppButton/AppIconButton/AppCard interactiva comparten borde
+de acción y relieve; información conserva borde neutro. Reglas publicadas tras
+respaldo remoto externo 2026-11-03T16-19-30-199Z, hash activo
+fee05c4c229be0c907840b47c6c5269213c2f419955620c6d7d8f81f75556055.
+Pruebas push autorizadas para hoy 18:00/20:00 Madrid en notification-probe del
+Supabase de notificaciones; cron jobs 2/3 de una ejecución, no cambiar job 1.
+Solo registro más reciente de la cuenta, sin modificar preferencias ni dinero;
+ventanas fechadas caducan. No acreditar entrega hasta probar el móvil.
+El usuario confirma fluidez D131 en A059P, sin medición de FPS general.
+Estado, límites y comprobaciones: docs/MOVEMENT_ENTRY_AND_NOTIFICATIONS_2026-11-03.md.
+
 Corrección de navegación D131, 2026-11-03: AppDeferredSection aplaza montar las
 features durante la entrada y muestra un esqueleto estático. La página saliente
 usa SnapshotWidget efímero y TickerMode pausado durante el movimiento; no es una

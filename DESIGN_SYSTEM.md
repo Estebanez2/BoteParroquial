@@ -1,5 +1,26 @@
 # BoteParroquial — Design System v0.4
 
+## Separación y zona de acción (D135–D136)
+
+AppButton añade margen exterior vertical sm y horizontal xs: separar controles
+y texto sin repetir ajustes por feature. El margen queda fuera de su borde y
+no sustituye el objetivo táctil interior. AppExpandableRow también lleva borde
+y fondo de acción, tanto abierto como cerrado. AppControlFeedback conserva las
+restricciones con StackFit.passthrough; AppChoiceBar llena cada segmento con su
+TextButton. No aceptar superficies pintadas con solo la etiqueta pulsable.
+Conservar callbacks/disabled, foco y movimiento reducido. Sin capas persistentes
+ni nuevas animaciones. Evidencia: docs/ACTION_SPACING_AND_PUSH_2026-11-03.md.
+
+## Acciones diferenciadas (D133)
+
+AppButton/AppIconButton y AppCard interactiva con callback usan borde de acción
+AppSpacing.actionBorder, fondo semántico de acción y relieve AppShadows.action.
+Foco, disabled, paletas y movimiento elegidos se conservan. Tarjetas informativas
+mantienen borde neutro y no reciben relieve de botón. Aplicar por biblioteca,
+sin estilos de acción duplicados en features. AppMoneyField permite prominent:
+false en formularios compactos, sin reducir objetivos táctiles ni quitar el
+scroll de seguridad con teclado/texto ampliado.
+
 ## Renderizado durante navegación de grupo (D131)
 
 AppDeferredSection muestra AppSkeleton estático durante la primera entrada y

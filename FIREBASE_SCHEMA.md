@@ -870,3 +870,14 @@ transiciones válidas;
 inmutabilidad de campos históricos.
 
 Google Authentication por sí sola no concede acceso a ningún grupo.
+
+Actualización D132, 2026-11-03: el alta de un ingreso puede crear en el mismo
+commit su primera allocation (un mes), allocationBalance y auditEvents, además
+del testigo de historial y auditoría del movimiento. No añade campos al ingreso
+ni deduce el mes de occurredAt. Allocation usa el contrato existente y un ID de
+auditoría estable ligado al ingreso/mes/importe/etapa. Reglas admiten source
+recién creado mediante getAfter; si existía, updatedAt debe mantenerse intacto.
+Journal v3 del móvil conserva InitialQuotaAssignment; no es una colección nueva.
+La función de pruebas push crea únicamente notificationDeliveries técnicos
+marcados test, con reserva por prueba, sin cambiar bandeja/cuotas/preferencias.
+Publicación y respaldo: docs/MOVEMENT_ENTRY_AND_NOTIFICATIONS_2026-11-03.md.

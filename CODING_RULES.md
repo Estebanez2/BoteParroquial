@@ -1,5 +1,18 @@
 Reglas de código
 
+Espacio de acciones: AppButton ya reserva su margen. Componer por tokens y no
+duplicar separadores entre controles sin necesidad; conservar espacios de sección.
+Los wrappers de animación deben propagar las restricciones del padre: la zona
+pulsable ha de cubrir la superficie visible incluso en Expanded/etiquetas cortas.
+No afirmar registro/envío/recepción como equivalentes en avisos. Resolver el
+destinatario actual por la cuenta/grupo que indique el usuario, no por nombres
+visibles iguales ni UID DEMO históricos. No imprimir tokens para diagnosticar.
+
+Alta con cuota: usar InitialQuotaAssignment y un commit único del servicio.
+Validar antes de escribir journal; recuperar ambos testigos antes de limpiarlo.
+No inferir cuota por fecha efectiva ni ejecutar una segunda escritura desde UI.
+El ID del intento y su reparto se mantienen en reintentos, sin duplicar dinero.
+
 Navegación de grupo: no construir nuevas features ni iniciar sus suscripciones
 dentro del deslizamiento; reutilizar AppDeferredSection y esqueletos compartidos.
 No usar keepAlive/caché persistente para ocultar tirones. Cualquier congelación de

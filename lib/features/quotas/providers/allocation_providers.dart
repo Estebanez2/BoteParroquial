@@ -6,6 +6,8 @@ import '../../../models/quota_allocation.dart';
 import '../../../models/quota_settlement.dart';
 import '../../../models/year_month.dart';
 import '../../../repositories/allocation_repository.dart';
+import '../../../repositories/initial_quota_repository.dart';
+import '../../../models/initial_quota_assignment.dart';
 import '../../../repositories/quota_settlement_repository.dart';
 import '../../../services/firestore_allocation_service.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -137,6 +139,29 @@ class AllocationController extends Notifier<AsyncValue<void>> {
     FailureCode.permissionDenied,
     'Actualiza el grupo para comprobar tus permisos.',
   );
+  ({
+    InitialQuotaAssignment assignment,
+    int overpaymentCents,
+    int? expectedCents,
+  })
+  reviewInitial(String personId, YearMonth month, int? cents, int incomeCents) {
+    if (ref.read(authStateProvider).asData?.value == null ||
+        !ref.read(canManageMovementsProvider(groupId))) {
+      throw _denied;
+    }
+    final key = (groupId, personId);
+    return InitialQuotaRepository.review(
+      groupId: groupId,
+      personId: personId,
+      month: month,
+      cents: cents,
+      incomeCents: incomeCents,
+      periods: ref.read(participationPeriodsProvider(key)).requireValue,
+      rules: ref.read(quotaRulesProvider(groupId)).requireValue,
+      settlement: ref.read(personQuotaSettlementProvider(key)).requireValue,
+    );
+  }
+
   AllocationReview review(String movementId, YearMonth month, int? cents) {
     final uid = ref.read(authStateProvider).asData?.value?.uid;
     if (uid == null || !ref.read(canManageMovementsProvider(groupId))) {

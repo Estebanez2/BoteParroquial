@@ -120,6 +120,9 @@ class _AppControlFeedbackState extends State<AppControlFeedback>
           final value = _reduced ? 0.0 : _controller.value;
           final active = !_reduced && _controller.isAnimating;
           Widget content = Stack(
+            // Preserve a parent's full slot, e.g. Expanded segmented controls.
+            // Loose Stack children otherwise shrink the actual hit target.
+            fit: StackFit.passthrough,
             clipBehavior: Clip.none,
             children: [
               child!,

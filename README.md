@@ -67,11 +67,27 @@ docs/firebase-setup.md
 
 Estado actual
 
+03/11/2026, D135–D137: separación de botones centralizada, borde en desplegables
+y área pulsable de todo el segmento en selectores. Comprobar registro muestra
+confirmación. Prueba push 19:20 recibida y confirmada por el usuario en Catequesis;
+la de 18:00 tenía destino antiguo y token inválido. Prueba 20:00 conservada con
+destino corregido. Cinco casos dirigidos pasan, análisis limpio; nuevos cambios
+visuales pendientes de comprobar en móvil.
+[Entrega actual](docs/ACTION_SPACING_AND_PUSH_2026-11-03.md).
+
+03/11/2026, D132–D134: movimientos con formulario compacto y selección opcional
+de una cuota al registrar un ingreso, guardados en una única transacción.
+Botones y tarjetas pulsables con borde marcado/relieve compartido; explicaciones
+de avisos ampliadas. Dos pruebas push programadas para hoy a las 18:00 y 20:00
+Madrid, sin cambiar preferencias. Reglas respaldadas, publicadas y verificadas.
+Recepción push y formulario en móvil pendientes; usuario ejecuta.
+[Entrega y comprobaciones](docs/MOVEMENT_ENTRY_AND_NOTIFICATIONS_2026-11-03.md).
+
 Corrección de tirones de navegación, D131 (03/11/2026): contenido de nuevas
 secciones aplazado hasta acabar su entrada, esqueleto ligero durante el movimiento,
 pantalla saliente temporalmente congelada y curvas acompasadas. Se conservan las
 animaciones elegidas, la barra y los controles de acceso. Cinco casos dirigidos
-superados y análisis limpio; medición física del APK actualizado pendiente.
+superados y análisis limpio; usuario confirma fluidez en A059P, sin medición general de FPS.
 [Estado, APK y comprobación de fluidez](docs/GROUP_NAVIGATION_PERFORMANCE_2026-11-03.md).
 
 Animaciones elegidas e integradas el 2026-11-03: B07/B08 en controles compartidos,

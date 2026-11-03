@@ -1,5 +1,7 @@
 import '../core/errors/app_failure.dart';
 import '../models/movement.dart';
+import '../models/initial_quota_assignment.dart';
+import '../services/initial_quota_movement_service.dart';
 import '../models/person.dart';
 import '../services/movement_service.dart';
 import '../services/movement_dashboard_source.dart';
@@ -10,6 +12,42 @@ class MovementRepository {
   final MovementService _service;
   static const maximumCents = 99999999999999;
   String newId(String groupId) => _service.newId(groupId);
+  static String? initialQuotaError(
+    MovementInput input,
+    InitialQuotaAssignment? quota, {
+    bool replacing = false,
+    bool cancel = false,
+  }) {
+    if (quota == null) return null;
+    if (cancel ||
+        replacing ||
+        input.type != MovementType.income ||
+        input.refund != null ||
+        input.personId == null ||
+        quota.amountCents <= 0 ||
+        quota.amountCents > input.amountCents ||
+        quota.participationPeriodId.isEmpty) {
+      return 'Revisa el mes y la cantidad destinada a su cuota; no puede superar el ingreso.';
+    }
+    return null;
+  }
+
+  Future<bool> initialQuotaApplied(
+    String groupId,
+    String id,
+    String actorUid,
+    InitialQuotaAssignment assignment,
+  ) {
+    final service = _service;
+    if (service is! InitialQuotaMovementService) return Future.value(false);
+    return (service as InitialQuotaMovementService).initialQuotaApplied(
+      groupId,
+      id,
+      actorUid,
+      assignment,
+    );
+  }
+
   Stream<List<Movement>> watchMovements(String groupId) =>
       _service.watchMovements(groupId);
   Future<List<Movement>> loadMovements(String groupId) =>
@@ -279,6 +317,7 @@ class MovementRepository {
     Movement? original,
     String? reason,
     DateTime? today,
+    InitialQuotaAssignment? initialQuota,
   }) {
     final error =
         inputError(input, today: today) ??
@@ -297,6 +336,30 @@ class MovementRepository {
       personId: input.personId,
       refund: input.refund,
     );
+    if (initialQuota != null) {
+      final quotaError = initialQuotaError(
+        normalized,
+        initialQuota,
+        replacing: original != null,
+      );
+      if (quotaError != null) {
+        throw AppFailure(FailureCode.invalidData, quotaError);
+      }
+      final service = _service;
+      if (service is! InitialQuotaMovementService) {
+        throw const AppFailure(
+          FailureCode.configuration,
+          'El guardado conjunto no está disponible. No se ha enviado el ingreso.',
+        );
+      }
+      return (service as InitialQuotaMovementService).saveWithInitialQuota(
+        groupId,
+        id,
+        actorUid,
+        normalized,
+        initialQuota,
+      );
+    }
     return _service.save(
       groupId,
       id,

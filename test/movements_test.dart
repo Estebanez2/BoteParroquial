@@ -119,7 +119,7 @@ void main() {
   testWidgets(
     'Flujo financiero: céntimos, advertencias, corrección y anulación sin doble saldo',
     (tester) async {
-      tester.view.physicalSize = const Size(412, 1000);
+      tester.view.physicalSize = const Size(412, 844);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -176,6 +176,7 @@ void main() {
       final router = container.read(routerProvider);
       Future<void> tap(String text) async {
         await tester.ensureVisible(find.text(text).last);
+        await tester.pumpAndSettle();
         await tester.tap(find.text(text).last);
         await tester.pumpAndSettle();
       }
@@ -183,10 +184,12 @@ void main() {
       router.go('/groups/a/movements');
       await tester.pumpAndSettle();
       await tap('Registrar ingreso');
+      expect(find.text('Revisar y guardar').hitTestable(), findsOneWidget);
       await tester.enterText(find.byType(TextFormField).first, '20,50');
       await tap('Revisar y guardar');
       expect(find.text('Selecciona la persona del ingreso.'), findsOneWidget);
       await tester.ensureVisible(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
       await tester.tap(find.byType(DropdownButtonFormField<String>));
       await tester.pumpAndSettle();
       await tap('Marta · Inactiva');

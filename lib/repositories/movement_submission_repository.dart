@@ -33,6 +33,7 @@ class MovementSubmissionRepository {
       a.actorUid == b.actorUid &&
       a.groupId == b.groupId &&
       a.cancel == b.cancel &&
+      a.initialQuota == b.initialQuota &&
       a.original?.id == b.original?.id &&
       a.original?.updatedAt == b.original?.updatedAt &&
       a.reason?.trim() == b.reason?.trim() &&
@@ -77,6 +78,15 @@ class MovementSubmissionRepository {
         throw _conflict;
       }
     }
+    if (submission.initialQuota != null &&
+        !await _movements.initialQuotaApplied(
+          submission.groupId,
+          submission.id,
+          submission.actorUid,
+          submission.initialQuota!,
+        )) {
+      throw _conflict;
+    }
     await _journal.clear(
       submission.actorUid,
       submission.groupId,
@@ -118,6 +128,15 @@ class MovementSubmissionRepository {
                   ? null
                   : MovementRepository.reasonError(submission.reason));
     if (error != null) throw AppFailure(FailureCode.invalidData, error);
+    final quotaError = MovementRepository.initialQuotaError(
+      submission.input,
+      submission.initialQuota,
+      replacing: submission.original != null,
+      cancel: submission.cancel,
+    );
+    if (quotaError != null) {
+      throw AppFailure(FailureCode.invalidData, quotaError);
+    }
     if ((submission.cancel && submission.original == null) ||
         (submission.original != null &&
             submission.original?.groupId != submission.groupId)) {
@@ -149,6 +168,7 @@ class MovementSubmissionRepository {
           original: submission.original,
           reason: submission.reason,
           today: today,
+          initialQuota: submission.initialQuota,
         );
       }
       await _journal.clear(

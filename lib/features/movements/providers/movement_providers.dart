@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../models/movement.dart';
+import '../../../models/initial_quota_assignment.dart';
 import '../../../models/person.dart';
 import '../../../models/movement_day.dart';
 import '../../../models/movement_history_filter.dart';
@@ -219,6 +220,10 @@ class MovementController extends Notifier<AsyncValue<void>> {
   }
 
   String currentActor() => _actor();
+  String? validateInitialQuota(
+    MovementInput input,
+    InitialQuotaAssignment? quota,
+  ) => MovementRepository.initialQuotaError(input, quota);
 
   Future<T?> _perform<T>(
     Future<T> Function(MovementRepository, String) action,
@@ -273,6 +278,7 @@ class MovementController extends Notifier<AsyncValue<void>> {
     Movement? original,
     String? reason,
     String? expectedActorUid,
+    InitialQuotaAssignment? initialQuota,
   }) async =>
       await _perform((repo, uid) async {
         if (expectedActorUid != null && uid != expectedActorUid) {
@@ -287,6 +293,7 @@ class MovementController extends Notifier<AsyncValue<void>> {
             id: id,
             actorUid: uid,
             input: input,
+            initialQuota: initialQuota,
             original: original,
             reason: reason,
           ),

@@ -23,17 +23,19 @@ class AppMoneyField extends StatelessWidget {
     this.onChangedCents,
     this.enabled = true,
     this.error,
+    this.prominent = true,
   });
   final String label, currency;
   final TextEditingController? controller;
   final ValueChanged<int?>? onChangedCents;
   final bool enabled;
   final String? error;
+  final bool prominent;
   @override
   Widget build(BuildContext context) => AppTextField(
     label: label,
     hint: '0,00',
-    prominent: true,
+    prominent: prominent,
     controller: controller,
     enabled: enabled,
     error: error,

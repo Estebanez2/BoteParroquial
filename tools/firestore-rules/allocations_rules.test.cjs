@@ -19,7 +19,7 @@ beforeEach(async()=>{
     for(const[uid,role]of[['owner','owner'],['admin','admin'],['member','member']])
       b.set(doc(s,p(`members/${uid}`)),{uid,role,status:'active',personId:uid==='admin'?'admin-person':null});
     b.set(doc(s,p('persons/admin-person')),{isActive:true});
-    b.set(doc(s,p('persons/person')),{isActive:true});
+    b.set(doc(s,p('persons/person')),{displayName:'DEMO persona',notes:'',isActive:true,createdBy:'owner',updatedBy:'owner',createdAt:now,updatedAt:now});
     b.set(doc(s,p('participationPeriods/stage')),{personId:'person',firstMonth:month-1,lastMonthInclusive:null});
     b.set(doc(s,p('participationPeriods/other')),{personId:'other-person',firstMonth:month-1,lastMonthInclusive:null});
     b.set(doc(s,p('movements/income')),{type:'income',amountCents:5000,status:'active',personId:'person',description:'DEMO',occurredAt:Timestamp.fromDate(new Date(Date.UTC(2026,5,1))),createdBy:'owner',createdAt:now,updatedAt:now});
@@ -43,6 +43,29 @@ async function save(s,actor,m,cents,options={}) {
   const balance=(await getDoc(doc(s,p(`allocationBalances/${source}`)))).data();
   const b=writeBatch(s);writes(s,actor,m,cents,old,balance,options)(b);return b.commit();
 }
+test('Ingreso nuevo y cuota en un commit: ambos o ninguno, sin relajar identidad ni permisos',async()=>{
+  function combined(s,actor,id,cents,extra={}) {
+    const now=serverTimestamp(),b=writeBatch(s);
+    const data={type:'income',amountCents:300,status:'active',personId:'person',description:'DEMO ingreso y cuota',occurredAt:Timestamp.fromDate(new Date('2026-06-01T00:00:00Z')),createdBy:actor,createdAt:now,updatedAt:now};
+    const after={type:data.type,amountCents:data.amountCents,personId:data.personId,occurredAt:data.occurredAt,description:data.description,status:data.status,correctionOfMovementId:null,correctedByMovementId:null,cancellationReason:null,correctionReason:null};
+    b.set(doc(s,p(`movements/${id}`)),data);
+    b.update(doc(s,p('persons/person')),{firstMovementId:id});
+    b.set(doc(s,p(`auditEvents/movement-created-${id}`)),{action:'movement.created',entityType:'movement',entityId:id,actorUid:actor,createdAt:now,before:null,after});
+    writes(s,actor,month,cents,null,null,{source:id,extra})(b);
+    return b.commit();
+  }
+  const owner=db('owner');
+  await assertSucceeds(combined(owner,'owner','new-income',100));
+  assert.equal((await getDoc(doc(owner,p('movements/new-income')))).data().amountCents,300);
+  assert.equal((await getDoc(doc(owner,p(`allocations/new-income_${month}`)))).data().amountCents,100);
+  // A different person avoids rewriting an already established history witness.
+  await env.withSecurityRulesDisabled(async ctx=>{await updateDoc(doc(ctx.firestore(),p('persons/person')),{firstMovementId:require('firebase/firestore').deleteField()});});
+  await assertFails(combined(owner,'owner','excess',301));
+  assert.equal((await getDoc(doc(owner,p('movements/excess')))).exists(),false);
+  await assertFails(combined(owner,'owner','bad-period',100,{participationPeriodId:'other'}));
+  assert.equal((await getDoc(doc(owner,p('movements/bad-period')))).exists(),false);
+  await assertFails(combined(db('member'),'member','unauthorized-income',100));
+});
 test('Asignaciones con céntimos, permisos y auditoría inseparable; no alteran el ingreso',async()=>{
   await assertSucceeds(save(db('owner'),'owner',month,3000));
   await assertSucceeds(save(db('admin'),'admin',month+1,2000));

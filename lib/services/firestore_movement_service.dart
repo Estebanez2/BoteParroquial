@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/errors/app_failure.dart';
 import '../core/firestore/firestore_paths.dart';
 import '../models/movement.dart';
+import '../models/initial_quota_assignment.dart';
+import 'initial_quota_movement_service.dart';
+import 'firestore_initial_quota_mutation.dart';
 import '../models/refund_plan.dart';
 import 'movement_service.dart';
 import 'firestore_refund_mutation.dart';
@@ -13,7 +16,10 @@ import 'file_cash_cache.dart';
 import '../models/movement_cash_totals.dart';
 
 class FirestoreMovementService
-    implements MovementService, MovementDashboardSource {
+    implements
+        MovementService,
+        MovementDashboardSource,
+        InitialQuotaMovementService {
   const FirestoreMovementService(this._firestore);
   final FirebaseFirestore _firestore;
   static const _conflict = AppFailure(
@@ -286,11 +292,69 @@ class FirestoreMovementService
     MovementInput input, {
     Movement? original,
     String? reason,
+  }) => _save(groupId, id, actorUid, input, original: original, reason: reason);
+
+  @override
+  Future<void> saveWithInitialQuota(
+    String groupId,
+    String id,
+    String actorUid,
+    MovementInput input,
+    InitialQuotaAssignment assignment,
+  ) => _save(groupId, id, actorUid, input, initialQuota: assignment);
+
+  @override
+  Future<bool> initialQuotaApplied(
+    String groupId,
+    String id,
+    String actorUid,
+    InitialQuotaAssignment assignment,
+  ) async {
+    try {
+      final audit = await _firestore
+          .doc(
+            FirestorePaths.auditEvent(
+              groupId,
+              FirestoreInitialQuotaMutation.auditId(id, assignment),
+            ),
+          )
+          .get(const GetOptions(source: Source.server));
+      return FirestoreInitialQuotaMutation.matches(
+        audit.data(),
+        actorUid,
+        id,
+        assignment,
+      );
+    } on FirebaseException catch (error) {
+      throw _failure(error);
+    }
+  }
+
+  Future<void> _save(
+    String groupId,
+    String id,
+    String actorUid,
+    MovementInput input, {
+    Movement? original,
+    String? reason,
+    InitialQuotaAssignment? initialQuota,
   }) async {
     try {
       final target = _collection(groupId).doc(id);
       await _firestore.runTransaction((tx) async {
         final existing = (await tx.get(target)).data();
+        final writeQuota = initialQuota == null
+            ? null
+            : await FirestoreInitialQuotaMutation.prepare(
+                _firestore,
+                tx,
+                groupId: groupId,
+                movementId: id,
+                actorUid: actorUid,
+                input: input,
+                assignment: initialQuota,
+                existing: existing != null,
+              );
         if (original == null) {
           if (existing != null) {
             if (!_same(existing, actorUid, input) ||
@@ -338,6 +402,7 @@ class FirestoreMovementService
             );
           }
           refund?.write(tx);
+          writeQuota?.call();
           return;
         }
         final source = _collection(groupId).doc(original.id);

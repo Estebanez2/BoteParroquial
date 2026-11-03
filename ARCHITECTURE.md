@@ -1,5 +1,18 @@
 Arquitectura
 
+Ingreso y cuota inicial, D132 (2026-11-03)
+
+MovementEditorForm abre InitialQuotaPicker; AllocationController coordina la
+revisión pura de InitialQuotaRepository (etapa, importe, sobrepago). La selección
+es InitialQuotaAssignment, sin Firebase/Flutter. MovementController y
+MovementSubmissionRepository conservan el plan en PendingMovement/journal v3.
+MovementRepository usa la capacidad InitialQuotaMovementService para el commit
+único; FirestoreInitialQuotaMutation prepara lecturas y escrituras junto al alta
+económica. No encadenar dos llamadas de guardar ni esconder un fallo parcial.
+La recuperación relee ingreso y testigo inmutable de reparto antes de limpiar
+el journal. La elección solo aplica al alta; correcciones conservan revisión
+posterior, devoluciones su plan específico. Sin campos nuevos en movements.
+
 Renderizado de navegación, 2026-11-03 (D131)
 
 appRoute entrega un builder diferido a AppDeferredSection para las secciones.

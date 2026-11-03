@@ -30,4 +30,6 @@ abstract final class AppSpacing {
   static const double menuMinWidth = 260;
   static const double menuMaxWidth = 320;
   static const double floatingClearance = 96;
+  static const double actionBorder = 1.5;
+  static const double focusBorder = 2;
 }

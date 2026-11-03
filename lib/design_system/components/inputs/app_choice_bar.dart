@@ -41,23 +41,29 @@ class AppChoiceBar<T> extends StatelessWidget {
               child: AppControlFeedback(
                 enabled: enabled,
                 onActivate: () => onChanged(entry.key),
-                builder: (_, activate) => TextButton(
-                  onPressed: enabled ? activate : null,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.md,
+                builder: (_, activate) => SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: enabled ? activate : null,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.md,
+                      ),
+                      minimumSize: const Size(
+                        double.infinity,
+                        AppSpacing.controlHeight,
+                      ),
+                      foregroundColor: value == entry.key
+                          ? c.primary
+                          : c.textSecondary,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.control,
+                      ),
+                      textStyle: AppTypography.of(context).labelLarge,
                     ),
-                    minimumSize: const Size(0, AppSpacing.controlHeight),
-                    foregroundColor: value == entry.key
-                        ? c.primary
-                        : c.textSecondary,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: AppRadius.control,
-                    ),
-                    textStyle: AppTypography.of(context).labelLarge,
+                    child: Text(entry.value, textAlign: TextAlign.center),
                   ),
-                  child: Text(entry.value, textAlign: TextAlign.center),
                 ),
               ),
             ),

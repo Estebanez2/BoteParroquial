@@ -5,6 +5,7 @@ import '../core/errors/app_failure.dart';
 import '../models/movement.dart';
 import '../models/refund_plan.dart';
 import '../models/pending_movement.dart';
+import '../models/initial_quota_assignment.dart';
 import 'pending_movement_service.dart';
 
 /// No SDK auth tokens or credentials are stored. Files are private to the app.
@@ -60,7 +61,7 @@ class FilePendingMovementService implements PendingMovementService {
       if (!await file.exists()) return null;
       final data =
           jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-      if (![1, 2].contains(data['version']) ||
+      if (![1, 2, 3].contains(data['version']) ||
           data['uid'] != uid ||
           data['groupId'] != groupId) {
         throw _failure;
@@ -73,6 +74,11 @@ class FilePendingMovementService implements PendingMovementService {
         input: _readInput(data['input'] as Map<String, dynamic>),
         reason: data['reason'] as String?,
         cancel: data['cancel'] as bool,
+        initialQuota: data['initialQuota'] == null
+            ? null
+            : InitialQuotaAssignment.fromMap(
+                data['initialQuota'] as Map<String, dynamic>,
+              ),
         original: original == null
             ? null
             : Movement(
@@ -99,9 +105,10 @@ class FilePendingMovementService implements PendingMovementService {
       final temporary = File('${file.path}.tmp');
       await temporary.writeAsString(
         jsonEncode({
-          'version':
-              submission.input.refund != null ||
-                  submission.original?.input.refund != null
+          'version': submission.initialQuota != null
+              ? 3
+              : submission.input.refund != null ||
+                    submission.original?.input.refund != null
               ? 2
               : 1,
           'uid': submission.actorUid,
@@ -110,6 +117,8 @@ class FilePendingMovementService implements PendingMovementService {
           'input': _input(submission.input),
           'reason': submission.reason?.trim(),
           'cancel': submission.cancel,
+          if (submission.initialQuota != null)
+            'initialQuota': submission.initialQuota!.toMap(),
           'original': original == null
               ? null
               : {

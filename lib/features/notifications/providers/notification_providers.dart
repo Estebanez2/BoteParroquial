@@ -176,7 +176,10 @@ class PushDeviceController extends AsyncNotifier<bool> {
 
   Future<void> refresh() async {
     final uid = ref.read(authStateProvider).asData?.value?.uid;
-    if (uid != null && !state.isLoading) await _resume(uid);
+    if (uid != null && !state.isLoading) {
+      state = const AsyncLoading();
+      await _resume(uid);
+    }
   }
 
   Future<void> enable() async {

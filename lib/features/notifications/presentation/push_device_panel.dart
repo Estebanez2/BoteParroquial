@@ -39,7 +39,24 @@ class PushDevicePanel extends ConsumerWidget {
               onPressed: state.isLoading
                   ? null
                   : registered
-                  ? controller.refresh
+                  ? () async {
+                      await controller.refresh();
+                      if (!context.mounted) return;
+                      final result = ref.read(pushDeviceControllerProvider);
+                      AppSnackbar.show(
+                        context,
+                        result.hasError
+                            ? failureMessage(result.error!)
+                            : result.asData?.value == true
+                            ? 'Registro comprobado: este móvil puede recibir avisos de tu cuenta.'
+                            : 'Este móvil no está registrado. Activa los avisos para recibirlos.',
+                        variant: result.hasError
+                            ? AppSnackbarVariant.error
+                            : result.asData?.value == true
+                            ? AppSnackbarVariant.success
+                            : AppSnackbarVariant.info,
+                      );
+                    }
                   : controller.enable,
             ),
             if (registered || state.hasError) ...[
@@ -52,7 +69,7 @@ class PushDevicePanel extends ConsumerWidget {
             ],
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'La preferencia de cada grupo se cambia en su bandeja. Para cerrar sesión confirmaremos antes la retirada de este móvil; necesitarás conexión si lo has registrado.',
+              'Comprobar registro verifica y actualiza la vinculación de este móvil; no envía un aviso de prueba. Retirar avisos los desactiva aquí para todos los grupos de esta cuenta, sin borrar la bandeja ni cambiar otros móviles. Cada categoría del grupo tiene además su propio interruptor. Al cerrar sesión confirmamos la retirada de este móvil antes de salir; necesitarás conexión. Solo se registra la cuenta activa, aunque un aviso enviado antes de salir podría llegar con retraso.',
               style: type.bodySmall,
             ),
           ],

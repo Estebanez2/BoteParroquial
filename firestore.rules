@@ -715,12 +715,12 @@ service cloud.firestore {
     }
     function changedAllocation(groupId, id, before, data) {
       let source = movementPath(groupId,data.movementId);
-      let income = get(source).data;
+      let income = getAfter(source).data;
       let balance = getAfter(allocationBalancePath(groupId,data.movementId)).data;
       return managesPersons(groupId) && validAllocation(data)
         && id == data.movementId + '_' + string(data.month)
         && income.type == 'income' && income.status == 'active' && income.personId == data.personId
-        && getAfter(source).data.status == 'active' && getAfter(source).data.updatedAt == income.updatedAt
+        && (!exists(source) || income.updatedAt == get(source).data.updatedAt)
         && (before == null
           ? data.amountCents > 0 && data.revision == 1 && data.createdBy == request.auth.uid && data.createdAt == request.time
           : data.movementId == before.movementId && data.personId == before.personId && data.month == before.month

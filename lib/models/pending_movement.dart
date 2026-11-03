@@ -1,4 +1,5 @@
 import 'movement.dart';
+import 'initial_quota_assignment.dart';
 
 /// A confirmed user intention, retained until its server result is known.
 class PendingMovement {
@@ -10,10 +11,12 @@ class PendingMovement {
     this.original,
     this.reason,
     this.cancel = false,
+    this.initialQuota,
   });
   final String groupId, actorUid, id;
   final MovementInput input;
   final Movement? original;
   final String? reason;
   final bool cancel;
+  final InitialQuotaAssignment? initialQuota;
 }

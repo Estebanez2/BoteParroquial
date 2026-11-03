@@ -6,6 +6,24 @@ Mantener siempre una versión compilable.
 
 Seguimiento general — actualizado el 2026-11-03
 
+Última corrección D135–D137: márgenes AppButton, borde AppExpandableRow y zona
+completa de selección por AppControlFeedback/ChoiceBar. Confirmación de registro
+visible. Prueba 19:20 recibida en móvil; corregido destino de cuenta y registro
+antiguo del intento 18:00. Prueba 20:00 sigue programada para Catequesis, sin
+acreditar entrega aún. Cinco casos dirigidos y análisis limpio; sin Rules,
+escrituras económicas o nuevas claves. Usuario ejecuta para validar la UI.
+[Evidencia y APK](ACTION_SPACING_AND_PUSH_2026-11-03.md).
+
+Entrega D132–D134: ingreso nuevo con un mes/importe opcionales en el mismo
+formulario compacto; commit único y journal v3 recuperable. Botones con borde
+de acción y relieve centralizados. Ayuda de avisos y dos pruebas puntuales hoy
+18:00/20:00 Madrid; recepción pendiente. Respaldo remoto de reglas, cuatro casos
+de emulador y publicación/hash verificados. Cuatro casos Flutter afectados y un
+caso Deno superados, análisis limpio; sin suite general ni escrituras financieras
+de prueba remotas. APK debug/profile compilados, usuario ejecuta. [Evidencia](MOVEMENT_ENTRY_AND_NOTIFICATIONS_2026-11-03.md).
+D131 recibe confirmación del usuario de navegación fluida en A059P; no implica
+validación de todos los efectos, otros móviles o iOS.
+
 Corrección vigente D131: separar construcción/datos de la transición de secciones,
 esqueleto estático de entrada, captura efímera de salida con tickers pausados y
 curvas inversas acompasadas. Invalidación por acceso fuera del subárbol pausado;

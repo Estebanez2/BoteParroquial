@@ -417,6 +417,14 @@ void main() {
       await tap('Activar avisos en este móvil');
       expect(native.permissionRequests, 1);
       expect(cloud.devices, hasLength(1));
+      await tap('Comprobar registro');
+      expect(
+        find.text(
+          'Registro comprobado: este móvil puede recibir avisos de tu cuenta.',
+        ),
+        findsOneWidget,
+      );
+      expect(native.permissionRequests, 1);
       final router = container.read(routerProvider);
       router.go('/profile');
       await tester.pumpAndSettle();

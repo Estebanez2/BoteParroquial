@@ -81,6 +81,8 @@ class _PendingMovementCardState extends ConsumerState<PendingMovementCard> {
           submission.input,
           original: submission.original,
           reason: submission.reason,
+          initialQuota: submission.initialQuota,
+          expectedActorUid: submission.actorUid,
         );
       }
     } finally {
@@ -133,6 +135,11 @@ class _PendingMovementCardState extends ConsumerState<PendingMovementCard> {
                       '${submission.input.type == MovementType.income ? 'Ingreso' : 'Retirada'} · ${MaterialLocalizations.of(context).formatMediumDate(submission.input.occurredAt)}',
                       style: type.bodyMedium,
                     ),
+                    if (submission.initialQuota != null)
+                      Text(
+                        'Incluye cuota ${submission.initialQuota!.month}: ${formatMoneyCents(submission.initialQuota!.amountCents, currency: widget.currency)}. Se confirma junto al ingreso.',
+                        style: type.bodySmall,
+                      ),
                     Text(
                       ref
                           .watch(movementLabelsProvider(widget.groupId))
