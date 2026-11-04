@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_motion.dart';
 import '../../theme/app_radius.dart';
+import '../../platform/app_interaction_gate.dart';
 
 /// Geometry only: never persisted or used to authorize access.
 class AppGroupOrigin {
@@ -27,6 +28,9 @@ class _AppGroupEntryState extends State<AppGroupEntry>
   bool _opening = false;
   Future<void> _open() async {
     if (_opening) return;
+    final gate = AppInteractionScope.maybeOf(context);
+    AppInteractionLease? lease = gate?.tryAcquire();
+    if (gate != null && lease == null) return;
     _opening = true;
     try {
       if (!MediaQuery.disableAnimationsOf(context)) {
@@ -39,10 +43,20 @@ class _AppGroupEntryState extends State<AppGroupEntry>
       final overlay = Navigator.of(context).overlay?.context.findRenderObject();
       if (card is! RenderBox || overlay is! RenderBox || !card.hasSize) return;
       final topLeft = overlay.globalToLocal(card.localToGlobal(Offset.zero));
-      widget.onOpen(AppGroupOrigin(topLeft & card.size));
+      if (lease != null) {
+        final handoff = lease;
+        lease = null;
+        gate!.handoff(
+          handoff,
+          () => widget.onOpen(AppGroupOrigin(topLeft & card.size)),
+        );
+      } else {
+        widget.onOpen(AppGroupOrigin(topLeft & card.size));
+      }
     } on TickerCanceled {
       // Removing the card cancels pending entry.
     } finally {
+      lease?.release();
       _opening = false;
     }
   }

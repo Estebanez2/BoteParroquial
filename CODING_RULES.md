@@ -1,5 +1,20 @@
 Reglas de código
 
+D165: todo feedback/onda/transición usa el gate compartido si hay animación.
+Liberar leases en cancelación/dispose y hacer handoff por frame; no usar sleeps,
+colas de taps ni bloqueo de red/permisos. Escuchar muestra del laboratorio no
+debe emitir además el tap del control ni aplicar ajustes automáticamente.
+
+D157: emitir sonido solo desde controles disponibles o resultados semánticos;
+no reinstalar Listener global de toques. Deshabilitados/zona libre/scroll callan.
+Reutilizar back en botones de regreso, variantes/volumen en services/modelo;
+no generar WAV ni esperar su reproducción en UI. Default 75 conserva elecciones.
+
+Audio: success de una escritura solo después de su resultado confirmado; los
+selectores de borrador no prueban persistencia. No disparar éxito globalmente en
+AppFormGuard.saved. Usar AppToggleTile y eventos AppSoundScope para controles,
+sin esperar al reproductor ni incluir texto de campos/credenciales en eventos.
+
 Espacio de acciones: AppButton ya reserva su margen. Componer por tokens y no
 duplicar separadores entre controles sin necesidad; conservar espacios de sección.
 Los wrappers de animación deben propagar las restricciones del padre: la zona

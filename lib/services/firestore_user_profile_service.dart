@@ -64,6 +64,7 @@ class FirestoreUserProfileService implements UserProfileService {
       );
     } on FirebaseException catch (error) {
       throw switch (error.code) {
+        'resource-exhausted' => firestoreQuotaFailure,
         'permission-denied' || 'unauthenticated' => const AppFailure(
           FailureCode.permissionDenied,
           'No se pudo acceder a tu perfil. Comprueba los permisos de la aplicación.',

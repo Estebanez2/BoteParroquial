@@ -412,6 +412,8 @@ void main() {
       expect(find.text('Mi grupo'), findsOneWidget);
       await tap('Gestionar este espacio');
       await tap('Editar grupo');
+      expect(find.text('Un grupo con\nnombre propio.'), findsNothing);
+      expect(find.text('LA IDENTIDAD DE TU ESPACIO'), findsNothing);
       await tester.enterText(
         find.byType(TextFormField).first,
         'Nombre editado',

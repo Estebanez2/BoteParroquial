@@ -11,6 +11,7 @@ final class FirestoreGroupQuotaService implements GroupQuotaService {
   const FirestoreGroupQuotaService(this._store);
   final FirebaseFirestore _store;
   static AppFailure _failure(FirebaseException e) => switch (e.code) {
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'No se puede consultar el cumplimiento sin acceso al grupo.',

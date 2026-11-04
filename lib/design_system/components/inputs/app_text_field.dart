@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_colors.dart';
+import '../feedback/app_sound_scope.dart';
 
 class AppTextField extends StatelessWidget {
   const AppTextField({
@@ -56,11 +57,19 @@ class AppTextField extends StatelessWidget {
         : AppTypography.of(context).bodyLarge,
     autocorrect: !password,
     enableSuggestions: !password,
-    onChanged: onChanged,
+    onChanged: (value) {
+      AppSoundScope.emit(context, UiSound.typing);
+      onChanged?.call(value);
+    },
     validator: validator,
     keyboardType: keyboardType,
     inputFormatters: inputFormatters,
-    onTap: onTap,
+    onTap: onTap == null
+        ? null
+        : () {
+            AppSoundScope.emit(context, UiSound.tap);
+            onTap!();
+          },
     autovalidateMode: autovalidateMode,
     decoration: InputDecoration(
       labelText: label,

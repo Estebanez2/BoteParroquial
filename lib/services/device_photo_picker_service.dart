@@ -39,8 +39,12 @@ Uint8List preparePhoto(Uint8List input) {
 }
 
 class DevicePhotoPickerService implements PhotoPickerService {
-  DevicePhotoPickerService(this._picker);
+  DevicePhotoPickerService(
+    this._picker, {
+    Future<Directory> Function()? temporaryDirectory,
+  }) : _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory;
   final ImagePicker _picker;
+  final Future<Directory> Function() _temporaryDirectory;
 
   @override
   Future<Uint8List?> edit(
@@ -48,10 +52,8 @@ class DevicePhotoPickerService implements PhotoPickerService {
     bool darkTheme = true,
     bool panoramic = false,
   }) async {
-    final root = await getTemporaryDirectory();
-    final directory = await Directory(
-      '${root.path}/bote_photo_edit_',
-    ).createTemp();
+    final root = await _temporaryDirectory();
+    final directory = await root.createTemp('bote_photo_edit_');
     try {
       final source = File('${directory.path}/current.jpg');
       await source.writeAsBytes(bytes, flush: true);

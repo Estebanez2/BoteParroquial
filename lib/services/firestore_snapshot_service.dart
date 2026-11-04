@@ -45,6 +45,8 @@ class FirestoreSnapshotService
     bool descendants = false,
   }) async {
     final found = <SnapshotDocument>[];
+    // Inbox rules cap each query at 50, even when it would return zero.
+    final pageSize = collection == 'notifications' ? 50 : 200;
     String? cursor, readTime = time;
     while (true) {
       final rows = await request('$parent:runQuery', {
@@ -67,7 +69,7 @@ class FirestoreSnapshotService
               ],
               'before': false,
             },
-          'limit': 200,
+          'limit': pageSize,
         },
       });
       var count = 0;
@@ -100,7 +102,7 @@ class FirestoreSnapshotService
         count++;
       }
       if (found.length > 100000) throw DailySnapshot.invalid;
-      if (count < 200) break;
+      if (count < pageSize) break;
       time = readTime; // All later pages retain the first server readTime.
     }
     if (readTime == null) throw DailySnapshot.invalid;
@@ -305,6 +307,9 @@ class SnapshotRestTransport {
           FailureCode.permissionDenied,
           'No se pudo autorizar la lectura de estos datos.',
         );
+      }
+      if (response.statusCode == 429) {
+        throw firestoreQuotaFailure;
       }
       if (response.statusCode != 200) {
         throw FirestoreSnapshotService.unavailable;

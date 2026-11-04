@@ -268,7 +268,8 @@ void main() {
     () async {
       final copy = fixture(),
           root = 'projects/test/databases/(default)/documents/';
-      var pages = 0,
+      var noticePages = 0,
+          pages = 0,
           queries = 0,
           memberPasses = 0,
           changed = false,
@@ -341,6 +342,24 @@ void main() {
                   )
                 : docs;
           }
+          if (collection == 'notifications') {
+            expect(q['limit'], 50);
+            noticePages++;
+            docs = List.generate(
+              q['startAt'] == null ? 50 : 1,
+              (i) => SnapshotDocument(
+                'groups/a/notifications/notice-${q['startAt'] == null ? i : 50}',
+                {
+                  'recipientUid': wire('alice'),
+                  'kind': wire('quotaReminder'),
+                  'title': wire('DEMO aviso'),
+                  'body': wire('DEMO'),
+                  'createdAt': wire(_time),
+                  'readAt': wire(null),
+                },
+              ),
+            );
+          }
           return [
             for (final d in docs)
               {
@@ -353,6 +372,13 @@ void main() {
       );
       final captured = await service.capture('alice', '2026-10-23');
       expect(pages, 2);
+      expect(noticePages, 2);
+      expect(
+        captured.documents
+            .where((d) => d.path.startsWith('groups/a/notifications/'))
+            .length,
+        51,
+      );
       expect(
         captured.documents.where((d) => d.path.contains('/movements/')).length,
         203,
@@ -461,6 +487,17 @@ void main() {
       );
       await settleCopy();
       expect(find.text('COPIA GUARDADA · SOLO LECTURA'), findsOneWidget);
+      expect(find.text('Datos actuales'), findsOneWidget);
+      expect(
+        tester.getSize(find.byType(AppReadOnlyBanner)).height,
+        lessThan(120),
+      );
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      tester.platformDispatcher.clearTextScaleFactorTestValue();
+      await tester.pump();
       await tester.ensureVisible(find.text('Entrar en el grupo guardado'));
       await tester.tap(find.text('Entrar en el grupo guardado'));
       await settleCopy();

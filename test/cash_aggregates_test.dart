@@ -53,6 +53,18 @@ void main() {
     'Céntimos REST conservan int64 y rechazan double, desbordamiento y totales incoherentes',
     () {
       expect(
+        FirestoreCashAggregateService.httpFailure(429).code,
+        FailureCode.resourceExhausted,
+      );
+      expect(
+        FirestoreCashAggregateService.httpFailure(403).code,
+        FailureCode.permissionDenied,
+      );
+      expect(
+        FirestoreCashAggregateService.httpFailure(503).code,
+        FailureCode.network,
+      );
+      expect(
         FirestoreCashAggregateService.decodeInteger({
           'integerValue': '9007199254740993',
         }),

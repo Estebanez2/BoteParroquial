@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "146917525912-jm2ga594s8lkrkfl9pc3qu7cn9ma77oa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bote_parroquial",
+            "certificate_hash": "c6884efb7263c5d533fd05b41e68737cc5c47e52"
+          }
+        },
+        {
           "client_id": "146917525912-pu7uppsdkdd6vdg7nog0bpkanc8hm6gi.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

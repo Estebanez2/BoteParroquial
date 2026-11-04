@@ -7,8 +7,25 @@ import 'package:share_plus/share_plus.dart';
 import '../core/errors/app_failure.dart';
 import '../models/export_file.dart';
 import 'file_sharing_service.dart';
+import 'invitation_sharing_service.dart';
 
-class NativeFileSharingService implements FileSharingService {
+class NativeFileSharingService
+    implements FileSharingService, InvitationSharingService {
+  @override
+  Future<Uint8List> loadAppLogo() async => (await rootBundle.load(
+    'assets/branding/bote_parroquial.png',
+  )).buffer.asUint8List();
+
+  @override
+  Future<void> shareInvitation(
+    String uid,
+    ExportFile image,
+    String text,
+    bool Function() isCurrent,
+  ) async {
+    await _share(uid, image, text: text, isCurrent: isCurrent);
+  }
+
   @override
   Future<void> copyText(String text) async {
     try {
@@ -44,7 +61,15 @@ class NativeFileSharingService implements FileSharingService {
   }
 
   @override
-  Future<FileShareOutcome> share(String uid, ExportFile file) async {
+  Future<FileShareOutcome> share(String uid, ExportFile file) =>
+      _share(uid, file);
+
+  Future<FileShareOutcome> _share(
+    String uid,
+    ExportFile file, {
+    String? text,
+    bool Function()? isCurrent,
+  }) async {
     final generation = _generation[uid] ?? 0;
     try {
       final folder = await _folder(uid);
@@ -65,11 +90,12 @@ class NativeFileSharingService implements FileSharingService {
           await dated[i].$1.delete(recursive: true);
         }
       }
-      final request = await Directory('${folder.path}/export_').createTemp();
+      final request = await folder.createTemp('share_');
       final safeName = file.name.replaceAll(RegExp(r'[^a-zA-Z0-9_.-]'), '_');
       final target = File('${request.path}/$safeName');
       await target.writeAsBytes(file.bytes, flush: true);
-      if ((_generation[uid] ?? 0) != generation) {
+      if ((_generation[uid] ?? 0) != generation ||
+          (isCurrent != null && !isCurrent())) {
         await request.delete(recursive: true);
         throw const AppFailure(
           FailureCode.cancelled,
@@ -79,8 +105,13 @@ class NativeFileSharingService implements FileSharingService {
       final result = await SharePlus.instance.share(
         ShareParams(
           files: [XFile(target.path, mimeType: file.mimeType)],
-          title: 'Exportar movimientos',
-          subject: 'BoteParroquial · Movimientos',
+          text: text,
+          title: text == null
+              ? 'Exportar movimientos'
+              : 'Invitación de BoteParroquial',
+          subject: text == null
+              ? 'BoteParroquial · Movimientos'
+              : 'BoteParroquial · Invitación',
         ),
       );
       return switch (result.status) {

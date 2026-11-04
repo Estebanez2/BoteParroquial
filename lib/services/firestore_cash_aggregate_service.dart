@@ -12,6 +12,21 @@ import 'file_cash_cache.dart';
 class FirestoreCashAggregateService {
   const FirestoreCashAggregateService(this._db);
   final FirebaseFirestore _db;
+  static AppFailure httpFailure(int status) => switch (status) {
+    429 => firestoreQuotaFailure,
+    401 || 403 => const AppFailure(
+      FailureCode.permissionDenied,
+      'Ya no puedes consultar este grupo.',
+    ),
+    400 => const AppFailure(
+      FailureCode.configuration,
+      'No se pudo preparar la consulta del resumen. Revisa su configuración.',
+    ),
+    _ => const AppFailure(
+      FailureCode.network,
+      'No se pudo contactar con Firebase para actualizar el saldo. Comprueba la conexión y reintenta.',
+    ),
+  };
   static const invalid = AppFailure(
     FailureCode.invalidData,
     'El servidor no ha devuelto un total entero y completo. Actualiza el resumen.',
@@ -30,8 +45,11 @@ class FirestoreCashAggregateService {
   Future<MovementCashTotals> load(
     String groupId,
     String uid,
-    DateTime monthStart,
-  ) async {
+    DateTime monthStart, {
+    DateTime? beforeExclusive,
+    String? atReadTime,
+    bool totalsOnly = false,
+  }) async {
     final auth = FirebaseAuth.instanceFor(app: _db.app);
     if (auth.currentUser?.uid != uid) {
       throw const AppFailure(
@@ -67,6 +85,10 @@ class FirestoreCashAggregateService {
         final filters = [
           filter('status', 'EQUAL', {'stringValue': 'active'}),
           filter('type', 'EQUAL', {'stringValue': type}),
+          if (!month && beforeExclusive != null)
+            filter('occurredAt', 'LESS_THAN', {
+              'timestampValue': beforeExclusive.toIso8601String(),
+            }),
           if (month) ...[
             filter('occurredAt', 'GREATER_THAN_OR_EQUAL', {
               'timestampValue': monthStart.toIso8601String(),
@@ -112,18 +134,7 @@ class FirestoreCashAggregateService {
         );
         if (response.statusCode != 200) {
           await response.drain<void>();
-          throw AppFailure(
-            [401, 403].contains(response.statusCode)
-                ? FailureCode.permissionDenied
-                : response.statusCode == 400
-                ? FailureCode.configuration
-                : FailureCode.network,
-            [401, 403].contains(response.statusCode)
-                ? 'Ya no puedes consultar este grupo.'
-                : response.statusCode == 400
-                ? 'Falta preparar un índice para el resumen.'
-                : 'No se pudo actualizar la caja.',
-          );
+          throw httpFailure(response.statusCode);
         }
         final bytes = <int>[];
         await for (final chunk in response.timeout(
@@ -154,11 +165,11 @@ class FirestoreCashAggregateService {
         );
       }
 
-      final income = await sum('income');
+      final income = await sum('income', readTime: atReadTime);
       final rest = await Future.wait([
         sum('withdrawal', readTime: income.$2),
-        sum('income', month: true, readTime: income.$2),
-        sum('withdrawal', month: true, readTime: income.$2),
+        if (!totalsOnly) sum('income', month: true, readTime: income.$2),
+        if (!totalsOnly) sum('withdrawal', month: true, readTime: income.$2),
       ]);
       if (auth.currentUser?.uid != uid) {
         throw const AppFailure(
@@ -171,8 +182,8 @@ class FirestoreCashAggregateService {
         monthStart: monthStart,
         incomeCents: income.$1,
         withdrawalCents: rest[0].$1,
-        monthIncomeCents: rest[1].$1,
-        monthWithdrawalCents: rest[2].$1,
+        monthIncomeCents: totalsOnly ? 0 : rest[1].$1,
+        monthWithdrawalCents: totalsOnly ? 0 : rest[2].$1,
         confirmedAt: DateTime.parse(income.$2),
       );
       result.validate(groupId, monthStart);
@@ -228,6 +239,10 @@ class FirestoreCashAggregateService {
           if (attempts++ < 4) {
             retry = Timer(Duration(seconds: attempts * 3), refresh);
           }
+        } else if (error.code == FailureCode.resourceExhausted) {
+          // A quota limit is neither an access revocation nor a network retry.
+          cacheAllowed = false;
+          if (!stopped) controller.addError(error, stack);
         } else {
           cacheAllowed = false;
           await cache.clear(uid);

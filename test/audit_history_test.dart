@@ -8,6 +8,7 @@ import 'package:bote_parroquial/core/errors/app_failure.dart';
 import 'package:bote_parroquial/design_system/design_system.dart';
 import 'package:bote_parroquial/features/auth/providers/auth_providers.dart';
 import 'package:bote_parroquial/features/groups/presentation/group_audit_screen.dart';
+import 'package:bote_parroquial/features/groups/presentation/audit_event_detail.dart';
 import 'package:bote_parroquial/features/groups/providers/audit_history_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_management_providers.dart';
 import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
@@ -132,6 +133,34 @@ GroupAuditEvent decode(String group, Map<String, Object?> values) =>
     decodeAuditEvent(group, 'record', 'groups/a/auditEvents/record', values);
 
 void main() {
+  test(
+    'Fechas efectivas de movimientos no invalidan toda la página administrativa',
+    () async {
+      final created = Timestamp(1792490000, 123456789);
+      final occurred = Timestamp(1792490000, 0);
+      final event = decode('a', {
+        'action': 'movement.created',
+        'actorUid': 'alice',
+        'entityId': 'movement-a',
+        'entityType': 'movement',
+        'createdAt': created,
+        'before': null,
+        'after': {'occurredAt': occurred, 'amountCents': 390, 'type': 'income'},
+      });
+      expect(event.after['occurredAt'], occurred.toDate().toUtc());
+      expect(event.position.nanoseconds, 123456789);
+      expect(event.after['amountCents'], 390);
+      final rendered = auditDetailsText(event.after, 'EUR');
+      expect(rendered, contains('Fecha efectiva:'));
+      expect(rendered, contains('(UTC)'));
+      expect(rendered, contains('Ingreso'));
+      final service = MemoryAudit()..events = [event];
+      final repository = AuditHistoryRepository(service);
+      final page = await repository.watchHead('a').first;
+      expect(page.events.single.action, 'movement.created');
+      await service.changes.close();
+    },
+  );
   test(
     'Cursor exacto, grupos, orden, búsqueda española y contratos antiguos/nuevos',
     () async {

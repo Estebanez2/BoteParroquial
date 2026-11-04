@@ -1,5 +1,11 @@
 # Consulta de auditoría administrativa — 2026-10-20
 
+Corrección D160 (04/11/2026): el decoder antiguo rechazaba Timestamp dentro de
+before/after de movimientos e invalidaba páginas enteras. Corregido sin alterar
+eventos; cursor conserva nanosegundos, y la cabecera distingue fallo/carga de cero
+confirmado. Evidencia en MENUS_ACTIONS_AUDIT_2026-11-04.md. La validación de esta
+entrega histórica no cubría esa combinación real de eventos.
+
 Continuación acotada de Phase 11 y apartados 57–58 de la especificación completa.
 Implementación de consulta terminada; no acredita ejecución física ni auditoría
 de todas las operaciones. El usuario ejecuta la app.

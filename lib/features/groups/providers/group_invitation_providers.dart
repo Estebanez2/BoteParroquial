@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../models/group_invitation.dart';
 import '../../../models/group_member.dart';
 import '../../../repositories/group_invitation_repository.dart';
+import '../../../repositories/invitation_share_repository.dart';
+import '../../../core/supabase/supabase_providers.dart';
+import '../../../services/supabase_photo_service.dart';
 import '../../../services/firestore_group_invitation_service.dart';
 import '../../../services/native_file_sharing_service.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -16,6 +20,21 @@ final groupInvitationRepositoryProvider = Provider(
     NativeFileSharingService(),
   ),
 );
+final invitationShareRepositoryProvider = Provider((ref) {
+  final sharing = NativeFileSharingService();
+  var uid = ref.read(authStateProvider).asData?.value?.uid;
+  ref.listen(authStateProvider, (_, next) {
+    if (next.isLoading) return;
+    final current = next.asData?.value?.uid;
+    if (uid != null && uid != current) unawaited(sharing.clearAccount(uid!));
+    uid = current;
+  });
+  return InvitationShareRepository(
+    FirestoreGroupInvitationService(ref.watch(firestoreProvider)),
+    SupabasePhotoService(ref.watch(supabaseConnectionProvider)),
+    sharing,
+  );
+});
 final invitationSettingsProvider = StreamProvider.autoDispose
     .family<InvitationSettings?, String>((ref, id) {
       if (ref.watch(currentMembershipProvider(id)) == null) {
@@ -104,8 +123,23 @@ class InvitationController extends Notifier<AsyncValue<void>> {
       _perform((repo, _) => repo.copy(settings), manage: false);
   Future<bool> copyLink(InvitationSettings settings) =>
       _perform((repo, _) => repo.copyLink(settings), manage: false);
-  Future<bool> share(InvitationSettings settings) =>
-      _perform((repo, _) => repo.share(settings), manage: false);
+  Future<bool> share(InvitationSettings settings) => _perform((_, uid) async {
+    bool isCurrent() {
+      if (!ref.mounted || settings.code.groupId != groupId) return false;
+      final current = ref
+          .read(invitationSettingsProvider(groupId))
+          .asData
+          ?.value;
+      return ref.read(authStateProvider).asData?.value?.uid == uid &&
+          ref.read(currentMembershipProvider(groupId)) != null &&
+          current?.enabled == true &&
+          current?.code.value == settings.code.value;
+    }
+
+    await ref
+        .read(invitationShareRepositoryProvider)
+        .share(uid, settings, isCurrent);
+  }, manage: false);
 }
 
 class JoinState {

@@ -4,6 +4,7 @@ import '../../../design_system/design_system.dart';
 import '../../groups/presentation/group_access_body.dart';
 import '../../groups/presentation/group_bottom_navigation.dart';
 import 'persons_section.dart';
+import '../../groups/presentation/group_section_top_bar.dart';
 
 class PersonsScreen extends StatelessWidget {
   const PersonsScreen({super.key, required this.groupId});
@@ -12,7 +13,8 @@ class PersonsScreen extends StatelessWidget {
   Widget build(BuildContext context) => AppScaffold(
     maxWidth: AppSpacing.readingMax,
     bottomNavigation: GroupBottomNavigation(groupId: groupId, selectedIndex: 2),
-    appBar: AppTopBar(
+    appBar: GroupSectionTopBar(
+      groupId: groupId,
       title: 'Personas',
       leading: AppIconButton(
         icon: Icons.arrow_back_rounded,

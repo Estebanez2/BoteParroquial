@@ -13,6 +13,7 @@ class FirestoreGroupManagementService implements GroupManagementService {
     'El grupo ha cambiado o este envío ya existe con otros datos. Vuelve a abrirlo.',
   );
   static AppFailure _failure(FirebaseException error) => switch (error.code) {
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'No tienes permiso para guardar este grupo.',

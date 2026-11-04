@@ -31,6 +31,8 @@ abstract final class AppImageCropper {
           statusBarLight: !darkTheme,
           navBarLight: !darkTheme,
           lockAspectRatio: true,
+          cropStyle: panoramic ? CropStyle.rectangle : CropStyle.circle,
+          showCropGrid: panoramic,
           hideBottomControls: false,
         ),
         IOSUiSettings(
@@ -42,6 +44,7 @@ abstract final class AppImageCropper {
           resetAspectRatioEnabled: false,
           rotateButtonsHidden: false,
           rotateClockwiseButtonHidden: false,
+          cropStyle: panoramic ? CropStyle.rectangle : CropStyle.circle,
         ),
       ],
     );

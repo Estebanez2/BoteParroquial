@@ -30,11 +30,17 @@ GroupAuditEvent decodeAuditEvent(
               value != null &&
               value is! String &&
               value is! bool &&
-              value is! int,
+              value is! int &&
+              value is! Timestamp,
         )) {
       throw invalid;
     }
-    return Map<String, Object?>.unmodifiable(raw.cast<String, Object?>());
+    return Map<String, Object?>.unmodifiable(
+      raw.cast<String, Object?>().map(
+        (key, value) =>
+            MapEntry(key, value is Timestamp ? value.toDate().toUtc() : value),
+      ),
+    );
   }
 
   return GroupAuditEvent(

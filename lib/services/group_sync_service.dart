@@ -54,10 +54,13 @@ class FirestoreGroupSyncService implements GroupSyncService {
                 confirmed[index] = false;
                 controller.add(false);
                 controller.addError(
-                  const AppFailure(
-                    FailureCode.network,
-                    'No se ha podido confirmar la actualización de estos datos.',
-                  ),
+                  error is FirebaseException &&
+                          error.code == 'resource-exhausted'
+                      ? firestoreQuotaFailure
+                      : const AppFailure(
+                          FailureCode.network,
+                          'No se ha podido confirmar la actualización de estos datos.',
+                        ),
                   stack,
                 );
               },

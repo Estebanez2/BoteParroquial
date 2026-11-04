@@ -296,6 +296,7 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
               initialQuota: _initialQuota,
             );
       if (!mounted || !saved) return;
+      AppSoundScope.emit(context, UiSound.success);
       _guard.currentState?.saved();
       context.go('/groups/${widget.groupId}/movements');
     } finally {
@@ -306,6 +307,11 @@ class _MovementEditorFormState extends ConsumerState<MovementEditorForm> {
   @override
   Widget build(BuildContext context) {
     final groupId = widget.groupId;
+    ref.listen(movementControllerProvider(groupId), (previous, next) {
+      if (next.hasError && next.error != previous?.error) {
+        AppSoundScope.emit(context, UiSound.warning);
+      }
+    });
     final state = ref.watch(movementControllerProvider(groupId));
     final group = ref.watch(groupProvider(groupId)).asData?.value;
     final people = ref.watch(personsProvider(groupId));

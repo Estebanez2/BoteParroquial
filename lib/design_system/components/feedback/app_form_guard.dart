@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_dialog.dart';
+import '../../platform/app_interaction_gate.dart';
 
 /// Protects an explicit-save form. Contains no persistence or domain logic.
 class AppFormGuard extends StatefulWidget {
@@ -81,7 +82,9 @@ class AppFormGuardState extends State<AppFormGuard> {
   Widget build(BuildContext context) => PopScope(
     canPop: !widget.busy && (_allowExit || !widget.isDirty()),
     onPopInvokedWithResult: (didPop, _) {
-      if (!didPop) requestExit();
+      if (!didPop && AppInteractionScope.maybeOf(context)?.busy != true) {
+        requestExit();
+      }
     },
     child: widget.child,
   );

@@ -1,5 +1,141 @@
 # BoteParroquial — Design System v0.4
 
+## D166: selección final de clics
+
+Laboratorio de clics retirado. Press usa Retro 6/7/8 elegidos por el usuario;
+menús y otros eventos conservados. Variación en modelo/service, sin archivos
+elegidos desde features. AppInteractionHost y handoff D165 siguen vigentes.
+
+## D164–D165: bloqueo compartido y audición aislada
+
+AppInteractionHost/gate de leases en la raíz; AppControlFeedback, AppGroupEntry y
+AppPageTransitions mantienen el bloqueo solo por sus animaciones. Handoff sin
+hueco por frame, liberación por cancelación/dispose. No bloquear providers/red ni
+almacenar permisos en el gate. AppButton.soundEnabled permite escuchar muestras
+sin superponer su clic normal; no silenciar acciones del producto por defecto.
+
+## D161–D163: sonido del sistema y controles compactos
+
+AppSystemBackSound observa éxito de navegación y emite back por AppSoundScope;
+no alterar guards, callbacks ni transiciones. AppSoundSettingsPanel compone
+interruptor/prueba y AppVolumeSlider.compact; mínima altura sin perder accesibilidad.
+Familias de menús/normal separadas. Alta compone controles y portada solo si hay
+borrador, sin un bloque promocional. No subir fotos desde componentes visuales.
+
+## D159–D160: sonido de menú y gestión visible
+
+UiSound.menu en componentes de desplegable; AppButton/AppIconButton admiten sonido
+semántico explícito para apertura. No duplicarlo con tap. Familia normal nueva,
+menú anterior. Dashboard compone AppNavigationTile para Cuotas y etapas/Editar
+grupo/Historial administrativo, sin un ExpansionTile exterior de gestión.
+
+## D157–D158: audio semántico e identidad compacta
+
+AppSoundSurface ya no escucha pointer-down: solo controles activos emiten eventos.
+AppControlFeedback conserva rechazo visual silencioso si está deshabilitado;
+validación fallida de acción disponible conserva warning. Botones Volver usan back,
+no tap. SDK/variantes/volumen siguen fuera de componentes. AppCompactIdentity es
+presentación no interactiva de nombre elidido + miniatura, para cabecera derecha.
+GroupSectionTopBar compone con providers; identidad completa solo en Dashboard.
+
+## Distribución vigente de tarjetas de grupo (D154)
+
+Debajo de portada, AppAdaptiveRow con descripción izquierda y saldo derecha,
+alineados arriba. FittedBox.scaleDown evita recortar importes largos, manteniendo
+el tamaño hero si cabe. Sustituye la columna saldo/descripción de D153. Con texto
+ampliado o anchura insuficiente se permite apilar para accesibilidad. Conservar
+radios, ausencia de badges y acción completa.
+
+## Toques y volumen vigentes (D152–D153)
+
+AppSoundSurface contiene el scope y un Listener pasivo alrededor de toda la app:
+un tap físico por pointer-down, incluso zona libre/inicio de desplazamiento, sin
+activar acciones. Evita el segundo tap de componentes durante ese toque/frame;
+no suprimir success/warning/photo. AppTextField emite typing por cada edición,
+incluida contraseña sin transmitir contenido, no por restauración. Sustituye el
+comportamiento de ráfagas/exclusión anterior. AppVolumeSlider devuelve porcentajes
+enteros; el provider aplica el nivel al ajustar y persiste al terminar.
+
+AppGroupPreview: portada, saldo hero inmediato y descripción debajo, sin badges
+de rol/moneda. Conservar recortes y área interactiva completa. Perfil compone fila
+de avatar y acción flexible a su derecha, usando los tokens existentes.
+
+## Marca suministrada (D151)
+
+AppLogo usa assets/branding/bote_parroquial.png sin tintarlo y sustituye el dibujo
+provisional de AppBrand. AppLogoBackdrop presenta esa imagen al 12 %, con máscara
+radial de transparencia, IgnorePointer y exclusión semántica. Usarlo como fondo,
+sin lógica de datos ni animación continua. AppScaffold.background es opcional y
+no cambia otros layouts. Login y AppWelcomePanel componen la misma marca.
+No confundir el logo de app con fotos de grupos/personas ni reemplazar esas fotos.
+
+## Cobertura de audio (D150)
+
+AppToggleTile encapsula switch/casilla con feedback de selección y deshabilitado
+nativo. Usarlo frente a controles directos nuevos. AppTextField emite tap cuando
+tiene onTap explícito (p. ej. fecha); AppColorField/Plane y AppLineChart responden
+al toque/inicio del arrastre, sin sonar en cada actualización. Mantener callback
+sonoro externo; sin SDK de reproducción en componentes. Un borrador seleccionado
+no emite success de persistencia: no añadirlo a AppFormGuard.saved globalmente.
+
+## Recorte de portada en tarjeta (D148)
+
+AppGroupPreview aplica a la portada ClipRRect solo superior, con radio interior
+AppRadius.large - AppSpacing.actionBorder. Se alinea al contenido dentro del
+borde de AppCard y evita que la imagen cuadrada lo cubra en las esquinas.
+Conserva el recorte exterior de la tarjeta, acción completa y onda de entrada.
+
+## Portadas sin imagen (D147)
+
+AppCover usa imagen no disponible y leyenda Sin foto con colores del tema cuando
+no hay imagen o esta no se puede renderizar. Ya no calcula iniciales de grupo.
+Conservar AppShimmer durante carga y foto de caché si está disponible. Avatares de
+personas/cuentas siguen con iniciales: no cambiar su identidad por una avería remota.
+
+## Posición vigente de nombres en portada (D146)
+
+AppCover.titleOnImage sitúa el nombre abajo a la izquierda, headingSmall,
+caja imageScrim con alfa .28 y scrim inferior .45 → 0. Sustituye la posición
+superior y el texto mayor anteriores; se aplica en tarjetas e interior por el
+mismo componente. Mantener dos líneas, escalado de texto y colores semánticos.
+
+## Tarjetas y respuesta sonora (D144–D145)
+
+AppCover.titleOnImage aloja el nombre en caja semitransparente con tokens, además
+del scrim. AppGroupPreview compone esa portada y descripción/saldo adaptables,
+sin un botón Entrar separado. No envolver AppExpandableRow en otra AppCard solo
+para dibujar borde: el desplegable ya tiene el suyo.
+
+AppSoundScope recibe un callback de eventos UiSound; no importa reproductores ni
+providers. Controles compartidos emiten tap, typing, success, photo o warning.
+AppTextField solo emite typing por edición del usuario, salvo password; nunca
+envía texto al reproductor. AppSnackbar emite el resultado correspondiente.
+La app aplica preferencia, silencio y limitación; componentes no esperan audio
+para navegar/guardar y funcionan sin scope en showcase/tests. Solo el éxito
+confirmado por la UI puede emitir success. No confundir foto preparada con subida.
+
+## Aviso compacto de fuente (D142)
+
+AppReadOnlyBanner recibe fecha formateada y callback de salida, sin repositorios
+ni SDKs. Una fila con etiqueta/fecha y AppButton compacto conserva solo lectura
+visible y objetivo táctil de 48; reduce envoltorios y texto persistente. No ocultar
+la fuente al navegar ni reducir áreas táctiles para ganar espacio. La descripción
+de cifras/fotos queda disponible a tecnologías de asistencia.
+
+## Inicio y fotografía (D138–D141)
+
+AppGroupPreview compone portada y contenido inferior con pie adaptable, rol,
+moneda, saldo y entrada visible; AppWelcomePanel ofrece la cabecera de login.
+AppCover.titleOnImage coloca título superior izquierdo con scrim semántico,
+onImage/imageScrim centralizados. AppLineChart recibe valores enteros y etiquetas
+ya formateadas; solo normaliza geometría, nunca calcula finanzas ni accede a datos.
+Permite selección de puntos y resumen semántico. Usar tokens y paletas existentes.
+AppImageCropper: máscara circular para avatar 1:1 y rectangular para portada 16:9;
+no implica guardar un original completo ni migrar fotos. El laboratorio queda
+oculto por petición expresa, conservando sus fuentes y efectos de producción.
+Copias usa AppShimmer y bloques de esqueleto durante el trabajo, sin progreso ficticio.
+Evidencia: docs/HOME_COPIES_PHOTOS_2026-11-03.md.
+
 ## Separación y zona de acción (D135–D136)
 
 AppButton añade margen exterior vertical sm y horizontal xs: separar controles

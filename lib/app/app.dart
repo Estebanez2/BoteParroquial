@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,8 +9,10 @@ import '../features/notifications/providers/notification_providers.dart';
 import '../features/offline/providers/daily_snapshot_providers.dart';
 import '../features/settings/providers/appearance_providers.dart';
 import '../models/appearance_settings.dart';
+import '../features/settings/providers/ui_sound_providers.dart';
 
 import 'router.dart';
+import '../design_system/platform/app_interaction_gate.dart';
 
 class BoteParroquialApp extends ConsumerWidget {
   const BoteParroquialApp({super.key, this.themeMode});
@@ -67,7 +70,14 @@ class BoteParroquialApp extends ConsumerWidget {
         locale: const Locale('es'),
         supportedLocales: const [Locale('es')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        routerConfig: ref.watch(routerProvider),
+        routeInformationProvider: ref
+            .watch(routerProvider)
+            .routeInformationProvider,
+        routeInformationParser: ref
+            .watch(routerProvider)
+            .routeInformationParser,
+        routerDelegate: ref.watch(routerProvider).routerDelegate,
+        backButtonDispatcher: ref.watch(systemBackSoundProvider).dispatcher,
       ),
     );
   }
@@ -97,11 +107,21 @@ class _DailyCopyLifecycleState extends ConsumerState<_DailyCopyLifecycle>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    final sounds = ref.read(uiSoundRepositoryProvider);
+    sounds.active = state == AppLifecycleState.resumed;
+    if (!sounds.active) unawaited(sounds.service.stop());
     ref
         .read(dailyCopyControllerProvider.notifier)
         .foreground(state == AppLifecycleState.resumed);
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) {
+    ref.watch(uiSoundProvider);
+    return AppSoundSurface(
+      onSound: (sound) =>
+          unawaited(ref.read(uiSoundRepositoryProvider).play(sound)),
+      child: AppInteractionHost(child: widget.child),
+    );
+  }
 }

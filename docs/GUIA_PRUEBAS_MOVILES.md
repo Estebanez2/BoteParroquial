@@ -1197,9 +1197,9 @@ cambios visuales. No hace falta otra instalación para recibir push que el APK
 actual ya admite. Mantener la sesión que realmente estés usando, no una cuenta
 DEMO histórica con el mismo nombre visible.
 
-- [ ] **ESP-01 — Desplegables**. En Inicio del grupo abrir Gestionar este espacio:
-  borde/fondo de acción visibles estando cerrado y abierto, Editar grupo e
-  Historial administrativo separados. Revisar también un movimiento desplegado.
+- [ ] **ESP-01 — Desplegables y gestión**. D160 sustituye Gestionar este espacio
+  por dos tiles directos: Editar grupo e Historial administrativo, debajo de
+  Cuotas y etapas y separados. Revisar el borde de un movimiento desplegado.
 - [ ] **ESP-02 — Aire entre acciones**. Revisar Añadir persona/Abrir papelera,
   Por persona → Ver ficha, Su recorrido → Ver ficha de X, Repartir por meses →
   Corregir/Anular y Ajustar este mes. Debe haber espacio entre bordes y respecto
@@ -1223,4 +1223,330 @@ DEMO histórica con el mismo nombre visible.
   Esperado en notificaciones Android: BoteParroquial · Prueba 20:00. Texto
   «Este es el aviso de prueba que pediste. No cambia cuotas ni movimientos.»
   No añade una cuota ficticia ni un mensaje a la bandeja de la app. Pendiente.
-El APK anterior del 20/10 tenía hash
+
+## 26. Inicio, gráfica, copias y foto actual (D138–D141)
+
+Detalle: [HOME_COPIES_PHOTOS_2026-11-03.md](HOME_COPIES_PHOTOS_2026-11-03.md).
+El laboratorio de la sección 21 está oculto por petición posterior; no buscar
+su acceso en este APK. El usuario instala/ejecuta. Desde PowerShell, en la raíz:
+
+```powershell
+& "C:\Users\aleja\AppData\Local\Android\Sdk\platform-tools\adb.exe" -s 00166155L000316 install -r "build\app\outputs\flutter-apk\app-profile.apk"
+```
+
+Para otro móvil usar su ID de `flutter devices`. `install -r` actualiza conservando
+los datos locales; no desinstalar para esta prueba. No hace falta cerrar sesiones,
+borrar fotos o cambiar permisos de grupo.
+
+- [ ] **INI-01 — Tus grupos**. Portada arriba, datos debajo, rol/moneda/saldo y
+  entrada clara. El perfil no muestra texto de carga fugaz encima de Tus grupos.
+  La carga real de la lista sí debe conservar esqueletos. Revisar texto ampliado.
+- [ ] **INI-02 — Grupo**. Nombre sobre la foto arriba a la izquierda, también sin
+  foto. Saldo sin la leyenda histórica; no hay botones de ingreso/retirada en
+  Inicio, siguen en Actividad. Resumen destacado. Mantener navegación fluida.
+- [ ] **GRA-01 — Saldo**. Seis meses, actual en curso. Tocar cada punto muestra su
+  saldo acumulado. Comparar un cierre con ingresos activos menos retiradas activas
+  hasta ese mes, incluyendo el dinero anterior a la ventana. No son pagos de cuotas.
+  Anulaciones/correcciones se reflejan por su estado actual. Cero real es distinto
+  de error/carga. Revisar también un grupo sin movimientos.
+- [ ] **COP-11 — Comprobar hoy**. Con Internet, menú de cuenta → Copias en este
+  móvil → Comprobar copia de hoy. Se ve brillo y texto de trabajo hasta terminar.
+  Debe guardar la copia o indicar que ya existe una válida de hoy. No debe fallar
+  por autorización de avisos. Si falla, copiar el mensaje entero; las anteriores
+  deben conservarse. No repetir innecesariamente descargas completas.
+- [ ] **COP-12 — Abrir sin red**. Abrir una copia guardada, comprobar fecha y aviso
+  de solo lectura; consultar grupos, personas, movimientos, informes y gráfica.
+  Sin conexión no debe permitir escrituras ni ir a la fuente viva. Salir del visor
+  y recuperar red. Fotos solo si estaban en caché. No se descarga con app cerrada.
+- [ ] **FOT-01 — Editar la que ya está**. En una foto de cuenta/persona/miembro
+  subida, elegir Editar foto actual sin borrarla ni buscarla. Debe abrir el editor
+  con máscara circular para avatar; zoom/rotación y cancelar conservan la foto.
+  Reabrir, guardar y comprobar resultado. La portada de grupo sigue rectangular
+  16:9. No se recupera contenido que se recortó antes de subir la imagen.
+- [ ] **LOG-01 — Login**. Al salir voluntariamente, comprobar el nuevo diseño y
+  Continuar con Google, incluidos texto ampliado y mensajes de error existentes.
+  No hace falta cerrar sesión solo para validar el resto de esta entrega.
+
+Confirmación recibida 03/11/2026: el usuario guarda/abre la copia y Editar foto
+actual funciona. No acredita cada variante de esta lista ni otro móvil/rol/iOS.
+
+### Continuación: acceso sin red y franja compacta (D142)
+
+- [ ] Abrir una copia y comprobar que el aviso ocupa menos espacio: fecha,
+  «Solo lectura» y «Datos actuales» en una fila adaptable. Navegar entre secciones;
+  el aviso permanece y la salida funciona. Revisar también texto ampliado.
+- [ ] Sin Internet, junto a reintentar perfil/grupos/acceso aparece acceso a
+  copias. Dentro del grupo, el aviso de actualización pendiente conserva su
+  acceso. Abre el catálogo para elegir una copia; si no hay ninguna, lo indica.
+  No debe cambiar de fuente automáticamente ni ofrecer una salida al servidor
+  dentro del visor archivado. Recuperar red al acabar.
+
+Detalle/APK: [OFFLINE_COMPACT_ACCESS_2026-11-03.md](OFFLINE_COMPACT_ACCESS_2026-11-03.md).
+
+## 27. Cuota, tarjetas, edición y sonidos (D143–D145)
+
+Estado: [QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md](QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md).
+Instalar el nuevo profile con el comando de la sección 26, conservando `install -r`.
+El usuario abre la app; no desinstalar ni borrar sus copias locales para esta prueba.
+
+- [ ] **LIM-01 — Cuota no es Internet**. Si Firebase sigue limitando consultas,
+  Actualizar gráfica debe explicar el límite y permitir ir a copias guardadas.
+  No insistir repetidamente ni activar facturación para esta prueba. Cuando el
+  servidor vuelva a aceptar consultas, el botón debe reintentar caja y gráfica.
+  Comprobar importes reales entonces; un test local no recupera cuota remota.
+- [ ] **TAR-01 — Tus grupos**. Nombre en una caja sobre la foto; descripción
+  debajo a la izquierda y saldo a la derecha. Sin Entrar separado; pulsar la
+  tarjeta conserva onda/entrada. Con texto ampliado puede apilar descripción y
+  saldo. Comprobar sin foto y con nombre largo.
+- [ ] **EDI-01 — Grupo**. Gestionar este espacio tiene solo el borde de color,
+  sin tarjeta exterior. Editar grupo muestra los campos sin repetir portada,
+  nombre/descripción ni cabecera promocional. Cambiar algo y volver atrás sin
+  guardar conserva la confirmación; cancelar no modifica datos.
+- [ ] **SON-01 — Escuchar**. Con móvil en modo normal y volumen audible, pulsar
+  botones, menús y pestañas; escribir una frase y luego otra tras una pausa.
+  Escritura da un toque muy tenue por ráfaga, no una ráfaga de ruidos por carácter.
+  Las contraseñas y los campos restaurados al abrir pantalla no suenan.
+- [ ] **SON-02 — Resultado**. Elegir/recortar una foto produce el sonido de foto
+  preparada; cancelar no confirma guardado. Guardar con éxito produce confirmación,
+  error/validación tiene otro efecto. Un fallo de sonido no debe bloquear la acción.
+  Evitar operaciones económicas innecesarias mientras la cuota esté agotada.
+- [ ] **SON-03 — Preferencia local**. Menú de cuenta → perfil → Ajustes de apariencia
+  → Sonidos de la app. Apagar: próximos controles no suenan. Cerrar/abrir y comprobar
+  que continúa apagado; activar de nuevo si se desea. No cambia sonidos push ni
+  la preferencia del segundo móvil.
+- [ ] **SON-04 — Silencio y segundo plano**. Poner el móvil en silencio/vibración:
+  la app no debe emitir efectos; volver a modo normal. Al pasar a segundo plano
+  no debe seguir reproduciendo/iniciar sonidos pendientes ni interrumpir música.
+  Comprobar por separado en cada móvil. iOS requiere su propia prueba en Mac/iPhone.
+
+Todos estos pasos físicos nuevos quedan pendientes; las seis comprobaciones
+automatizadas, análisis y compilación se documentan aparte.
+
+Continuación D146: en TAR-01 comprobar ahora nombre **abajo a la izquierda**,
+más pequeño y caja más transparente, tanto en Tus grupos como dentro. El límite
+429 se ha vuelto a confirmar remotamente; el APK visual no lo restablece.
+
+Continuación D147:
+
+- [ ] **LIM-02 — Inicio sin servidor**. Ante cuota agotada, perfil/lista/acceso y
+  una tarjeta de grupo fallida ofrecen el catálogo de copias junto al reintento.
+  Abrir una copia guardada sin forzar conexión; si no hay, se indica en el catálogo.
+- [ ] **FOT-AUSENTE — Portada**. Sin imagen disponible se ve icono de imagen
+  ausente y Sin foto, no letras. Si estaba en caché debe conservarse. Los avatares
+  personales sin foto mantienen sus iniciales. No borrar fotos para probar esto;
+  usar un grupo que ya carezca de ella.
+
+Continuación D148: en TAR-01 mirar las dos esquinas superiores de la foto; deben
+seguir el radio de la tarjeta sin tapar su borde. Comprobar con foto y con Sin foto.
+No borrar imágenes ni repetir descargas completas para esta revisión visual.
+
+## 28. Aviso del servidor y sonidos completados (04/11/2026)
+
+Detalle: [SERVER_NOTICE_AND_SOUND_COMPLETION_2026-11-04.md](SERVER_NOTICE_AND_SOUND_COMPLETION_2026-11-04.md).
+Instalar el profile nuevo con `adb install -r` según la sección 26. Usuario ejecuta.
+
+- [ ] Ante 429, comprobar «El servidor está temporalmente fuera de servicio.
+  Inténtalo más tarde o mañana» y acceso a copias. El aviso no garantiza una hora
+  de recuperación. No consumir consultas para provocar deliberadamente el error.
+- [ ] Con sonido activado y móvil fuera de silencio, probar botón, casilla,
+  interruptor y apertura de fecha/color/foto. Mover un color debe evitar una
+  ráfaga continua de sonidos. Deshabilitados no deben ejecutar cambios.
+- [ ] Escribir una frase: toque por ráfaga. No sonar al restaurar campos ni al
+  escribir contraseñas. Abrir la cámara/editor nativo conserva su funcionamiento
+  del sistema; sus controles no se sustituyen por widgets de Flutter.
+- [ ] Preparar una foto produce su efecto; guardarla con éxito confirma. Cancelar
+  no confirma subida. En una operación económica de prueba, guardar, corregir y
+  anular confirmados producen éxito; datos incompletos y fallo no lo producen.
+  Si la base no confirma, no repetir movimientos pensando que el sonido es un recibo.
+- [ ] Apagar Sonidos de la app en perfil → Ajustes de apariencia. Comprobar apagado
+  después de reiniciar. Volver a activar si se desea; silencio/vibración y segundo
+  plano siguen evitando efectos. No modifica preferencias push de grupos.
+
+Tres pruebas automatizadas distintas superadas; sonido físico, iOS y otros móviles
+no acreditados por ellas. Registrar por separado las comprobaciones del usuario.
+
+## 29. Logo e icono de aplicación (04/11/2026)
+
+Detalle: [APP_LOGO_2026-11-04.md](APP_LOGO_2026-11-04.md).
+
+- [ ] Actualizar el profile con el comando de la sección 26 (`adb install -r`).
+  Comprobar el nuevo icono de BoteParroquial en el launcher; no desinstalar para
+  refrescarlo ni borrar los datos/caché de la app.
+- [ ] Cuando corresponda ver el login, comprobar logo en cabecera/bienvenida y
+  fondo suave. No debe tapar texto, capturar toques o impedir Continuar con Google.
+  Probar claro/oscuro y texto ampliado. El fondo blanco de la ilustración original
+  se conserva; la transparencia se aplica en la pantalla.
+- [ ] Confirmar que las fotos de cuenta/grupo/personas siguen independientes del
+  logo y que el logo aparece sin Internet. iOS requiere revisar en Mac/iPhone;
+  generar sus iconos desde Windows no acredita compilación ni lanzamiento.
+
+## 30. Cada toque, volumen y tarjetas/perfil (D152–D153)
+
+Este apartado sustituye las expectativas anteriores de escritura por ráfagas o
+contraseña sin sonido. Detalle: [EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md](EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md).
+
+- [ ] Instalar el profile actualizado mediante `adb install -r` (sección 26), sin
+  desinstalar ni perder copias. El usuario abre la app.
+- [ ] Ajustes de apariencia → Sonidos de la app: con sonido activo, ajustar volumen
+  a 20, 60 y 100 %, soltar y pulsar Probar sonido. Debe percibirse diferencia;
+  bajar a 0 evita efectos. Cerrar/abrir confirma el nivel y la elección apagado.
+  Una preferencia apagada de la versión anterior debe seguir apagada.
+- [ ] Pulsar rápidamente un botón, abrir/seleccionar desplegables, tocar texto o
+  una zona libre. Cada toque físico produce un tap, sin dos taps por un único
+  botón. Comenzar scroll también produce uno; no sonar cada frame del arrastre.
+  Los controles deshabilitados pueden sonar al toque, pero no ejecutar acciones.
+- [ ] Escribir rápido, borrar o pegar en un campo: feedback en cada edición, sin
+  agrupación. Campos restaurados no suenan por sí solos. No se transmite texto al
+  audio; teclado/cámara/Google fuera de la app conserva sus propios controles.
+- [ ] Confirmar éxito/error sigue siendo distinto de tocar Guardar. Sonidos no
+  conceden permisos ni prueban una escritura. Modo silencio/vibración, interruptor
+  apagado y segundo plano siguen evitando los efectos.
+- [ ] Perfil: Cambiar mi foto está a la derecha del avatar, también con texto
+  ampliado, sin solaparse. Abrir/cancelar conserva permisos y cambios sin guardar.
+- [ ] Tus grupos: saldo mayor y primero bajo foto; descripción debajo si existe.
+  Sin EUR ni rol en esa tarjeta; dentro se conservan. Revisar descripciones corta,
+  larga y vacía y cantidad grande, sin perder el nombre/esquinas ni entrada al grupo.
+
+Seis casos automatizados superados; audibilidad, volumen efectivo, apariencia y
+fluidez en cada móvil siguen pendientes de comprobación física. iOS requiere su
+propia compilación y prueba.
+
+Precisión D154 para las tarjetas de la sección 30: descripción a la izquierda y
+saldo grande a la derecha, ambos alineados arriba justo bajo la foto. Con texto
+ampliado/anchura insuficiente puede apilarse; el importe no debe recortarse.
+
+## 31. Distribución Android e invitación con imagen (D155–D156)
+
+- APK release: `build/app/outputs/flutter-apk/app-release.apk`, con firma propia.
+  Antes de distribuir ampliamente, probar acceso Google e invitación en un móvil.
+- Si está instalado el APK debug/profile, Android rechazará actualizarlo con la
+  firma nueva. Antes de desinstalar, confirmar que no quedan operaciones pendientes,
+  datos sin sincronizar ni copias locales que quieras conservar. La desinstalación
+  borra preferencias/copias del móvil; no los datos guardados en Firebase.
+- Instalar release, entrar con Google, confirmar grupos/datos. Compartir el APK
+  como documento por WhatsApp; destinatarios Android lo descargan y autorizan la
+  instalación desde esa aplicación si Android lo pide. No sirve para iPhone.
+- Entrar en un grupo con foto → Participantes → Invitar al grupo → Compartir
+  invitación → WhatsApp → elegir destinatario. Comprobar foto + frase con nombre +
+  enlace/código. La imagen se comparte expresamente con ese destinatario.
+- Repetir en grupo sin foto: debe adjuntar logo. Copiar enlace sigue copiando solo
+  URL. En otro móvil, tocar el enlace y comprobar vista previa/solicitud; respetar
+  aprobación configurada. Si no abre la app, usar Entrar con código.
+- Confirmar que invitación desactivada/regenerada no admite un código antiguo.
+  No confundir envío al selector con mensaje realmente enviado por WhatsApp.
+- Guardar copia privada de BoteParroquial.jks y BoteParroquial-signing.properties;
+  no enviarlas a usuarios. Próximos APK conservarán firma y aumentarán build number.
+
+Pasos manuales pendientes; la compilación y los tests no los acreditan.
+
+## 32. Audio e identidad de secciones (1.0.1+2, D157–D158)
+
+- Instalar `build/app/outputs/flutter-apk/app-release.apk` con la misma firma
+  oficial D156. No es necesario desinstalar la release anterior; actualizar.
+- Ajustes de apariencia → Sonidos: 75 % predeterminado solo si no había nivel
+  elegido; conservar 0/apagado y otros niveles. Probar 75/100 y después silencio
+  del móvil/apagado de la app. Valorar volumen/timbre físicamente.
+- Botones/tarjetas accionables/menús: cuatro clics ligeramente distintos, sin
+  repetir inmediatamente. Tocar espacios libres, texto, imagen no interactiva,
+  controles deshabilitados y deslizar: no suenan. Volver tiene tono descendente.
+- Inicio del grupo conserva descripción/rol/moneda. Actividad, Participantes,
+  Personas, Miembros e Informes solo muestran nombre/miniatura arriba derecha.
+  Comprobar nombre largo y texto ampliado, sin ocultar controles.
+- Participantes → Invitar al grupo abre directamente Invitaciones. Mantener acceso
+  por Miembros; en copia local de solo lectura no se permite invitar.
+
+Automatizadas: seis comprobaciones dirigidas y análisis limpio. Pasos físicos
+pendientes. Más detalle en SOUND_AND_GROUP_SECTIONS_2026-11-04.md.
+
+## 33. Menús, gestión e historial corregido (1.0.2+3, D159–D160)
+
+- Actualizar app-release.apk sobre la versión oficial, sin desinstalar.
+- Abrir menú de cuenta/desplegable de mes: conservan el clic de 1.0.1. Botones
+  normales tienen nueva familia más cálida. Comprobar variación, Volver, apagado y
+  silencio; zonas libres siguen calladas.
+- Inicio de grupo: debajo de Cuotas y etapas hay dos tiles, Editar grupo e Historial
+  administrativo, visibles para gestores. Ya no aparece Gestionar este espacio.
+- Catequesis → Historial → Actualizar. La revisión remota acotada encontró 21
+  eventos en este momento; el número podrá aumentar. Abrir un movimiento para
+  comprobar fecha efectiva (UTC), importe y tipo. No se han alterado documentos.
+- En DEMO, Cargar más conserva orden y no duplica; filtros sobre cargados siguen
+  funcionando. Un error sin resultados debe mostrar Historial no disponible,
+  nunca presentar cero como consulta confirmada. No hacer cambios para inventar
+  eventos de demostración durante esta comprobación.
+
+Ocho casos dirigidos y análisis limpio. Validación física pendiente; evidencia en
+MENUS_ACTIONS_AUDIT_2026-11-04.md.
+
+## 34. Gesto Atrás, ajustes y foto en alta (1.0.3+4, D161–D163)
+
+- Actualizar release con app-release.apk, conservando la firma propia.
+- Abrir una sección/grupo/formulario y volver mediante gesto del sistema: un
+  único tono de regreso, igual que con el botón. Probar cancelar un gesto y un
+  formulario con datos sin guardar; no debe salir sin la confirmación existente.
+- Menús ahora usan la familia de clic normal de 1.0.2. Los botones tienen nuevos
+  clics mecánicos suaves y aleatorios. Probar nivel, silencio y apagado.
+- Apariencia: solo panel compacto de sonido (interruptor, volumen y prueba), sin
+  A tu manera, párrafo introductorio ni Personas, movimientos y el bote...
+- Nuevo grupo: no aparece UN NUEVO COMIENZO ni su bloque. Foto opcional desde
+  galería/cámara; recorte rectangular, vista previa, editar o quitar. Cancelar
+  una selección conserva el borrador previo. Atrás con cambios pide confirmar.
+- Crear grupo y verificar foto. Si se informa de que el grupo está creado pero
+  su foto falló, mantener el formulario y pulsar Reintentar guardar foto. Verificar
+  un solo grupo. Si se abandona, el grupo permanece y la foto puede añadirse luego;
+  el borrador de ese formulario no se conserva tras cerrarlo.
+
+Siete comprobaciones distintas automatizadas; cámara/recorte/subida y gesto real
+requieren prueba física. Detalles en BACK_SOUND_COMPACT_SETTINGS_GROUP_PHOTO_2026-11-04.md.
+
+## 35. Laboratorio de clics y bloqueo durante animaciones (profile 1.0.4+5)
+
+El usuario elige SOLO debug/profile. Instalar esta vez app-profile.apk: firma
+propia D156 verificada, por lo que actualiza la oficial sin desinstalar. La
+app-release.apk anterior no se ha recompilado y no muestra el laboratorio.
+
+Desde PowerShell en la raíz:
+
+```powershell
+& "C:\Users\aleja\AppData\Local\Android\Sdk\platform-tools\adb.exe" -s 00166155L000316 install -r "build\app\outputs\flutter-apk\app-profile.apk"
+```
+
+- Inicio → Laboratorio de clics. Hay 104 muestras: doce familias y ocho actuales.
+  Filtrar familia, ajustar volumen de prueba, Escuchar y marcar estrella. Solo
+  favoritas permite compararlas. Anotar códigos C001–C104 antes de cerrar el lab:
+  son preferencias efímeras y no se aplican al producto.
+- Escuchar debe reproducir solo una muestra, sin el clic extra del botón. Otra
+  muestra sustituye la anterior. Mantener sonido activado, volumen general mayor
+  que cero y móvil fuera de silencio. No se reactivan preferencias automáticamente.
+- Tocar un grupo: durante la onda y la entrada intentar Apariencia, cuenta,
+  Añadir u otro grupo. Esos toques no deben actuar ni ejecutarse luego. Solo debe
+  abrirse el grupo seleccionado. Al completar la transición vuelve la interacción.
+- Probar un botón normal y pulsar otro durante su animación: no debe competir.
+  Probar Atrás y un formulario con cambios; la protección de salida permanece.
+- Movimiento reducido no introduce esperas temporizadas adicionales; pérdida de
+  acceso/cambio de cuenta sigue retirando pantallas aunque haya una animación.
+
+Cuatro casos dirigidos y análisis limpio; validación física pendiente. No ejecutar
+pruebas destructivas ni alterar datos para evaluar sonidos.
+
+## 36. Retro 6/7/8 y retirada del laboratorio (release 1.0.5+6)
+
+La sección 35 queda como histórica: ya no hay acceso/ruta al laboratorio en ningún
+modo. Actualizar con `build/app/outputs/flutter-apk/app-release.apk`, misma firma
+que la profile 1.0.4; no desinstalar la app ni perder copias/preferencias locales.
+
+- Pulsar controles normales varias veces: Retro 6/7/8 (antes C086–C088), elegidos
+  al azar sin repetir el anterior. Menús/Volver conservan sus sonidos.
+- Comprobar volumen elegido, apagado y silencio. No se ha restablecido el nivel.
+- Inicio no muestra Laboratorio de clics; gate durante onda/entrada sigue impidiendo
+  pulsar Apariencia u otro grupo hasta completar la animación.
+
+Una regresión dirigida verifica los tres WAV exactos por hash y la variación;
+análisis limpio. Usuario comprueba audio real. Detalles: SELECTED_RETRO_CLICKS_2026-11-04.md.
+
+## 37. Orientación vertical (release 1.0.6+7)
+
+Actualizar app-release.apk sin desinstalar. Activar rotación automática del teléfono
+y girarlo en Inicio, grupo, formularios, ajustes y copia local: la UI propia debe
+seguir vertical. Volver del editor de fotos/cámara y comprobar de nuevo. Apps y
+selectores externos gestionan su orientación. iOS y pantallas grandes Android
+requieren su prueba específica; ver PORTRAIT_ONLY_2026-11-04.md.

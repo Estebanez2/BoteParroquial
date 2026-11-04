@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../feedback/app_sound_scope.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
@@ -27,6 +28,9 @@ class AppDropdown<T> extends StatelessWidget {
     key: ValueKey(value),
     initialValue: value,
     isExpanded: true,
+    onTap: enabled && onChanged != null
+        ? () => AppSoundScope.emit(context, UiSound.menu)
+        : null,
     itemHeight: null,
     dropdownColor: AppColors.of(context).surface,
     elevation: 8,
@@ -52,7 +56,12 @@ class AppDropdown<T> extends StatelessWidget {
           ),
         )
         .toList(),
-    onChanged: enabled ? onChanged : null,
+    onChanged: enabled && onChanged != null
+        ? (value) {
+            AppSoundScope.emit(context, UiSound.menu);
+            onChanged!(value);
+          }
+        : null,
     selectedItemBuilder: (context) => options.values
         .map(
           (label) => Align(

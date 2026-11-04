@@ -4,6 +4,7 @@ import '../../../design_system/design_system.dart';
 import '../providers/group_sync_providers.dart';
 import '../../../core/offline/offline_mode.dart';
 import '../../offline/presentation/daily_copies_screen.dart';
+import '../../../core/errors/app_failure.dart';
 
 class GroupSyncNotice extends ConsumerWidget {
   const GroupSyncNotice({super.key, required this.groupId});
@@ -12,6 +13,9 @@ class GroupSyncNotice extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (ref.watch(offlineReadOnlyProvider)) return const SizedBox.shrink();
     final state = ref.watch(groupServerConfirmedProvider(groupId));
+    final quotaExceeded =
+        state.error is AppFailure &&
+        (state.error as AppFailure).code == FailureCode.resourceExhausted;
     final unconfirmed =
         !state.isLoading && (state.hasError || state.asData?.value == false);
     return AppDelayedVisibility(
@@ -23,14 +27,18 @@ class GroupSyncNotice extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppBadge(
-                'Actualización pendiente',
+              AppBadge(
+                quotaExceeded
+                    ? 'Servidor no disponible'
+                    : 'Actualización pendiente',
                 tone: AppTone.warning,
                 icon: Icons.sync_problem_outlined,
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Todavía no se ha confirmado la actualización de estos datos. Puedes consultar la información guardada; los movimientos necesitan confirmación del servidor.',
+                quotaExceeded
+                    ? failureMessage(state.error!)
+                    : 'Todavía no se ha confirmado la actualización de estos datos. Puedes consultar la información guardada; los movimientos necesitan confirmación del servidor.',
                 style: AppTypography.of(context).bodyMedium,
               ),
               if (state.hasError)

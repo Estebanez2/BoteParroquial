@@ -10,8 +10,8 @@ import '../../photos/presentation/photo_view.dart';
 import '../../photos/presentation/photo_editor_screen.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../groups/providers/group_providers.dart';
-import '../../groups/presentation/group_widgets.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
+import '../../offline/presentation/daily_copies_screen.dart';
 import 'pending_lifecycle_panel.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -86,15 +86,17 @@ class HomeScreen extends ConsumerWidget {
           profile.when(
             skipLoadingOnRefresh: false,
             skipLoadingOnReload: false,
-            loading: () =>
-                const LoadingIndicator(label: 'Preparando tu perfil…'),
-            error: (error, _) => EmptyState(
-              icon: Icons.cloud_off_outlined,
-              title: 'No pudimos preparar tu perfil',
-              description: failureMessage(error),
-              actionLabel: 'Reintentar perfil',
-              onAction: () =>
-                  ref.read(authControllerProvider.notifier).retryProfile(),
+            loading: () => const SizedBox.shrink(),
+            error: (error, _) => DailyCopyRecovery(
+              error: error,
+              child: EmptyState(
+                icon: Icons.cloud_off_outlined,
+                title: 'No pudimos preparar tu perfil',
+                description: failureMessage(error),
+                actionLabel: 'Reintentar perfil',
+                onAction: () =>
+                    ref.read(authControllerProvider.notifier).retryProfile(),
+              ),
             ),
             data: (user) => const SizedBox.shrink(),
           ),
@@ -132,12 +134,15 @@ class _GroupList extends ConsumerWidget {
           layout: AppSkeletonLayout.groups,
           label: 'Buscando tus espacios…',
         ),
-        error: (error, _) => EmptyState(
-          icon: Icons.cloud_off_outlined,
-          title: 'Tus grupos están a un reintento',
-          description: failureMessage(error),
-          actionLabel: 'Reintentar grupos',
-          onAction: () => ref.invalidate(membershipsProvider),
+        error: (error, _) => DailyCopyRecovery(
+          error: error,
+          child: EmptyState(
+            icon: Icons.cloud_off_outlined,
+            title: 'Tus grupos están a un reintento',
+            description: failureMessage(error),
+            actionLabel: 'Reintentar grupos',
+            onAction: () => ref.invalidate(membershipsProvider),
+          ),
         ),
         data: (memberships) => memberships.isEmpty
             ? const EmptyState(
@@ -178,103 +183,65 @@ class _GroupTile extends ConsumerWidget {
             layout: AppSkeletonLayout.group,
             label: 'Abriendo espacio…',
           ),
-          error: (error, _) => AppCard(
-            child: Column(
-              children: [
-                Text(failureMessage(error)),
-                AppButton(
-                  label: 'Reintentar espacio',
-                  variant: AppButtonVariant.ghost,
-                  onPressed: () => ref.invalidate(groupProvider(groupId)),
-                ),
-              ],
+          error: (error, _) => DailyCopyRecovery(
+            error: error,
+            child: AppCard(
+              child: Column(
+                children: [
+                  Text(failureMessage(error)),
+                  AppButton(
+                    label: 'Reintentar espacio',
+                    variant: AppButtonVariant.ghost,
+                    onPressed: () => ref.invalidate(groupProvider(groupId)),
+                  ),
+                ],
+              ),
             ),
           ),
           data: (group) {
             if (group == null) return const SizedBox.shrink();
-            final details = Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: Text(group.name, style: t.headingSmall)),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: AppColors.of(context).textMuted,
-                      size: AppSpacing.icon,
+            final balance = ref
+                .watch(dashboardProvider(groupId))
+                .when(
+                  skipLoadingOnReload: false,
+                  skipLoadingOnRefresh: false,
+                  loading: () => const AppShimmer(
+                    label: 'Actualizando saldo',
+                    child: AppSkeletonBlock(
+                      width: AppSpacing.coverLarge,
+                      height: AppSpacing.xxl,
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    AppBadge(
-                      roleLabel(membership.role),
-                      tone: membership.role == GroupRole.member
-                          ? AppTone.neutral
-                          : AppTone.info,
-                      icon: membership.role == GroupRole.owner
-                          ? Icons.workspace_premium_outlined
-                          : Icons.people_outline,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                ref
-                    .watch(dashboardProvider(groupId))
-                    .when(
-                      skipLoadingOnReload: false,
-                      skipLoadingOnRefresh: false,
-                      loading: () => const AppShimmer(
-                        label: 'Actualizando saldo',
-                        child: AppSkeletonBlock(
-                          width: AppSpacing.coverLarge,
-                          height: AppSpacing.xxl,
-                        ),
+                  ),
+                  error: (error, _) =>
+                      Text('Saldo no disponible', style: t.bodySmall),
+                  data: (summary) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MoneyText(
+                        summary.balanceCents,
+                        currency: group.currency,
+                        size: MoneyTextSize.hero,
                       ),
-                      error: (error, _) =>
-                          Text('Saldo no disponible', style: t.bodySmall),
-                      data: (summary) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Saldo disponible', style: t.bodySmall),
-                          MoneyText(
-                            summary.balanceCents,
-                            currency: group.currency,
-                          ),
-                        ],
-                      ),
-                    ),
-              ],
-            );
+                      Text('Saldo disponible', style: t.bodySmall),
+                    ],
+                  ),
+                );
             return AppGroupEntry(
               onOpen: (origin) => context.go(
                 '/groups/${Uri.encodeComponent(groupId)}',
                 extra: origin,
               ),
-              builder: (context, activate) => AppCard(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                variant: AppCardVariant.interactive,
-                tapEffect: AppTapEffect.none,
+              builder: (context, activate) => AppGroupPreview(
+                title: group.name,
+                description: group.description,
+                balance: balance,
                 onTap: activate,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    PhotoCover(
-                      groupId: groupId,
-                      name: group.name,
-                      panoramic: true,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.xs,
-                      ),
-                      child: details,
-                    ),
-                  ],
+                cover: PhotoCover(
+                  groupId: groupId,
+                  name: group.name,
+                  panoramic: true,
+                  edgeToEdge: true,
+                  titleOnImage: true,
                 ),
               ),
             );

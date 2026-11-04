@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import '../theme/app_motion.dart';
 import '../theme/app_radius.dart';
 import 'app_section_motion_scope.dart';
+import 'app_interaction_gate.dart';
 
 enum AppPageMotion { standard, group, section, form }
 
@@ -36,6 +37,30 @@ abstract final class AppPageTransitions {
       );
 
   static Widget build(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child, {
+    AppPageMotion motion = AppPageMotion.standard,
+    int? sectionIndex,
+    Rect? origin,
+  }) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+    return AppRouteInteractionLock(
+      animation: animation,
+      child: _build(
+        context,
+        animation,
+        secondaryAnimation,
+        child,
+        motion: motion,
+        sectionIndex: sectionIndex,
+        origin: origin,
+      ),
+    );
+  }
+
+  static Widget _build(
     BuildContext context,
     Animation<double> animation,
     Animation<double> secondaryAnimation,
@@ -201,11 +226,14 @@ class AppCupertinoPageTransitionsBuilder
           secondaryAnimation,
           child,
         )
-      : super.buildTransitions(
-          route,
-          context,
-          animation,
-          secondaryAnimation,
-          child,
+      : AppRouteInteractionLock(
+          animation: animation,
+          child: super.buildTransitions(
+            route,
+            context,
+            animation,
+            secondaryAnimation,
+            child,
+          ),
         );
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../design_system/design_system.dart';
 import '../../../models/appearance_settings.dart';
 import '../providers/appearance_providers.dart';
+import '../providers/ui_sound_providers.dart';
 import 'custom_palette_editor.dart';
 
 class AppearanceScreen extends ConsumerWidget {
@@ -13,6 +14,7 @@ class AppearanceScreen extends ConsumerWidget {
     final state = ref.watch(appearanceProvider);
     final controller = ref.read(appearanceProvider.notifier);
     final t = AppTypography.of(context);
+    final sound = ref.watch(uiSoundProvider);
     return AppScaffold(
       maxWidth: AppSpacing.readingMax,
       appBar: AppTopBar(
@@ -26,12 +28,28 @@ class AppearanceScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('A tu manera.', style: t.displayLarge),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Elige el ambiente de tu app. Se aplica a todas las pantallas y se recuerda en este móvil.',
-            style: t.bodyMedium,
+          AppSoundSettingsPanel(
+            enabled: sound.enabled,
+            volume: sound.volumePercent,
+            onEnabled: sound.loading
+                ? null
+                : ref.read(uiSoundProvider.notifier).select,
+            onVolume: sound.loading
+                ? null
+                : ref.read(uiSoundProvider.notifier).previewVolume,
+            onVolumeEnd: sound.loading
+                ? null
+                : ref.read(uiSoundProvider.notifier).saveVolume,
+            onPreview:
+                !sound.enabled || sound.volumePercent == 0 || sound.loading
+                ? null
+                : () {},
           ),
+          if (sound.failed)
+            Text(
+              'No se pudo guardar la preferencia. Vuelve a intentarlo.',
+              style: t.bodySmall,
+            ),
           const SizedBox(height: AppSpacing.section),
           Text('Modo de pantalla', style: t.headingSmall),
           const SizedBox(height: AppSpacing.md),
@@ -77,11 +95,6 @@ class AppearanceScreen extends ConsumerWidget {
             onChanged: (font) {
               if (font != null) controller.select(font: font);
             },
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Personas, movimientos y el bote de tu comunidad.',
-            style: t.headingMedium,
           ),
           const SizedBox(height: AppSpacing.section),
           Text('Tu paleta', style: t.headingSmall),

@@ -15,10 +15,10 @@ import '../../groups/providers/group_management_providers.dart';
 
 import '../../movements/providers/movement_providers.dart';
 import '../../movements/presentation/pending_movement_card.dart';
-import '../../movements/presentation/movement_actions.dart';
 import '../../persons/providers/person_providers.dart';
 import '../providers/dashboard_providers.dart';
 import '../../reports/presentation/quota_report_section.dart';
+import 'balance_trend_panel.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key, required this.groupId});
@@ -46,6 +46,7 @@ class DashboardScreen extends StatelessWidget {
     child: GroupAccessBody(
       groupId: groupId,
       edgeToEdge: true,
+      showIdentity: true,
       builder: (group, membership) =>
           _Dashboard(group: group, membership: membership),
     ),
@@ -99,7 +100,6 @@ class _SummaryBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final type = AppTypography.of(context);
     final groupId = group.id;
-    final canManage = ref.watch(canManageMovementsProvider(groupId));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -109,8 +109,8 @@ class _SummaryBody extends ConsumerWidget {
             balanceCents: summary.balanceCents,
             currency: group.currency,
             caption: summary.cashConfirmedAt == null
-                ? 'Todo el historial · Solo movimientos activos'
-                : 'Todo el historial · Solo movimientos activos\nCaja confirmada: ${MaterialLocalizations.of(context).formatShortDate(summary.cashConfirmedAt!.toLocal())} · ${TimeOfDay.fromDateTime(summary.cashConfirmedAt!.toLocal()).format(context)}',
+                ? null
+                : 'Confirmado: ${MaterialLocalizations.of(context).formatShortDate(summary.cashConfirmedAt!.toLocal())} · ${TimeOfDay.fromDateTime(summary.cashConfirmedAt!.toLocal()).format(context)}',
           ),
         ),
         if (summary.isNegative) ...[
@@ -133,29 +133,25 @@ class _SummaryBody extends ConsumerWidget {
             ),
           ),
         ],
-        if (canManage) ...[
-          const SizedBox(height: AppSpacing.md),
-          MovementActions(groupId: groupId),
-        ],
         const SizedBox(height: AppSpacing.lg),
-        AppCard(
+        BalanceTrendPanel(groupId: groupId, currency: group.currency),
+        const SizedBox(height: AppSpacing.lg),
+        AppHeroPanel(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Resumen del grupo', style: type.headingSmall),
-              const SizedBox(height: AppSpacing.xs),
               Text(
-                'Todo el historial · Movimientos activos',
-                style: type.bodySmall.copyWith(
-                  color: AppColors.of(context).textMuted,
+                'Resumen del grupo',
+                style: type.headingMedium.copyWith(
+                  color: AppColors.of(context).onHero,
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
               AppAdaptiveRow(
-                minChildWidth: AppSpacing.coverSmall,
+                minChildWidth: AppSpacing.coverLarge * 1.5,
                 children: [
                   StatisticCard(
-                    framed: false,
+                    framed: true,
                     label: 'Total ingresado',
                     value: formatMoneyCents(
                       summary.incomeCents,
@@ -164,7 +160,7 @@ class _SummaryBody extends ConsumerWidget {
                     icon: Icons.south_west_rounded,
                   ),
                   StatisticCard(
-                    framed: false,
+                    framed: true,
                     label: 'Total retirado',
                     tone: AppTone.danger,
                     value: formatMoneyCents(
@@ -174,7 +170,7 @@ class _SummaryBody extends ConsumerWidget {
                     icon: Icons.north_east_rounded,
                   ),
                   StatisticCard(
-                    framed: false,
+                    framed: true,
                     label: 'Personas activas',
                     tone: AppTone.tertiary,
                     value: '${summary.activePersonsCount}',
@@ -236,26 +232,19 @@ class _SummaryBody extends ConsumerWidget {
           onTap: () => context.push('/groups/$groupId/quotas'),
         ),
         if (ref.watch(canEditGroupProvider(groupId))) ...[
-          const SizedBox(height: AppSpacing.section),
-          AppCard(
-            child: AppExpandableRow(
-              title: Text('Gestionar este espacio', style: type.labelLarge),
-              leading: const Icon(Icons.tune_rounded),
-              children: [
-                AppButton(
-                  label: 'Editar grupo',
-                  leadingIcon: Icons.tune_rounded,
-                  variant: AppButtonVariant.ghost,
-                  onPressed: () => context.push('/groups/$groupId/settings'),
-                ),
-                AppButton(
-                  label: 'Historial administrativo',
-                  leadingIcon: Icons.history_rounded,
-                  variant: AppButtonVariant.ghost,
-                  onPressed: () => context.push('/groups/$groupId/audit'),
-                ),
-              ],
-            ),
+          const SizedBox(height: AppSpacing.md),
+          AppNavigationTile(
+            label: 'Editar grupo',
+            icon: Icons.tune_rounded,
+            description: 'Cambia el nombre y la descripción del espacio',
+            onTap: () => context.push('/groups/$groupId/settings'),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppNavigationTile(
+            label: 'Historial administrativo',
+            icon: Icons.history_rounded,
+            description: 'Consulta quién cambió qué y cuándo',
+            onTap: () => context.push('/groups/$groupId/audit'),
           ),
         ],
       ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../feedback/app_sound_scope.dart';
 import 'package:flutter/services.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
@@ -73,7 +74,10 @@ class AppColorPlane extends StatelessWidget {
             return MouseRegion(
               cursor: SystemMouseCursors.precise,
               child: GestureDetector(
-                onTapDown: (details) => choose(details.localPosition),
+                onTapDown: (details) {
+                  AppSoundScope.emit(context, UiSound.tap);
+                  choose(details.localPosition);
+                },
                 onPanStart: (details) => choose(details.localPosition),
                 onPanUpdate: (details) => choose(details.localPosition),
                 child: CustomPaint(
@@ -190,6 +194,7 @@ class AppHueSlider extends StatelessWidget {
             trackHeight: AppSpacing.md,
           ),
           child: Slider(
+            onChangeStart: (_) => AppSoundScope.emit(context, UiSound.tap),
             value: value,
             max: 360,
             label: 'Tono ${value.round()}°',

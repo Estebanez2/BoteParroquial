@@ -21,7 +21,7 @@ class GroupIdentityHeader extends StatelessWidget {
     final identity = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(group.name, style: panoramic ? t.displayLarge : t.headingSmall),
+        if (!panoramic) Text(group.name, style: t.headingSmall),
         if (group.description?.isNotEmpty == true) ...[
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -52,6 +52,7 @@ class GroupIdentityHeader extends StatelessWidget {
             interactive: true,
             panoramic: true,
             edgeToEdge: true,
+            titleOnImage: true,
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(

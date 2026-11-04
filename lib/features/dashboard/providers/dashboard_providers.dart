@@ -3,12 +3,35 @@ import '../../../core/errors/app_failure.dart';
 import '../../../models/dashboard_summary.dart';
 import '../../../models/movement.dart';
 import '../../../models/movement_cash_totals.dart';
+import '../../../models/monthly_balance.dart';
 import '../../../repositories/dashboard_repository.dart';
 import '../../groups/providers/group_providers.dart';
 import '../../movements/providers/movement_providers.dart';
 import '../../persons/providers/person_providers.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../quotas/providers/quota_providers.dart';
+
+final dashboardTrendProvider = FutureProvider.autoDispose
+    .family<List<MonthlyBalance>, String>((ref, id) async {
+      final group = ref.watch(groupProvider(id));
+      final member = ref.watch(currentMembershipProvider(id));
+      final uid = ref.watch(authStateProvider).asData?.value?.uid;
+      if (uid == null || group.asData?.value == null || member == null) {
+        throw const AppFailure(
+          FailureCode.permissionDenied,
+          'No tienes acceso a esta evolución.',
+        );
+      }
+      final month = ref.watch(quotaMonthProvider(id));
+      final cash = ref.watch(dashboardCashProvider(id));
+      final repository = ref.watch(movementRepositoryProvider);
+      if (cash.isLoading) await ref.watch(dashboardCashProvider(id).future);
+      if (!ref.mounted) {
+        throw const AppFailure(FailureCode.cancelled, 'Consulta cerrada.');
+      }
+      if (cash.hasError) throw cash.error!;
+      return repository.loadBalanceTrend(id, uid, month);
+    }, retry: (_, _) => null);
 
 final dashboardCashProvider = StreamProvider.autoDispose
     .family<MovementCashTotals, String>((ref, id) {

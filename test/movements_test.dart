@@ -19,6 +19,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'auth_flow_test.dart' as auth;
 import 'groups_test.dart' as groups;
 import 'support/memory_pending_movements.dart';
+import 'package:bote_parroquial/models/ui_sound.dart';
+import 'package:bote_parroquial/models/ui_sound_settings.dart';
+import 'package:bote_parroquial/services/ui_sound_service.dart';
+import 'package:bote_parroquial/repositories/ui_sound_repository.dart';
+import 'package:bote_parroquial/features/settings/providers/ui_sound_providers.dart';
+
+class _Audio implements UiSoundService {
+  final heard = <UiSound>[];
+  @override
+  Future<UiSoundSettings> loadSettings() async => const UiSoundSettings();
+  @override
+  Future<void> saveSettings(UiSoundSettings value) async {}
+  @override
+  Future<void> play(UiSound sound, {required double volume}) async {
+    heard.add(sound);
+  }
+
+  @override
+  Future<void> stop() async {}
+  @override
+  Future<void> dispose() async {}
+}
 
 class MemoryMovements implements MovementService {
   final changes = StreamController<List<Movement>>.broadcast();
@@ -127,6 +149,7 @@ void main() {
           membership = groups.FakeGroups(),
           service = MemoryMovements();
       final journal = MemoryPendingMovements();
+      final audio = _Audio();
       final person = Person(
         id: 'inactive',
         groupId: 'a',
@@ -139,6 +162,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          uiSoundRepositoryProvider.overrideWithValue(UiSoundRepository(audio)),
           dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
           groupServerConfirmedProvider.overrideWith(
             (ref, groupId) => Stream.value(true),
@@ -188,6 +212,7 @@ void main() {
       await tester.enterText(find.byType(TextFormField).first, '20,50');
       await tap('Revisar y guardar');
       expect(find.text('Selecciona la persona del ingreso.'), findsOneWidget);
+      expect(audio.heard.where((e) => e == UiSound.success), isEmpty);
       await tester.ensureVisible(find.byType(DropdownButtonFormField<String>));
       await tester.pumpAndSettle();
       await tester.tap(find.byType(DropdownButtonFormField<String>));
@@ -231,6 +256,7 @@ void main() {
       await tap('Revisar anulación');
       await tap('Anular movimiento');
       expect(MovementRepository.balanceOf(service.current), 1000);
+      expect(audio.heard.where((e) => e == UiSound.success).length, 4);
       expect(
         service.current
             .where((m) => m.status == MovementStatus.cancelled)

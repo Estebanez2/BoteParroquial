@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:typed_data';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../models/group.dart';
@@ -7,6 +8,8 @@ import '../../../repositories/group_management_repository.dart';
 import '../../../services/firestore_group_management_service.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../persons/providers/person_providers.dart';
+import '../../photos/providers/photo_providers.dart';
+import '../../../models/photo_target.dart';
 
 final groupManagementRepositoryProvider = Provider<GroupManagementRepository>(
   (ref) => GroupManagementRepository(
@@ -30,6 +33,8 @@ final groupManagementControllerProvider = NotifierProvider.autoDispose
 class GroupManagementController extends Notifier<AsyncValue<void>> {
   GroupManagementController(this.groupId);
   final String groupId;
+  String? _createdUid;
+  bool get groupCreated => _createdUid != null;
   @override
   AsyncValue<void> build() => const AsyncData(null);
   String newId() => ref.read(groupManagementRepositoryProvider).newId();
@@ -48,6 +53,7 @@ class GroupManagementController extends Notifier<AsyncValue<void>> {
     try {
       final user = ref.read(authStateProvider).asData?.value;
       if (user == null ||
+          (_createdUid != null && _createdUid != user.uid) ||
           (original != null &&
               (original.id != groupId ||
                   !ref.read(canEditGroupProvider(groupId))))) {
@@ -66,21 +72,46 @@ class GroupManagementController extends Notifier<AsyncValue<void>> {
             'Completa los datos del grupo.',
           );
         }
-        final profile = await ref.read(userProfileProvider.future);
-        if (!ref.mounted ||
-            profile?.uid != user.uid ||
-            ref.read(authStateProvider).asData?.value?.uid != user.uid) {
-          throw const AppFailure(
-            FailureCode.permissionDenied,
-            'Tu sesión ha cambiado. Abre el formulario de nuevo.',
+        if (_createdUid == null) {
+          final profile = await ref.read(userProfileProvider.future);
+          if (!ref.mounted ||
+              profile?.uid != user.uid ||
+              ref.read(authStateProvider).asData?.value?.uid != user.uid) {
+            throw const AppFailure(
+              FailureCode.permissionDenied,
+              'Tu sesión ha cambiado. Abre el formulario de nuevo.',
+            );
+          }
+          await repository.create(
+            groupId,
+            user.uid,
+            profile!.displayName,
+            creation,
           );
+          _createdUid = user.uid;
         }
-        await repository.create(
-          groupId,
-          user.uid,
-          profile!.displayName,
-          creation,
-        );
+        if (!ref.mounted ||
+            ref.read(authStateProvider).asData?.value?.uid != user.uid) {
+          return false;
+        }
+        final photo = ref.read(groupDraftPhotoProvider(groupId)).draft;
+        if (photo != null) {
+          try {
+            await ref
+                .read(photoRepositoryProvider)
+                .upload(user.uid, PhotoTarget.group(groupId), photo);
+            if (!ref.mounted ||
+                ref.read(authStateProvider).asData?.value?.uid != user.uid) {
+              return false;
+            }
+            ref.read(photoRefreshProvider)(PhotoTarget.group(groupId));
+          } catch (error) {
+            throw AppFailure(
+              error is AppFailure ? error.code : FailureCode.unknown,
+              'El grupo ya está creado, pero no se pudo guardar la foto. Reintenta la subida; no se creará otro grupo. ${failureMessage(error)}',
+            );
+          }
+        }
       }
       if (ref.mounted) state = const AsyncData(null);
       return true;
@@ -88,5 +119,68 @@ class GroupManagementController extends Notifier<AsyncValue<void>> {
       if (ref.mounted) state = AsyncError(error, stack);
       return false;
     }
+  }
+}
+
+final groupDraftPhotoProvider = NotifierProvider.autoDispose
+    .family<GroupDraftPhotoController, PhotoEditorState, String>(
+      GroupDraftPhotoController.new,
+    );
+
+/// Local image draft: no membership or Storage access before the group exists.
+class GroupDraftPhotoController extends Notifier<PhotoEditorState> {
+  GroupDraftPhotoController(this.groupId);
+  final String groupId;
+  int _generation = 0;
+  @override
+  PhotoEditorState build() {
+    _generation++;
+    ref.watch(authStateProvider.select((value) => value.asData?.value?.uid));
+    return const PhotoEditorState();
+  }
+
+  Future<void> select(PhotoSource source, {required bool darkTheme}) =>
+      _prepare(
+        (previous) => ref
+            .read(photoRepositoryProvider)
+            .pick(
+              source,
+              target: PhotoTarget.group(groupId),
+              darkTheme: darkTheme,
+            ),
+      );
+  Future<void> edit({required bool darkTheme}) => _prepare(
+    (previous) async => previous == null
+        ? null
+        : ref
+              .read(photoRepositoryProvider)
+              .editDraft(previous, panoramic: true, darkTheme: darkTheme),
+  );
+  Future<void> _prepare(
+    Future<Uint8List?> Function(Uint8List?) operation,
+  ) async {
+    if (state.busy) return;
+    final uid = ref.read(authStateProvider).asData?.value?.uid;
+    if (uid == null) return;
+    final generation = _generation;
+    final previous = state.draft;
+    state = PhotoEditorState(draft: previous, busy: true);
+    try {
+      final bytes = await operation(previous);
+      if (!ref.mounted ||
+          generation != _generation ||
+          ref.read(authStateProvider).asData?.value?.uid != uid) {
+        return;
+      }
+      state = PhotoEditorState(draft: bytes ?? previous);
+    } catch (error) {
+      if (ref.mounted && generation == _generation) {
+        state = PhotoEditorState(draft: previous, error: failureMessage(error));
+      }
+    }
+  }
+
+  void clear() {
+    if (!state.busy) state = const PhotoEditorState();
   }
 }

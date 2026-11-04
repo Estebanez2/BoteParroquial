@@ -881,3 +881,8 @@ Journal v3 del móvil conserva InitialQuotaAssignment; no es una colección nuev
 La función de pruebas push crea únicamente notificationDeliveries técnicos
 marcados test, con reserva por prueba, sin cambiar bandeja/cuotas/preferencias.
 Publicación y respaldo: docs/MOVEMENT_ENTRY_AND_NOTIFICATIONS_2026-11-03.md.
+Corrección de lectura D160 (04/11/2026): auditEvents existentes pueden contener
+Timestamp en before/after (por ejemplo occurredAt de movimientos). El servicio
+los convierte a DateTime UTC para consulta; no se cambia formato persistido,
+reglas ni documentos. createdAt conserva precisión exacta para cursor paginado.
+

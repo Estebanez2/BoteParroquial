@@ -194,7 +194,8 @@ class _FirstMonthSetupScreenState extends ConsumerState<FirstMonthSetupScreen> {
                             : () => setState(_selected.clear),
                       ),
                       for (final person in candidates.requireValue)
-                        CheckboxListTile(
+                        AppToggleTile(
+                          checkbox: true,
                           contentPadding: EdgeInsets.zero,
                           title: Text(person.displayName),
                           value: _selected.contains(person.id),

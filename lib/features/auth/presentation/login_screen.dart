@@ -13,8 +13,8 @@ class LoginScreen extends ConsumerWidget {
     final action = ref.watch(authControllerProvider);
     final session = ref.watch(authStateProvider);
     final t = AppTypography.of(context);
-    final onHero = AppColors.of(context).onHero;
     return AppScaffold(
+      background: const AppLogoBackdrop(),
       maxWidth: AppSpacing.readingMax,
       appBar: const AppTopBar(
         title: 'BoteParroquial',
@@ -23,34 +23,12 @@ class LoginScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.sm),
           AppReveal(
-            child: AppHeroPanel(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.diversity_1_outlined,
-                    size: AppSpacing.xxxl,
-                    color: onHero,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    'LO NUESTRO, EN COMÚN',
-                    style: t.labelSmall.copyWith(color: onHero),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'Un pequeño gesto.\nUna gran comunidad.',
-                    style: t.displayLarge.copyWith(color: onHero),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    'Un espacio para cuidar los fondos y las actividades de tu comunidad.',
-                    style: t.bodyLarge.copyWith(color: onHero),
-                  ),
-                ],
-              ),
+            child: const AppWelcomePanel(
+              title: 'Tu comunidad.\nTodo, en su sitio.',
+              description:
+                  'Personas, aportaciones y proyectos en un espacio que cuidáis juntos.',
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -58,8 +36,16 @@ class LoginScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Accede con tu cuenta de Google.', style: t.bodyLarge),
-                const SizedBox(height: AppSpacing.xl),
+                Text(
+                  'Tu próximo encuentro empieza aquí',
+                  style: t.headingSmall,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Accede con tu cuenta de Google para entrar en tus grupos.',
+                  style: t.bodyMedium,
+                ),
+                const SizedBox(height: AppSpacing.md),
                 if (!startup.isReady) ...[
                   Text(
                     startup.error == null
@@ -101,6 +87,23 @@ class LoginScreen extends ConsumerWidget {
                       ? null
                       : () =>
                             ref.read(authControllerProvider.notifier).signIn(),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.shield_outlined,
+                      color: AppColors.of(context).primary,
+                      size: AppSpacing.icon,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        'Sin contraseñas nuevas. Tus permisos pertenecen a cada grupo.',
+                        style: t.bodySmall,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

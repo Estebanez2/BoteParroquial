@@ -6,6 +6,7 @@ import '../../theme/app_typography.dart';
 import '../navigation/app_menu_row.dart';
 import 'app_avatar.dart';
 import '../navigation/app_menu_surface.dart';
+import '../feedback/app_sound_scope.dart';
 
 class AppAvatarMenu extends StatefulWidget {
   const AppAvatarMenu({
@@ -64,6 +65,7 @@ class _AppAvatarMenuState extends State<AppAvatarMenu> {
     onOpened: () => _open = true,
     onCanceled: () => _open = false,
     onSelected: (value) {
+      AppSoundScope.emit(context, UiSound.menu);
       _open = false;
       if (value == 'photo') {
         widget.onPhoto?.call();

@@ -1,6 +1,7 @@
 enum FailureCode {
   cancelled,
   network,
+  resourceExhausted,
   permissionDenied,
   configuration,
   invalidData,
@@ -14,6 +15,11 @@ class AppFailure implements Exception {
   @override
   String toString() => message;
 }
+
+const firestoreQuotaFailure = AppFailure(
+  FailureCode.resourceExhausted,
+  'El servidor está temporalmente fuera de servicio. Inténtalo más tarde o mañana. Puedes consultar una copia guardada.',
+);
 
 String failureMessage(Object error) => error is AppFailure
     ? error.message

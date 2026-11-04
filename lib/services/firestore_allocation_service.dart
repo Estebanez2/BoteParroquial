@@ -17,6 +17,7 @@ final class FirestoreAllocationService implements AllocationService {
     'Una asignación tiene un formato no válido.',
   );
   static AppFailure _failure(FirebaseException error) => switch (error.code) {
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'No tienes permiso para cambiar estas asignaciones.',

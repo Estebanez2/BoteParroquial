@@ -7,6 +7,7 @@ import '../buttons/app_button.dart';
 import '../layout/app_bottom_sheet.dart';
 import 'app_text_field.dart';
 import 'app_color_plane.dart';
+import '../feedback/app_sound_scope.dart';
 
 /// Reusable local color selection. Returns a draft; never persists preferences.
 class AppColorField extends StatelessWidget {
@@ -28,6 +29,7 @@ class AppColorField extends StatelessWidget {
     onPressed: !enabled
         ? null
         : () async {
+            AppSoundScope.emit(context, UiSound.tap);
             final color = await AppBottomSheet.show<Color>(
               context,
               title: label,

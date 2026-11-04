@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../design_system.dart';
 import 'motion_lab_catalog.dart';
@@ -6,8 +5,8 @@ import 'motion_lab_transitions.dart';
 import 'motion_lab_buttons.dart';
 import 'motion_lab_bar.dart';
 
-/// Explicit temporary opt-in for testing APKs; never enabled in release.
-const motionLabEnabled = !kReleaseMode;
+/// Hidden at the user's request; keep the isolated catalogue for later reuse.
+const motionLabEnabled = false;
 const motionLabPath = '/testing/motion';
 
 enum _LabSection { pages, buttons, bars }

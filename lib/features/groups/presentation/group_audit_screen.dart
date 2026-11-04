@@ -56,7 +56,11 @@ class GroupAuditScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      '${history.events.length} cambios cargados',
+                      history.events.isNotEmpty || history.serverConfirmed
+                          ? '${history.events.length} cambios cargados'
+                          : history.error != null
+                          ? 'Historial no disponible'
+                          : 'Consultando cambios…',
                       style: t.headingSmall.copyWith(color: colors.onHero),
                     ),
                     Text(

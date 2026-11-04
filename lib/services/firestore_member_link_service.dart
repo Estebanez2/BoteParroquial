@@ -93,6 +93,7 @@ class FirestoreMemberLinkService implements MemberLinkService {
       });
     } on FirebaseException catch (error) {
       throw switch (error.code) {
+        'resource-exhausted' => firestoreQuotaFailure,
         'permission-denied' || 'unauthenticated' => const AppFailure(
           FailureCode.permissionDenied,
           'Ya no tienes permiso para cambiar esta vinculación.',

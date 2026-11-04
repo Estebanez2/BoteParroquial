@@ -4,6 +4,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_motion.dart';
 import '../../theme/app_radius.dart';
+import '../feedback/app_sound_scope.dart';
 
 class AppExpandableRow extends StatelessWidget {
   const AppExpandableRow({
@@ -21,6 +22,7 @@ class AppExpandableRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     return ExpansionTile(
+      onExpansionChanged: (_) => AppSoundScope.emit(context, UiSound.menu),
       initiallyExpanded: expanded,
       expansionAnimationStyle: AnimationStyle(
         duration: AppMotion.duration(context, AppMotion.durationSlow),

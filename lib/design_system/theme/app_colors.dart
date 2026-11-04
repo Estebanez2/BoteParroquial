@@ -35,6 +35,8 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color textPrimary, textSecondary, textMuted;
   final Color success, warning, danger, info, divider, outline;
   final Color hero, onHero;
+  Color get onImage => const Color(0xFFFFFFFF);
+  Color get imageScrim => const Color(0xFF000000);
 
   static const light = AppColors(
     primary: Color(0xFF2459C4),

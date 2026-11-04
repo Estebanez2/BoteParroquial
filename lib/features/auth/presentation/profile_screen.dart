@@ -102,28 +102,31 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: PhotoView(
-                target: PhotoTarget.account(_original.uid),
-                builder: (context, image, loading) => AppAvatar(
-                  name: _original.displayName,
-                  size: AppAvatarSize.editor,
-                  image: image,
-                  loading: loading,
+            Row(
+              children: [
+                PhotoView(
+                  target: PhotoTarget.account(_original.uid),
+                  builder: (context, image, loading) => AppAvatar(
+                    name: _original.displayName,
+                    size: AppAvatarSize.editor,
+                    image: image,
+                    loading: loading,
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            AppButton(
-              label: 'Cambiar mi foto',
-              variant: AppButtonVariant.ghost,
-              leadingIcon: Icons.photo_camera_outlined,
-              onPressed: () => showPhotoEditor(
-                context,
-                target: PhotoTarget.account(_original.uid),
-                name: _original.displayName,
-              ),
+                const SizedBox(width: AppSpacing.lg),
+                Expanded(
+                  child: AppButton(
+                    label: 'Cambiar mi foto',
+                    variant: AppButtonVariant.ghost,
+                    leadingIcon: Icons.photo_camera_outlined,
+                    onPressed: () => showPhotoEditor(
+                      context,
+                      target: PhotoTarget.account(_original.uid),
+                      name: _original.displayName,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.lg),
             AppCard(

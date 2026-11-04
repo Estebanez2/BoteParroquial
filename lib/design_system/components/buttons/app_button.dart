@@ -8,6 +8,7 @@ import '../../theme/app_gradients.dart';
 import '../../theme/app_shadows.dart';
 import '../feedback/loading_indicator.dart';
 import '../feedback/app_control_feedback.dart';
+import '../feedback/app_sound_scope.dart';
 
 enum AppButtonVariant { primary, secondary, outline, ghost, destructive }
 
@@ -26,6 +27,8 @@ class AppButton extends StatelessWidget {
     this.trailingIcon,
     this.validate,
     this.tapEffect,
+    this.sound,
+    this.soundEnabled = true,
   });
   final String label;
   final VoidCallback? onPressed;
@@ -35,6 +38,8 @@ class AppButton extends StatelessWidget {
   final IconData? leadingIcon, trailingIcon;
   final bool Function()? validate;
   final AppTapEffect? tapEffect;
+  final UiSound? sound;
+  final bool soundEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +95,9 @@ class AppButton extends StatelessWidget {
                 : AppTapEffect.wave),
         color: foreground,
         onActivate: onPressed,
+        soundEnabled: soundEnabled,
+        sound:
+            sound ?? (label.startsWith('Volver') ? UiSound.back : UiSound.tap),
         builder: (context, activate) => SizedBox(
           width: fullWidth ? double.infinity : null,
           child: DecoratedBox(

@@ -1,5 +1,71 @@
 Arquitectura
 
+D166: laboratorio de clics y capacidad temporal ClickSoundPreviewService retirados.
+UiSoundRepository/DeviceUiSoundService conservan flujo habitual y pools acotados;
+UiClickVariants elige tres press Retro y cuatro menús. Gate D165 permanece; no
+depende de la existencia de laboratorios ni de reproducción de audio.
+
+D164–D165: catálogo puro ClickSoundCatalog → ClickLabController → UiSoundRepository
+→ capacidad ClickSoundPreviewService del servicio nativo; reproductor de muestra
+único/cancelable, sin Firestore ni aplicación automática de selección. Gate visual
+AppInteractionHost en raíz, leases de feedback/onda/transición. No sustituye las
+validaciones de acceso ni suspende providers, cargas, journal o permisos reactivos.
+
+D161–D163: AppSystemBackSound coordina observers/dispatcher sin interceptar guards
+ni ejecutar audio nativo; emite AppSoundScope.back al pop de sistema/gesto. Panel
+de sonido solo recibe datos/callbacks. UI del alta → GroupDraftPhotoController
+(borrador local/picker) y GroupManagementController → repositories de grupo/foto
+→ servicios existentes. Foto tras alta confirmada; estado parcial guarda UID/ID
+durante el formulario para no repetir create. No hay SDK en widgets ni garantía
+atómica entre Firebase y Supabase.
+
+D159: UiSound.menu selecciona variantes de menú anteriores y tap las nuevas;
+SDK/pools/aleatoriedad fuera de widgets. D160: FirestoreAuditDecoder transforma
+Timestamp en valores antes/después a DateTime UTC, modelos sin Firebase; cursor
+con segundos/nanosegundos exactos. No recrear datos para subsanar un error lector.
+
+D157 sustituye AppSoundSurface global: ahora solo proporciona AppSoundScope,
+sin Listener de punteros ni emisión sobre información. Controles activos emiten
+semántica; UiClickVariants elige entre cuatro assets sin repetir. DeviceUiSoundService
+mantiene pools por asset y aplica nivel. WAV preparados fuera de ejecución/UI.
+GroupSectionTopBar observa permiso/grupo y compone PhotoView/AppCompactIdentity;
+no inicia consultas adicionales de historia ni cambia congelación de navegación.
+
+Invitaciones con imagen D155: InvitationController → InvitationShareRepository →
+GroupInvitationService/PhotoService/InvitationSharingService. El service nativo
+carga el logo y prepara el adjunto; el repositorio compone texto y valida acceso
+remoto, y el provider comprueba sesión/membresía/código actual antes del selector.
+No obtener URLs públicas para fotos privadas ni leer assets desde las pantallas.
+
+Actualización D152 (2026-11-04): AppSoundSurface emite toques globales pasivos y
+deduplica solo tap de componentes del mismo gesto. UiSoundRepository ya no agrupa
+ni filtra escritura/toques rápidos; mantiene gates de preferencia, nivel y primer
+plano. UiSoundSettings puro y JSON local versionado con migración del txt; volumen
+se aplica en memoria y se guarda al terminar el ajuste. No meter reproducción o
+escritura de preferencias en widgets, ni usar eventos sonoros como recibo económico.
+
+Sonidos locales D145 (2026-11-03)
+
+App* → AppSoundScope → callback de aplicación → provider → UiSoundRepository →
+UiSoundService/DeviceUiSoundService. SDK audioplayers, canal Android de consulta
+del silencio y archivo de preferencia encapsulados en service. Modelo UiSound
+puro. Repositorio limita ráfagas y respeta preferencia/primer plano; audio no se
+espera desde botones ni repositorios económicos. Preferencia local del dispositivo,
+sin datos de usuario/Firebase, también al consultar copias. El visor no adquiere
+acceso a SDK remoto por heredar este callback de presentación.
+
+Evolución de saldo y copias, D139–D141 (2026-11-03)
+
+BalanceTrendPanel → dashboardTrendProvider → MovementRepository → capacidad
+MovementTrendSource → FirestoreMovementService/FirestoreCashAggregateService.
+Seis cierres con sumas int64 REST y comprobación de sesión; reutiliza la señal
+de caja para actualizar. No leer todo el historial en la UI. Sin capacidad live,
+BalanceTrendRepository calcula desde movimientos completos, como en el visor
+SnapshotMovementService: no introduce SDK remoto en ese contenedor aislado.
+AppLineChart solo dibuja y selecciona puntos. FirestoreSnapshotService pagina
+notifications a 50 conforme a Rules; el resto mantiene su límite, readTime y
+revalidación. No cambiar permisos para resolver un error de forma de consulta.
+
 Ingreso y cuota inicial, D132 (2026-11-03)
 
 MovementEditorForm abre InitialQuotaPicker; AllocationController coordina la

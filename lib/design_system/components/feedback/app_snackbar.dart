@@ -4,6 +4,7 @@ import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../display/app_badge.dart';
+import 'app_sound_scope.dart';
 
 enum AppSnackbarVariant { success, error, warning, info }
 
@@ -13,6 +14,11 @@ abstract final class AppSnackbar {
     String message, {
     AppSnackbarVariant variant = AppSnackbarVariant.info,
   }) {
+    AppSoundScope.emit(context, switch (variant) {
+      AppSnackbarVariant.success => UiSound.success,
+      AppSnackbarVariant.error || AppSnackbarVariant.warning => UiSound.warning,
+      AppSnackbarVariant.info => UiSound.tap,
+    });
     final c = AppColors.of(context);
     final tone = switch (variant) {
       AppSnackbarVariant.success => AppTone.success,

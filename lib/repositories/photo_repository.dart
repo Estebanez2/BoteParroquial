@@ -155,6 +155,20 @@ class PhotoRepository {
     );
   }
 
+  Future<Uint8List?> editDraft(
+    Uint8List bytes, {
+    bool panoramic = false,
+    bool darkTheme = true,
+  }) {
+    if (bytes.isEmpty || bytes.length > 524288) {
+      throw const AppFailure(
+        FailureCode.invalidData,
+        'La imagen no tiene un tamaño válido.',
+      );
+    }
+    return _picker.edit(bytes, panoramic: panoramic, darkTheme: darkTheme);
+  }
+
   Future<void> remove(String uid, PhotoTarget target) async {
     _validate(uid, target);
     if (!(await _photos.access(uid, target)).canEdit) {

@@ -7,6 +7,7 @@ import '../../../models/economic_report.dart';
 import '../../../models/report_export.dart';
 import '../../groups/presentation/group_access_body.dart';
 import '../../groups/presentation/group_bottom_navigation.dart';
+import '../../groups/presentation/group_section_top_bar.dart';
 import '../../movements/providers/movement_providers.dart';
 import '../../persons/providers/person_providers.dart';
 import '../providers/report_providers.dart';
@@ -37,7 +38,8 @@ class EconomicReportScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => AppScaffold(
     maxWidth: AppSpacing.readingMax,
     bottomNavigation: GroupBottomNavigation(groupId: groupId, selectedIndex: 3),
-    appBar: AppTopBar(
+    appBar: GroupSectionTopBar(
+      groupId: groupId,
       title: 'Informes',
       leading: AppIconButton(
         icon: Icons.arrow_back_rounded,

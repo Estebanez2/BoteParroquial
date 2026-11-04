@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../feedback/app_sound_scope.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../theme/app_motion.dart';
@@ -92,7 +93,13 @@ class AppBottomNavigation extends StatelessWidget {
                               child: InkWell(
                                 onTap: index == selectedIndex
                                     ? null
-                                    : () => onSelected(index),
+                                    : () {
+                                        AppSoundScope.emit(
+                                          context,
+                                          UiSound.tap,
+                                        );
+                                        onSelected(index);
+                                      },
                                 borderRadius: AppRadius.control,
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(

@@ -206,6 +206,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       final router = container.read(routerProvider);
+      expect(find.text('Laboratorio de animaciones'), findsNothing);
+      expect(find.text('Preparando tu perfil…'), findsNothing);
       router.go('/groups/a');
       await tester.pumpAndSettle();
       expect(find.text('Actualización pendiente'), findsNothing);
@@ -231,6 +233,10 @@ void main() {
       expect(find.text('Informes del grupo'), findsNothing);
       final cover = tester.widget<AppCover>(find.byType(AppCover));
       expect(cover.panoramic, true);
+      expect(cover.titleOnImage, true);
+      expect(find.text('Registrar ingreso'), findsNothing);
+      expect(find.text('Registrar retirada'), findsNothing);
+      expect(find.byType(AppLineChart), findsOneWidget);
       expect(tester.getSize(find.byType(AppCover)).width, 360);
       tester.platformDispatcher.accessibilityFeaturesTestValue =
           const FakeAccessibilityFeatures(disableAnimations: false);

@@ -120,6 +120,8 @@ String auditDetailsText(Map<String, Object?> values, String currency) {
     'effectiveFromMonth': 'Mes de inicio',
     'monthlyFeeCents': 'Cuota',
     'amountCents': 'Importe',
+    'occurredAt': 'Fecha efectiva',
+    'type': 'Tipo de movimiento',
     'incomeId': 'Ingreso de origen',
     'month': 'Mes asignado',
     'movementId': 'Movimiento',
@@ -142,6 +144,9 @@ String auditDetailsText(Map<String, Object?> values, String currency) {
     'owner' => 'Propietario',
     'admin' => 'Administrador',
     'member' => 'Miembro',
+    'income' => 'Ingreso',
+    'withdrawal' => 'Retirada',
+    DateTime date => '${date.toUtc().toIso8601String()} (UTC)',
     _ => '$value',
   };
   return values.entries

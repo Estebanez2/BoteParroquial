@@ -44,6 +44,7 @@ class FirestoreMemberRoleService implements MemberRoleService {
     'role': role.name,
   };
   static AppFailure _failure(FirebaseException error) => switch (error.code) {
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'No se pudo autorizar el cambio. Actualiza los miembros; para transferir, verifica de nuevo Google.',

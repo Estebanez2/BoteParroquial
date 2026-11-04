@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../design_system/design_system.dart';
+import '../../../core/offline/offline_mode.dart';
 import '../providers/daily_snapshot_providers.dart';
 
 class DailyCopiesScreen extends ConsumerWidget {
@@ -37,6 +38,35 @@ class DailyCopiesScreen extends ConsumerWidget {
             onPressed: () =>
                 ref.read(dailyCopyControllerProvider.notifier).refresh(),
           ),
+          if (state.busy) ...[
+            const SizedBox(height: AppSpacing.md),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Preparando tu copia de hoy', style: type.headingSmall),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Comprobando acceso, descargando los datos y verificando el archivo de este móvil. Mantén la app abierta; las copias anteriores se conservan.',
+                    style: type.bodySmall,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const AppShimmer(
+                    label: 'Comprobando y guardando copia',
+                    child: Column(
+                      children: [
+                        AppSkeletonBlock(height: AppSpacing.iconLarge),
+                        SizedBox(height: AppSpacing.md),
+                        AppSkeletonBlock(height: AppSpacing.iconLarge),
+                        SizedBox(height: AppSpacing.md),
+                        AppSkeletonBlock(height: AppSpacing.controlHeight),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (state.error != null) ...[
             const SizedBox(height: AppSpacing.md),
             AppCard(
@@ -124,6 +154,33 @@ class DailyCopyEntryButton extends ConsumerWidget {
       variant: AppButtonVariant.outline,
       leadingIcon: Icons.offline_pin_outlined,
       onPressed: () => context.push('/offline'),
+    );
+  }
+}
+
+/// Offers the local catalog alongside a failed network retry, never in a copy.
+class DailyCopyRecovery extends ConsumerWidget {
+  const DailyCopyRecovery({
+    super.key,
+    required this.error,
+    required this.child,
+  });
+  final Object error;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (error is! AppFailure ||
+        ![
+          FailureCode.network,
+          FailureCode.resourceExhausted,
+        ].contains((error as AppFailure).code) ||
+        ref.watch(offlineReadOnlyProvider)) {
+      return child;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [child, const DailyCopyEntryButton()],
     );
   }
 }

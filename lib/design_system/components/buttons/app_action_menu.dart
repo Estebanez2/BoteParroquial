@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
 import '../navigation/app_menu_row.dart';
 import 'app_icon_button.dart';
+import '../feedback/app_sound_scope.dart';
 
 class AppActionMenu<T> extends StatefulWidget {
   const AppActionMenu({
@@ -28,10 +29,14 @@ class _AppActionMenuState<T> extends State<AppActionMenu<T>> {
       // The child already owns its tooltip and accessible label.
       tooltip: '',
       enabled: widget.enabled,
-      onSelected: widget.onSelected,
+      onSelected: (value) {
+        AppSoundScope.emit(context, UiSound.menu);
+        widget.onSelected(value);
+      },
       offset: const Offset(0, AppSpacing.sm),
       child: AppIconButton(
         icon: Icons.more_vert_rounded,
+        sound: UiSound.menu,
         label: widget.label,
         onPressed: widget.enabled
             ? () => _menu.currentState?.showButtonMenu()

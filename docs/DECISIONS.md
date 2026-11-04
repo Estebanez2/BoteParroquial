@@ -1,5 +1,88 @@
 Registro de decisiones
 
+D167 — Orientación vertical (2026-11-04)
+
+Usuario pide siempre vertical. portraitUp global y máscaras/manifiesto nativos
+solo portrait, full screen en iPad. No introducir rotación por pantalla ni intentar
+forzar la orientación de cámara/galería/Google externos o saltar restricciones del OS.
+
+D166 — Retro 6/7/8 y fin del laboratorio de clics (2026-11-04)
+
+El usuario elige Retro 6, 7 y 8 para press y ordena retirar laboratorio. Aplicar
+exactamente C086/C087/C088 como press_1–3, aleatorios sin repetición inmediata;
+menús y resto intactos. Retirar código/assets temporales y conservar gate D165.
+Sustituye la conservación temporal del laboratorio acordada en D164.
+
+D164 — Laboratorio temporal de clics (2026-11-04)
+
+El usuario pide muchas muestras para elegir y decide acceso SOLO debug/profile.
+104 códigos, doce familias y actuales; audición/favoritas no aplican selección.
+Conservar hasta que el usuario elija qué sonidos usar y cuándo retirar el lab.
+
+D165 — Bloqueo compartido durante animaciones (2026-11-04)
+
+El usuario pide impedir otras pulsaciones hasta terminar la animación activa,
+incluida la onda de entrada al grupo. Gate central, traspaso entre etapas y
+cancelación segura; no bloquear por red ni usarlo como permiso. Profile se firma
+con la clave existente para probar sobre la oficial sin desinstalar.
+
+D161 — Regreso del sistema y nueva familia de clic (2026-11-04)
+
+Sonar también al regresar mediante gesto confirmado, sin duplicar botón/raíz/shell
+ni sonar al cancelar. Mover el clic normal anterior a menús y crear variantes
+mecánicas suaves para clic normal; mantener aleatoriedad y preferencias.
+
+D162 — Ajustes de sonido compactos (2026-11-04)
+
+Usuario retira A tu manera, textos introductorios/explicativos indicados y frase
+de muestra; controles de sonido compactos con interruptor, nivel y prueba.
+
+D163 — Foto en creación de grupo y resultado parcial (2026-11-04)
+
+Crear grupo solo con campos y foto opcional, sin bloque UN NUEVO COMIENZO.
+Usuario elige conservar grupo si falla foto y reintentar sin otro alta. No tratar
+Firebase/Supabase como transacción única ni borrar el grupo al fallar la imagen.
+
+D159 — Familias de sonido por acción (2026-11-04)
+
+El usuario reserva los clics de D157 para desplegables y pide nuevos para botones
+normales. Menu usa tap_1–4; normal click_1–4, ambas aleatorias sin repetición
+inmediata. Back y preferencias se conservan; todos los cambios en biblioteca.
+
+D160 — Accesos de gestión directos (2026-11-04)
+
+El usuario elimina Gestionar este espacio y pide Editar grupo e Historial
+administrativo como Cuotas y etapas. Mantener permisos/rutas; no crear historial
+ficticio al reparar la lectura de los eventos ya existentes.
+
+D157 — Audio audible solo en acciones (2026-11-04)
+
+Sustituye toque global D152: espacios no interactivos y deshabilitados no suenan.
+Predeterminado 75 %, fuentes más audibles sin clipping, cuatro clics con pequeñas
+variaciones aleatorias sin repetición inmediata, sonido distinto al volver.
+Conservar volumen elegido, silencio/apagado/segundo plano y sonidos específicos.
+
+D158 — Identidad compacta e invitación visible (2026-11-04)
+
+Descripción, rol y moneda solo en Inicio del grupo; resto de pestañas con nombre
+y miniatura arriba derecha. Participantes muestra acceso directo para invitar.
+Conservar permisos y aislamiento de copias, sin compartir automáticamente.
+
+D155 — Invitación con imagen adjunta (2026-11-04)
+
+El usuario elige adjuntar la foto del grupo y texto con nombre/frase/enlace, sin
+imagen pública de vista previa. Si no existe foto usar logo local. Compartición
+explícita mediante selector nativo; verificar acceso e invitación vigentes.
+
+D156 — Firma Android independiente (2026-11-04)
+
+El usuario elige crear BoteParroquial.jks en su carpeta privada keystores, sin
+reutilizar las claves de sus otras apps. Release con firma propia, registro de
+certificado en Firebase y enlaces HTTPS. No usar debug como sustituto silencioso.
+Respaldar clave/configuración fuera de Git; nunca compartirlas junto al APK.
+La instalación sobre debug/profile exige retirar antes esa versión de pruebas;
+conservar datos remotos y advertir pérdida de copias/preferencias locales.
+
 Este documento contiene decisiones ya tomadas.
 
 No contiene propuestas.
@@ -1314,3 +1397,148 @@ usuario. Prueba 20:00 conservada para ese mismo destino. Sin preferencias,
 dinero, IAM, claves ni Rules nuevos. Un APK nuevo no era necesario para recibir
 push, sí para aplicar estos cambios de UI y la confirmación de Comprobar registro.
 Evidencia D135–D137: ACTION_SPACING_AND_PUSH_2026-11-03.md.
+
+D138 — Inicio, tarjetas y laboratorio (2026-11-03)
+
+El usuario retira temporalmente el laboratorio y elige portada con datos debajo
+para Tus grupos. Nombre sobre la foto arriba a la izquierda, sin duplicar acciones
+económicas de Actividad en Inicio ni mostrar su leyenda histórica. Resumen y login
+más destacados; retirar solo la carga fugaz de perfil, no esqueletos de datos reales.
+Mantener efectos elegidos y conservar fuentes del laboratorio ocultas.
+
+D139 — Evolución del saldo en seis meses (2026-11-03)
+
+El usuario elige saldo acumulado al cierre de los últimos seis meses frente a dos
+líneas de ingresos/retiradas. Movimientos activos por fecha efectiva, incluyendo
+el dinero anterior a esa ventana; mes actual en curso. No reconstruye el estado
+que tenían las correcciones al cierre. Agregados en vivo sin historial completo;
+cálculo puro sobre datos completos de la copia, respetando su mes congelado.
+
+D140 — Editor de foto actual y máscara circular (2026-11-03)
+
+El usuario quiere ver el avatar circular también al editar y reutilizar una foto
+subida sin borrarla/buscarla. Portadas siguen 16:9. Crear temporal dentro del
+directorio existente, limpiar únicamente el temporal propio y conservar la foto
+ante cancelación/error. No migrar imágenes ni prometer recuperar el original.
+
+D141 — Descarga autorizada y carga visible de copias (2026-11-03)
+
+El error comunicado es «No se pudo autorizar la lectura de estos datos». Se
+reproduce la consulta de notificaciones con límite 200 incompatible con Rules <=50.
+Paginar esa colección a 50 hasta agotarla, manteniendo readTime y controles de
+cuenta/permisos. No abrir reglas. Mostrar shimmer y explicación durante el trabajo;
+no afirmar que acabó ni sustituir una copia válida ante fallo.
+
+Evidencia D138–D141: HOME_COPIES_PHOTOS_2026-11-03.md. Pruebas físicas pendientes.
+
+D142 — Copia visible sin ocupar el contenido y acceso sin red (2026-11-03)
+
+El usuario confirma guardado/apertura y edición de foto actual; pide reducir
+aviso/salida del visor y añadir copias junto al reintento sin conexión. Franja
+compacta conserva fecha y solo lectura, con salida accesible. Errores de red de
+perfil/lista/acceso añaden acceso al catálogo, donde se elige una copia; no entrar
+automáticamente en la más reciente. No mostrar atajo por denegación de permisos
+ni dentro del visor aislado. Sin nuevas descargas automáticas ni cambios remotos.
+Evidencia: OFFLINE_COMPACT_ACCESS_2026-11-03.md.
+
+D143 — Diferenciar cuota remota y reintentar la dependencia (2026-11-03)
+
+El usuario comunica error al actualizar gráfica. Lectura remota devuelve 429
+RESOURCE_EXHAUSTED/Quota exceeded; Android declara red validada. Distinguir cuota
+de red/permisos, conservar caché sin falsa confirmación y ofrecer copias. El botón
+invalida caja para que su error anterior no impida reintentar gráfica. No activar
+facturación ni atribuir un contador concreto sin métricas.
+
+D144 — Identidad sobre portada y edición directa (2026-11-03)
+
+El usuario pide nombre en caja sobre la portada de cada tarjeta, descripción
+debajo y saldo a la derecha, sin Entrar separado. Tarjeta entera conserva entrada.
+Con texto ampliado se permite apilar para accesibilidad. Gestionar sin marco
+exterior adicional; editar grupo solo muestra formulario y controles necesarios,
+sin identidad ni cabecera promocional repetidas. Conserva controles de acceso.
+
+D145 — Sonidos suaves de interfaz con control local (2026-11-03)
+
+El usuario pide sonidos según acción y confirma activados por defecto a volumen
+bajo, respetar silencio y un interruptor local. Escritura por ráfagas, no por
+pulsación. Efectos Kenney CC0 locales para toque, escritura, confirmación, foto
+preparada y advertencia, por componentes comunes y servicio encapsulado.
+No sonar por cambios programáticos o contraseña. No bloquear acciones por audio;
+desactivar/suspender cancela inicios pendientes. Independientes de push.
+Ubicación: perfil → Ajustes de apariencia → Sonidos de la app.
+Evidencia D143–D145: QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md.
+
+D146 — Nombre sobre portada abajo y más discreto (2026-11-03)
+
+El usuario pide esquina inferior izquierda, texto menor y fondo más transparente.
+Aplicar en AppCover: headingSmall y caja alfa .28, scrim inferior .45 → 0; misma
+composición en Tus grupos e interior. Sin cambiar datos ni navegación. Nueva
+lectura confirma que continúa el 429 de cuota; no confundir con caída o pérdida
+de datos. Consulta de copia local sigue disponible sin reinstalar.
+
+D147 — Copias ante cuota del SDK y portada sin iniciales (2026-11-03)
+
+El usuario pide acceso a copias cuando ocurra 429 y una imagen predefinida Sin
+foto en lugar de las letras del grupo. Corregir el mapeo resource-exhausted del
+SDK en grupos/perfil/sincronización y ofrecer copias en la tarjeta fallida.
+AppCover usa icono/leyenda de imagen ausente con tokens; conservar fotos disponibles
+en caché y carga real. No modificar iniciales de avatares personales. La referencia
+09:00 Madrid del 04/11 es condicional a cuota gratuita diaria, no hora prometida.
+
+D148 — Portada ajustada al borde superior (2026-11-03)
+
+El usuario señala que la imagen cuadrada tapa el borde redondeado. Recortar las
+dos esquinas superiores de la portada en AppGroupPreview con radio interior,
+derivado de los tokens de radio y borde existentes. No cambiar callbacks ni
+espaciados de contenido. Explicar el límite de documentos leídos compartido por
+proyecto, sin equiparar consultas/acciones ni estimar uso real sin medición.
+
+D149 — Texto sencillo del 429 (2026-11-04)
+
+El usuario pide «servidor fuera de servicio, inténtalo más tarde o mañana».
+Mostrar ese mensaje temporal con acceso a copias, conservar resourceExhausted
+internamente y no prometer restablecimiento al día siguiente. No implica que se
+haya diagnosticado una caída total ni habilita cambios de plan/facturación.
+
+D150 — Completar conexiones de sonidos (2026-11-04)
+
+Auditar los tipos ya creados y completar acciones que aún no emitían feedback.
+Success económico solo tras save/cancel verdadero, también al corregir; error
+de controller warning. Casillas/switch en AppToggleTile; campos con acción,
+fotos interactivas, colores y gráfica por los componentes comunes. Sin sonido
+continuo por arrastre ni éxito por confirmar solo un borrador. Preservar D145:
+suaves, activados por defecto, ráfagas, silencio y preferencia local. Audio nativo
+sigue pendiente. Evidencia: SERVER_NOTICE_AND_SOUND_COMPLETION_2026-11-04.md.
+
+D151 — Logo suministrado y fondo del acceso (2026-11-04)
+
+El usuario pide mover LogoBoteParroquial.png de Descargas e integrarlo como marca
+e imagen semitransparente de login. Guardar original sin editar en assets/branding;
+transparencia de presentación en AppLogoBackdrop, no modificar el PNG. AppLogo
+y AppBrand compartidos; iconos nativos regenerables Android/iOS con herramienta
+de desarrollo. Recursos locales, sin Firebase/Supabase ni cambiar autenticación.
+Evidencia: APP_LOGO_2026-11-04.md; usuario comprueba físicamente.
+
+D152 — Todo toque y edición, con volumen local (2026-11-04)
+
+El usuario comunica sonidos intermitentes y pide cada click y texto escrito,
+sustituyendo la elección anterior de ráfagas. Capturar pointer-down global sin
+interferir en gestos; deduplicar solo tap semántico asociado al mismo toque. Sonar
+también en zonas libres/inicio de arrastre. No limitar por tiempo ni por efecto
+ocupado. Texto/password emite evento genérico por edición, nunca contenido.
+Volumen general 0–100 por móvil, prueba y migración de preferencia apagada previa;
+guardar al soltar slider. Silencio, apagado y segundo plano siguen prevaleciendo.
+
+D153 — Perfil horizontal y saldo primero (2026-11-04)
+
+El usuario pide Cambiar mi foto a la derecha del avatar. En Tus grupos, saldo
+mayor e inmediato bajo foto; descripción después, sin rol ni EUR redundantes.
+Conservar símbolo monetario y badges dentro del grupo, acciones/permisos y radios.
+Evidencia D152–D153: EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md.
+
+D154 — Descripción izquierda y saldo derecha (2026-11-04)
+
+El usuario precisa que ambos deben ir en la misma fila bajo la foto, descripción
+izquierda y saldo grande derecha. Sustituye la columna de D153; alinear arriba para
+que el saldo no baje con la altura de descripción. Adaptar texto ampliado y evitar
+recortar importes. Mantener retirada de EUR/rol y cambios de audio/perfil.

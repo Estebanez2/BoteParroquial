@@ -21,6 +21,7 @@ class FirestoreGroupInvitationService implements GroupInvitationService {
       FailureCode.network,
       'Se necesita conexión para confirmar esta operación. Actualiza antes de repetirla.',
     ),
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'No tienes permiso o la invitación ya no está disponible.',

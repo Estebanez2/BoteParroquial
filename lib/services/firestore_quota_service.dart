@@ -39,6 +39,7 @@ class FirestoreQuotaService implements QuotaService {
   }
 
   static AppFailure failure(FirebaseException error) => switch (error.code) {
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'No se pudo autorizar el cambio de cuotas o participación. Actualiza el grupo.',

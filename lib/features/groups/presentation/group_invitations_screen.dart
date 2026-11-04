@@ -38,7 +38,7 @@ class GroupInvitationsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Comparte el enlace o el código con las personas que quieras invitar. Cada cuenta entra con sus propios permisos.',
+              'Comparte una invitación con la foto del grupo, su nombre y el enlace. Si no tiene foto, se enviará el logo de la app. También puedes copiar el enlace o el código.',
               style: AppTypography.of(context).bodyMedium,
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -258,7 +258,7 @@ class _InvitationCard extends ConsumerWidget {
                         },
                 ),
                 AppButton(
-                  label: 'Compartir enlace',
+                  label: 'Compartir invitación',
                   variant: AppButtonVariant.outline,
                   leadingIcon: Icons.ios_share_rounded,
                   onPressed: busy

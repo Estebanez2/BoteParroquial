@@ -12,6 +12,7 @@ class FirestorePersonService implements PersonService {
   String newId(String groupId) =>
       _firestore.collection(FirestorePaths.persons(groupId)).doc().id;
   static AppFailure _failure(FirebaseException error) => switch (error.code) {
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'No tienes permiso para gestionar las personas de este grupo.',

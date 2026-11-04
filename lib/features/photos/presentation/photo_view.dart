@@ -78,7 +78,10 @@ class PhotoAvatar extends ConsumerWidget {
           label: 'Foto de $name',
           child: InkWell(
             borderRadius: BorderRadius.circular(AppRadius.pill),
-            onTap: () => showPhotoEditor(context, target: target, name: name),
+            onTap: () {
+              AppSoundScope.emit(context, UiSound.tap);
+              showPhotoEditor(context, target: target, name: name);
+            },
             child: avatar,
           ),
         );
@@ -95,10 +98,12 @@ class PhotoCover extends ConsumerWidget {
     this.interactive = false,
     this.panoramic = false,
     this.edgeToEdge = false,
+    this.titleOnImage = false,
   });
   final String groupId, name;
   final bool interactive;
   final bool panoramic, edgeToEdge;
+  final bool titleOnImage;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final readOnly = ref.watch(offlineReadOnlyProvider);
@@ -111,6 +116,7 @@ class PhotoCover extends ConsumerWidget {
           loading: loading,
           panoramic: panoramic,
           edgeToEdge: edgeToEdge,
+          titleOnImage: titleOnImage,
         );
         if (!interactive || readOnly) return cover;
         return Semantics(
@@ -118,11 +124,14 @@ class PhotoCover extends ConsumerWidget {
           label: 'Imagen del grupo $name',
           child: InkWell(
             borderRadius: AppRadius.card,
-            onTap: () => showPhotoEditor(
-              context,
-              target: PhotoTarget.group(groupId),
-              name: name,
-            ),
+            onTap: () {
+              AppSoundScope.emit(context, UiSound.tap);
+              showPhotoEditor(
+                context,
+                target: PhotoTarget.group(groupId),
+                name: name,
+              );
+            },
             child: cover,
           ),
         );

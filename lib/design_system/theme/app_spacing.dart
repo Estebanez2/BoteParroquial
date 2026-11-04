@@ -32,4 +32,5 @@ abstract final class AppSpacing {
   static const double floatingClearance = 96;
   static const double actionBorder = 1.5;
   static const double focusBorder = 2;
+  static const double chartHeight = 180;
 }

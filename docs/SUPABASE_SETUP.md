@@ -1,5 +1,14 @@
 # Fotos con Supabase — preparación
 
+Corrección 03/11/2026, D140: editar foto actual crea su carpeta temporal con
+createTemp sobre el directorio existente, reutiliza los bytes autorizados de la
+foto y limpia solo esa carpeta. Cancelar no cambia la foto. Avatares usan máscara
+circular en el editor nativo (archivo 1:1); portadas conservan máscara 16:9.
+Sustituye la indicación inferior de vista previa cuadrada de avatar; no migra
+fotos ni requiere desplegar funciones/bucket o cambiar permisos. Editor nativo
+real pendiente de confirmación; contrato de canal y flujo comprobados localmente.
+Evidencia: HOME_COPIES_PHOTOS_2026-11-03.md.
+
 Actualizado el 2026-11-02; las entregas inferiores conservan su fecha histórica.
 
 Ampliación 02/11/2026: editor de portadas de grupo y vista previa pasan a 16:9,

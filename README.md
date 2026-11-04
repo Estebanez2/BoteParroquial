@@ -1,5 +1,102 @@
 BoteParroquial
 
+D167, 04/11/2026: orientación vertical global en Flutter y configuración nativa
+Android/iOS. [Estado, límites y APK](docs/PORTRAIT_ONLY_2026-11-04.md).
+Release vigente 1.0.6+7 compilado, análisis limpio y firma oficial verificada.
+
+D166, 04/11/2026: Retro 6/7/8 elegidos para clics normales, aleatorios sin repetir;
+laboratorio de clics retirado por petición expresa. Se mantiene bloqueo de
+animaciones, menús y demás sonidos. Una regresión dirigida y análisis limpio.
+[Estado y APK](docs/SELECTED_RETRO_CLICKS_2026-11-04.md).
+Release vigente 1.0.5+6 compilado y firma oficial verificada: app-release.apk.
+
+D164–D165, 04/11/2026: laboratorio temporal con 104 clics SOLO debug/profile,
+favoritas/códigos, sin aplicar selección. Bloqueo compartido durante pulsación,
+onda de grupo y navegación para impedir acciones simultáneas. Cuatro casos y
+análisis limpio; APK profile 1.0.4+5 firmado como actualización de la oficial.
+La release previa no se ha recompilado. [Estado y uso](docs/CLICK_LAB_AND_INTERACTION_LOCK_2026-11-04.md).
+
+D161–D163, 04/11/2026: sonido al Atrás del sistema confirmado, clic mecánico nuevo
+y familia anterior para menús. Ajustes compactos sin textos pedidos y alta de grupo
+sin bloque introductorio, con foto opcional/recorte/reintento sin duplicar grupo.
+Siete casos dirigidos; usuario comprueba gesto/audio y subida real.
+[Estado y APK](docs/BACK_SOUND_COMPACT_SETTINGS_GROUP_PHOTO_2026-11-04.md).
+Release vigente 1.0.3+4 compilado, análisis limpio y misma firma oficial verificada.
+
+04/11/2026 D159–D160: clics normales nuevos; desplegables conservan los anteriores.
+Editar grupo/Historial administrativo visibles junto a Cuotas y etapas, sin
+Gestionar este espacio. Corregida lectura del historial: rechazaba las fechas de
+movimientos y descartaba la página. Ocho casos dirigidos y análisis limpio; usuario
+valida en móvil. [Detalle y APK](docs/MENUS_ACTIONS_AUDIT_2026-11-04.md).
+Release vigente 1.0.2+3 compilado y firma oficial comprobada: app-release.apk.
+
+04/11/2026 D157–D158: audio más audible, cuatro variantes de clic, sonido propio
+de Volver; zonas libres/deshabilitados silenciosos. 75 % predeterminado, conservar
+nivel elegido. Identidad completa solo en Inicio y compacta en resto de pestañas;
+Invitar visible en Participantes. Seis comprobaciones y análisis limpio; validación
+física pendiente. [Estado y APK](docs/SOUND_AND_GROUP_SECTIONS_2026-11-04.md).
+Release vigente 1.0.1+2 compilado y firma oficial verificada, misma ruta app-release.apk.
+
+04/11/2026, D155–D156: invitación con foto privada adjunta (logo si falta), nombre,
+frase y enlace. Firma Android propia creada y registrada en Firebase; asociación
+HTTPS actualizada. [Distribución y evidencia](docs/INVITATIONS_AND_ANDROID_RELEASE_2026-11-04.md).
+APK release compilado y firma verificada: `build/app/outputs/flutter-apk/app-release.apk`.
+Comprobación física pendiente; usuario instala/ejecuta. No compartir claves de firma.
+
+Corrección D154: debajo de la foto, descripción a la izquierda y saldo grande a
+la derecha, alineados arriba. Sin las etiquetas EUR/rol. [Estado y APK](docs/EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md).
+
+04/11/2026, D152–D153: sonido por cada toque/edición, sin filtros de ráfaga ni
+descarte por efecto ocupado. Volumen local 0–100 en Ajustes de apariencia con
+prueba y conservación de preferencias. Foto de perfil con botón a su derecha;
+saldo mayor bajo portada, descripción después y sin badges EUR/rol en Tus grupos.
+Seis casos dirigidos y análisis limpio; usuario valida en móvil.
+[Estado y APK](docs/EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md).
+
+Logo oficial integrado (D151, 04/11/2026) en assets/branding/bote_parroquial.png:
+iconos Android/iOS, cabecera y fondo suave del login. Un caso de acceso/logout
+superado y análisis limpio; apariencia física pendiente, usuario ejecuta.
+[Detalle y APK](docs/APP_LOGO_2026-11-04.md).
+
+04/11/2026, D149–D150: aviso del 429 «El servidor está temporalmente fuera de
+servicio. Inténtalo más tarde o mañana», con acceso a copias. Completadas conexiones
+de sonido que faltaban en guardado económico, fotos y selectores; casillas y
+switch por AppToggleTile. Tres comprobaciones dirigidas y análisis limpio;
+usuario valida sonido nativo. [Detalle y APK](docs/SERVER_NOTICE_AND_SOUND_COMPLETION_2026-11-04.md).
+
+Ajuste D148: portada de Tus grupos recortada en las esquinas superiores siguiendo
+el radio interior de la tarjeta, conservando su borde. El límite gratuito de
+Firestore es de lecturas de documentos por proyecto/día, no de pantallas abiertas.
+[Evidencia y APK](docs/QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md).
+
+Continuación D147: el error de cuota del SDK también muestra acceso a copias en
+Inicio/acceso de grupos. Portadas sin imagen usan el indicador Sin foto, sin
+reemplazar fotos disponibles en caché. [Evidencia y APK](docs/QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md).
+
+Ajuste D146: nombres de grupos abajo a la izquierda sobre la foto, más pequeños
+y con caja más transparente. Firestore sigue respondiendo 429 por cuota agotada
+en la nueva comprobación; usar las copias locales mientras rechaza lecturas.
+La actualización visual no elimina el límite remoto.
+
+Última continuación D143–D145: diagnosticado límite de Firestore (429), mensaje
+específico y reintento de caja/gráfica corregido. Tarjetas con nombre sobre foto,
+descripción/saldo debajo y edición simplificada. Sonidos suaves locales con
+interruptor en perfil → Ajustes de apariencia, respetando silencio y escritura
+por ráfagas. Seis casos dirigidos y análisis limpio; usuario valida sonido nativo
+y consulta real cuando Firebase vuelva a admitirla.
+[Estado y evidencia](docs/QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md).
+
+Última entrega (03/11/2026, D138–D141): Inicio y login renovados, tarjetas con
+portada, nombre sobre la foto y gráfica de saldo de seis meses. Laboratorio
+oculto. Corregidas la autorización de copias (páginas de avisos de 50) y la
+edición de fotos guardadas; avatares con máscara circular. Ocho casos dirigidos
+y análisis limpio; usuario confirma copia guardada/abierta y edición de foto actual.
+[Detalle y evidencia](docs/HOME_COPIES_PHOTOS_2026-11-03.md).
+
+Continuación D142: aviso del visor compacto y acceso a copias junto al reintento
+por error de red en Inicio/acceso a grupos. Se mantiene elección explícita y
+aislamiento de consulta. [Validación y APK](docs/OFFLINE_COMPACT_ACCESS_2026-11-03.md).
+
 Aplicación Flutter para gestionar botes de dinero compartidos.
 
 El proyecto comienza con un MVP pequeño para pocos administradores, pero su arquitectura está diseñada desde el principio para evolucionar hacia una aplicación con múltiples grupos, miembros, cuotas mensuales, estadísticas, notificaciones e historial completo.

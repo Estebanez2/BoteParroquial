@@ -15,9 +15,12 @@ class FirestoreGroupService implements GroupService {
 
   Stream<T> _guard<T>(Stream<T> stream) async* {
     try {
-      yield* stream;
+      await for (final value in stream) {
+        yield value;
+      }
     } on FirebaseException catch (error) {
       throw switch (error.code) {
+        'resource-exhausted' => firestoreQuotaFailure,
         'permission-denied' || 'unauthenticated' => const AppFailure(
           FailureCode.permissionDenied,
           'No tienes acceso a este espacio. Vuelve a tus grupos.',

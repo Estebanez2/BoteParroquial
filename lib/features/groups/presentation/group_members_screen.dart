@@ -12,6 +12,7 @@ import '../providers/member_link_providers.dart';
 import 'group_access_body.dart';
 import 'group_bottom_navigation.dart';
 import 'group_widgets.dart';
+import 'group_section_top_bar.dart';
 import 'member_link_editor.dart';
 import 'member_role_button.dart';
 import '../providers/member_role_providers.dart';
@@ -24,7 +25,8 @@ class GroupMembersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => AppScaffold(
     maxWidth: AppSpacing.readingMax,
     bottomNavigation: GroupBottomNavigation(groupId: groupId, selectedIndex: 2),
-    appBar: AppTopBar(
+    appBar: GroupSectionTopBar(
+      groupId: groupId,
       title: 'Miembros',
       leading: AppIconButton(
         icon: Icons.arrow_back_rounded,

@@ -14,14 +14,47 @@ import 'movement_dashboard_source.dart';
 import 'firestore_cash_aggregate_service.dart';
 import 'file_cash_cache.dart';
 import '../models/movement_cash_totals.dart';
+import '../models/monthly_balance.dart';
+import '../models/year_month.dart';
+import 'movement_trend_source.dart';
 
 class FirestoreMovementService
     implements
         MovementService,
         MovementDashboardSource,
-        InitialQuotaMovementService {
+        InitialQuotaMovementService,
+        MovementTrendSource {
   const FirestoreMovementService(this._firestore);
   final FirebaseFirestore _firestore;
+  @override
+  Future<List<MonthlyBalance>> loadBalanceTrend(
+    String groupId,
+    String uid,
+    YearMonth currentMonth,
+  ) async {
+    final service = FirestoreCashAggregateService(_firestore);
+    Future<MovementCashTotals> at(YearMonth month, String? readTime) =>
+        service.load(
+          groupId,
+          uid,
+          month.firstDayUtc,
+          beforeExclusive: month.addMonths(1).firstDayUtc,
+          atReadTime: readTime,
+          totalsOnly: true,
+        );
+    final firstMonth = currentMonth.addMonths(-5);
+    final first = await at(firstMonth, null);
+    final time = first.confirmedAt.toUtc().toIso8601String();
+    final rest = await Future.wait(
+      List.generate(5, (i) => at(firstMonth.addMonths(i + 1), time)),
+    );
+    return List.unmodifiable([
+      MonthlyBalance(firstMonth, first.balanceCents),
+      for (var i = 0; i < rest.length; i++)
+        MonthlyBalance(firstMonth.addMonths(i + 1), rest[i].balanceCents),
+    ]);
+  }
+
   static const _conflict = AppFailure(
     FailureCode.invalidData,
     'El movimiento ya ha cambiado o este envío ya existe con otros datos. Revisa el historial.',
@@ -31,6 +64,7 @@ class FirestoreMovementService
     'Un movimiento tiene un formato no válido.',
   );
   static AppFailure _failure(FirebaseException error) => switch (error.code) {
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'No tienes permiso para realizar esta operación en el grupo.',

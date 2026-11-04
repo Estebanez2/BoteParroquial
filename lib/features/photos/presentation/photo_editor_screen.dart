@@ -34,6 +34,14 @@ class _PhotoEditorScreenState extends ConsumerState<PhotoEditorScreen> {
   String get name => widget.name;
   @override
   Widget build(BuildContext context) {
+    ref.listen(photoControllerProvider(target), (previous, next) {
+      if (!next.busy && next.draft != null && next.draft != previous?.draft) {
+        AppSoundScope.emit(context, UiSound.photo);
+      }
+      if (next.error != null && next.error != previous?.error) {
+        AppSoundScope.emit(context, UiSound.warning);
+      }
+    });
     final state = ref.watch(photoControllerProvider(target));
     final access = ref.watch(photoAccessProvider(target));
     final photo = ref.watch(photoProvider(target));

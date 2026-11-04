@@ -1,4 +1,5 @@
 import '../../../core/routing/app_route.dart';
+import '../../../design_system/platform/app_system_back_sound.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -115,6 +116,7 @@ class SnapshotSessionView extends StatefulWidget {
 }
 
 class _SessionState extends State<SnapshotSessionView> {
+  final _backSound = AppSystemBackSound();
   late final ProviderContainer _container;
   late final GoRouter _router;
   @override
@@ -123,6 +125,7 @@ class _SessionState extends State<SnapshotSessionView> {
     _container = createSnapshotContainer(widget.data);
     String id(GoRouterState s) => s.pathParameters['groupId']!;
     _router = GoRouter(
+      observers: [_backSound.observer()],
       initialLocation: '/',
       routes: [
         appRoute(
@@ -131,6 +134,7 @@ class _SessionState extends State<SnapshotSessionView> {
               _SnapshotHome(data: widget.data, onExit: widget.onExit),
           routes: [
             ShellRoute(
+              observers: [_backSound.observer()],
               pageBuilder: (context, state, child) => AppMotionPage<void>(
                 key: state.pageKey,
                 motion: AppPageMotion.group,
@@ -257,35 +261,21 @@ class _SessionState extends State<SnapshotSessionView> {
       locale: const Locale('es'),
       supportedLocales: const [Locale('es')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      routerConfig: _router,
+      routeInformationProvider: _router.routeInformationProvider,
+      routeInformationParser: _router.routeInformationParser,
+      routerDelegate: _router.routerDelegate,
+      backButtonDispatcher: _backSound.dispatcher,
       builder: (context, child) => Column(
         children: [
           Material(
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const AppBadge(
-                        'COPIA GUARDADA · SOLO LECTURA',
-                        tone: AppTone.warning,
-                        icon: Icons.offline_pin_outlined,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        '${MaterialLocalizations.of(context).formatShortDate(widget.data.snapshot.asOf.toLocal())} · ${TimeOfDay.fromDateTime(widget.data.snapshot.asOf.toLocal()).format(context)}. Las cifras corresponden a ese instante; las fotos son las de caché.',
-                        style: AppTypography.of(context).bodySmall,
-                      ),
-                      AppButton(
-                        label: 'Volver a los datos actuales',
-                        variant: AppButtonVariant.ghost,
-                        onPressed: widget.onExit,
-                      ),
-                    ],
-                  ),
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                child: AppReadOnlyBanner(
+                  dateLabel:
+                      '${MaterialLocalizations.of(context).formatShortDate(widget.data.snapshot.asOf.toLocal())} · ${TimeOfDay.fromDateTime(widget.data.snapshot.asOf.toLocal()).format(context)}',
+                  onExit: widget.onExit,
                 ),
               ),
             ),

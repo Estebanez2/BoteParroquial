@@ -18,6 +18,7 @@ class MovementCashTotals {
       monthIncomeCents,
       monthWithdrawalCents;
   final bool cached;
+  int get balanceCents => incomeCents - withdrawalCents;
   void validate(String expectedGroup, DateTime expectedMonth) {
     if (groupId != expectedGroup ||
         monthStart != expectedMonth ||

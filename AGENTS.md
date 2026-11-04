@@ -1,5 +1,188 @@
 BoteParroquial — Instrucciones para agentes
 
+D167 (2026-11-04): usuario pide orientación siempre vertical. Arranque Flutter
+portraitUp antes de Firebase; MainActivity portrait; iOS/iPad solo Portrait y
+UIRequiresFullScreen true (sin multitarea iPad). No rotaciones por feature.
+No prometer bloqueo en pantallas Android 16+ >=600 dp ni en apps externas.
+Estado/APK: docs/PORTRAIT_ONLY_2026-11-04.md. Usuario instala/ejecuta; iOS sin compilar.
+Release vigente 1.0.6+7 compilado, portrait en manifiesto APK comprobado, análisis
+limpio y firma D156 verificada. 75.860.541 bytes. Rotación física aún pendiente.
+
+D166 (2026-11-04): usuario elige Retro 6/7/8 (C086/C087/C088) para press y pide
+retirar laboratorio de clics. press_1–3 son copias exactas de las muestras elegidas,
+110 ms/pico 0,85; tres variantes aleatorias sin repetir anterior. Menú mantiene
+click_1–4, restantes sonidos/preferencias intactos. Retirados ruta/acceso/pantalla/
+provider/catálogo/audición y 96 WAV lab_c*, generador de catálogo y test exclusivo.
+prepare_ui_sounds reproduce la selección. NO reintroducir laboratorio sin petición.
+Gate de animación D165 permanece. Una regresión por hashes/aleatoriedad y análisis
+limpio; estado/APK en docs/SELECTED_RETRO_CLICKS_2026-11-04.md. Usuario ejecuta.
+Sin cambios remotos ni nueva firma. Esta decisión sustituye conservación de D164.
+Release vigente 1.0.5+6 compilado, firma D156 y versión verificadas; 75.860.545
+bytes, app-release.apk. Usuario instala/ejecuta; sin aprobación acústica nueva.
+
+D164–D165 (2026-11-04): usuario pide laboratorio temporal de clics y elige SOLO
+debug/profile. Inicio → Laboratorio de clics, /testing/clicks; 104 muestras C001–104,
+familias/favoritas/nivel efímeros, audición sin aplicar sonidos ni doble clic.
+Una instancia de preview, no 104 pools; silencio/off/cero/segundo plano intactos.
+AppInteractionHost/gate compartido cubre feedback, onda de grupo y transiciones;
+handoff por frame, liberar al terminar/cancelar/desmontar, no esperar red/audio ni
+congelar permisos. No encolar toques. FormGuard mantiene protección y evita otra
+confirmación durante gate. Profile usa firma D156 existente para actualizar release
+sin desinstalar; debug intacto, no recrear claves. Cuatro casos y análisis limpio.
+Profile 1.0.4+5 compilado; release anterior no recompilada. Detalles/pending físicos:
+docs/CLICK_LAB_AND_INTERACTION_LOCK_2026-11-04.md. Usuario instala/ejecuta.
+No retirar laboratorio ni elegir/aplicar sonidos hasta indicación del usuario.
+
+D161–D163 (2026-11-04): AppSystemBackSound observa back del sistema y didPop de
+raíz/shell, más userGestureInProgress; deduplicar por solicitud, no por tiempo.
+Gesto cancelado/bloqueado no suena; botón mantiene back sin duplicar. Router de
+copias también integrado, sin SDKs nuevos. Menú usa click_1–4 anteriores y normal
+press_1–4 mecánicos filtrados de 65 ms. Apariencia usa AppSoundSettingsPanel compacto,
+sin textos retirados. Crear grupo sin GroupOpening, foto opcional local 16:9;
+GroupDraftPhotoController por formulario/UID, PhotoRepository.editDraft sin acceso
+remoto. Usuario elige conservar grupo si falla foto: mismo ID, alta confirmada
+no se repite; reintentar foto o quitar borrador/abrir grupo. No atomicidad entre
+Firebase y Supabase, ni borrador persistente tras cerrar. Guard protege foto/datos.
+Estado, siete casos y APK: docs/BACK_SOUND_COMPACT_SETTINGS_GROUP_PHOTO_2026-11-04.md.
+Usuario instala/ejecuta; sin despliegues, datos remotos o firma nuevos.
+Release vigente 1.0.3+4 compilado, análisis limpio, firma D156 y versión verificadas;
+75.831.857 bytes. Pruebas físicas de gesto, audio y cámara/subida aún pendientes.
+
+Continuación D159–D160 (2026-11-04): menú usa UiSound.menu con tap_1–4 anteriores;
+normal usa click_1–4 nuevos cálidos. Override semántico en botones de apertura;
+mantener silencio y no emitir doble. Inicio sustituye Gestionar por tiles Editar
+grupo/Historial administrativo junto a Cuotas y etapas. Historial fallaba porque
+decoder rechazaba occurredAt Timestamp antes/después: convertir en service a
+DateTime UTC, conservar cursor exacto y tipos/rutas protegidos. No ocultar errores
+con contador cero. Lectura remota acotada vio 21 eventos Catequesis y páginas de
+51 por DEMO; no total de DEMO ni autorización de escritura. Ocho casos dirigidos
+y análisis limpio. Evidencia/APK/pendientes: docs/MENUS_ACTIONS_AUDIT_2026-11-04.md.
+Sin cambios remotos; usuario instala/ejecuta.
+Release vigente 1.0.2+3 compilado, firma oficial D156 verificada y versión
+confirmada; 75.742.297 bytes. No equivale a aprobación física de audio/historial.
+
+Continuación D157–D158 (2026-11-04): sustituye sonido global de D152. Solo controles
+activos emiten; zonas libres/scroll/deshabilitados callan (feedback visual intacto).
+Volumen predeterminado 75 %, conservar elección guardada/off/silencio. Cuatro WAV
+de clic de 85 ms, aleatorios sin repetición inmediata; back descendente para botones
+Volver. Fuentes normalizadas a pico 0,92, no esperar audio para operar. Identidad
+extendida solo en Dashboard; GroupAccessBody por defecto sin cabecera. Secciones
+usan GroupSectionTopBar/AppCompactIdentity con nombre/miniatura derecha, permisos
+reactivos y fotos privadas. Participantes muestra Invitar al grupo; oculto en copia.
+Seis comprobaciones y análisis limpio; usuario valida audio/UI en móvil. Evidencia,
+APK y límites: docs/SOUND_AND_GROUP_SECTIONS_2026-11-04.md. Sin cambios remotos.
+Release vigente 1.0.1+2 compilado y firma D156 verificada; 75.704.221 bytes.
+Se actualiza sobre release anterior sin desinstalar; audio/UI físicos pendientes.
+
+Continuación D155–D156 (2026-11-04): invitación usa adjunto privado + nombre/frase/
+enlace; fallback logo solo si no hay foto. No publicar imágenes ni enviar WhatsApp
+automáticamente. InvitationShareRepository valida acceso remoto y sesión/código
+antes de compartir; limpiar temporales por cuenta. Firma Android independiente
+creada en Documents/keystores, configuración android/key.properties ignorada y
+respaldo privado externo. Nunca imprimir/incluir contraseñas o clave en Git/chat.
+Huellas registradas en Firebase y Hosting; no recrear clave ni usar debug en release.
+Ver docs/INVITATIONS_AND_ANDROID_RELEASE_2026-11-04.md para evidencia y pendientes.
+Usuario instala/ejecuta; firma nueva no actualiza APK debug/profile previo.
+Release compilado, firma v2 verificada con certificado propio, 75.656.635 bytes;
+APK build/app/outputs/flutter-apk/app-release.apk. Google/WhatsApp/enlaces físicos
+pendientes. No confundir certificado registrado con login probado en este release.
+
+Corrección D154 (2026-11-04): usuario precisa descripción a la izquierda y saldo
+grande a la derecha bajo la foto, no en columna. AppGroupPreview usa fila adaptativa,
+alineación superior y escala hacia abajo solo si el saldo no cabe. Sin EUR/rol ni
+botón Entrar; radios/entrada intactos. Texto ampliado permite apilar por accesibilidad.
+Solo ajuste visual, sin nuevas pruebas de negocio. Evidencia y APK en
+docs/EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md, D154; usuario instala/ejecuta.
+
+Continuación D152–D153 (2026-11-04): usuario sustituye ráfagas por cada toque y
+edición. AppSoundSurface captura pointer-down global (también zonas libres/inicio
+de scroll), sin duplicar tap semántico del mismo toque. No filtrar eventos rápidos
+ni descartar efectos ocupados; permitir superposición. Volumen local 0–100 y
+preview, JSON versionado compatible con txt off anterior. Silencio, apagado y
+segundo plano se mantienen. Texto/password solo emiten enum, nunca contenido.
+Perfil: foto y botón a su derecha. Home: saldo hero primero bajo portada,
+descripción después, sin badges EUR/rol; dentro se conservan. Seis casos dirigidos
+superados y análisis limpio, usuario instala/ejecuta. Evidencia y pendientes:
+docs/EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md. Sin cambios remotos.
+
+Continuación D151 (2026-11-04): logo del usuario movido de Descargas a
+assets/branding/bote_parroquial.png, original preservado y hash verificado.
+AppLogo/AppLogoBackdrop centralizan marca y fondo decorativo al 12 % del login;
+AppBrand y bienvenida usan la imagen real. No capturar toques ni enviar el logo
+a servicios remotos. Iconos Android/adaptativos e iOS generados con
+flutter_launcher_icons.yaml (herramienta dev 0.14.4). Un caso auth dirigido y
+análisis limpio; usuario instala/ejecuta. iOS solo recursos, sin compilar en Windows.
+Evidencia y APK: docs/APP_LOGO_2026-11-04.md. Sin cambios remotos.
+
+Continuación D149–D150 (2026-11-04): el 429 usa el texto solicitado «El servidor
+está temporalmente fuera de servicio. Inténtalo más tarde o mañana», conservando
+resourceExhausted y acceso a copias; no confundir texto de producto con diagnóstico
+de caída ni prometer recuperación mañana. Audio auditado: faltaban éxito de
+movimientos y controles directos. Movimiento emite success solo tras resultado
+confirmado; error de controller warning. AppToggleTile centraliza casillas/switch;
+campos con acción, fotos, colores y gráfica conectados. No usar saved() de guard
+globalmente: puede ser un borrador. Tres casos dirigidos y análisis limpio;
+usuario instala/ejecuta, audio nativo pendiente. Estado:
+docs/SERVER_NOTICE_AND_SOUND_COMPLETION_2026-11-04.md. Sin cambios remotos.
+
+Continuación D148 (2026-11-03): AppGroupPreview recorta la portada en las dos
+esquinas superiores con radio interior (AppRadius.large - actionBorder), para
+dejar visible el borde de la tarjeta. Cambio visual, sin nuevas pruebas de negocio.
+No confundir 50.000 lecturas gratuitas de documentos/día por proyecto con 50.000
+consultas o acciones de usuario. Reglas, escuchas, copias y worker también cuentan;
+no atribuir el agotamiento a una causa concreta sin métricas. Evidencia en
+docs/QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md, D148. Usuario instala/ejecuta.
+
+Continuación D147 (2026-11-03): resource-exhausted del SDK se conserva como
+resourceExhausted en grupos/perfil/sincronización, no unknown/network; Inicio
+ofrece copias también en error de una tarjeta individual. AppCover reemplaza
+iniciales por icono/leyenda Sin foto cuando no hay imagen; conservar fotos de
+caché y esqueletos de carga. Los avatares personales mantienen sus iniciales.
+Dos regresiones dirigidas; evidencia y límites en
+docs/QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md, D147. No prometer hora exacta de
+recuperación del 429: 09:00 Madrid del 04/11 solo si es la cuota diaria gratuita.
+
+Continuación D146 (2026-11-03): nombres sobre portadas abajo a la izquierda,
+headingSmall, caja más transparente, por AppCover compartido (tarjetas e interior).
+Nueva consulta remota sigue dando 429 RESOURCE_EXHAUSTED/Quota exceeded incluso
+al leer grupos. No atribuirlo a Internet, borrado de datos o caída total. Ofrecer
+consulta de copias sin cambiar plan/facturación. Análisis limpio, usuario ejecuta;
+evidencia en docs/QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md, continuación D146.
+
+Continuación 2026-11-03 D143–D145: diagnóstico real Firestore 429
+RESOURCE_EXHAUSTED/Quota exceeded, antes de sumas; Android con red validada.
+No confundir límite remoto con falta de Internet ni activar facturación.
+Actualizar gráfica reintenta su caja dependiente; cuota conserva archivos y
+ofrece copias, sin presentarlas como datos actuales. Tarjetas con nombre en caja
+sobre foto y descripción/saldo debajo, sin Entrar; edición sin cabecera repetida
+y Gestionar sin tarjeta exterior. Sonidos locales Kenney CC0 vía AppSoundScope →
+provider → repository → service; activados por defecto, suaves, silencio nativo,
+interruptor local y escritura por ráfagas. No sonar por contraseña/restauración,
+no esperar audio para operar ni confirmar guardado al mero toque. El usuario
+instala/ejecuta; no dar por acreditado sonido nativo ni gráfica real tras cuota.
+Evidencia: docs/QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md. Sin cambios remotos.
+
+Continuación D142, 2026-11-03: usuario confirma copia guardada/abierta y edición de
+foto actual en su móvil. No extender a iOS/otros roles/dispositivos. Visor recibe
+AppReadOnlyBanner compacto con fecha, solo lectura y salida; errores de red de
+Inicio/acceso ofrecen catálogo junto al reintento. No saltar automáticamente a
+otra fuente ni mostrar escape desde el visor aislado. Sin permisos/datos remotos.
+Estado y evidencia: docs/OFFLINE_COMPACT_ACCESS_2026-11-03.md.
+
+Entrega vigente 2026-11-03, D138–D141: laboratorio oculto (código conservado),
+tarjetas de grupo con portada/datos debajo y login renovado. Nombre sobre foto,
+Inicio sin acciones económicas duplicadas ni leyenda histórica; resumen destacado.
+Gráfica de seis cierres acumulados por fecha efectiva con movimientos active,
+incluye saldo anterior; mes actual en curso. Agregados REST en vivo y cálculo
+puro en copia aislada; dinero entero, double solo para geometría. Copias fallaban
+por pedir 200 avisos donde Rules exige <=50: paginar a 50, sin relajar permisos.
+Editar foto actual usa temporal creado correctamente; avatar con máscara circular,
+portada 16:9. Ocho casos dirigidos, análisis limpio y profile compilado; usuario
+instala/ejecuta. Posteriormente confirma descarga/apertura y editor nativo;
+no extender la confirmación a otros móviles, roles ni iOS.
+Sin Rules/índices/despliegues/datos nuevos. Estado y evidencia:
+docs/HOME_COPIES_PHOTOS_2026-11-03.md. Guía móvil sección 26.
+
 Continuación 2026-11-03 D135–D137: AppButton reserva márgenes exteriores centrales;
 AppExpandableRow tiene borde/fondo de acción (incluye Gestionar este espacio).
 AppControlFeedback usa StackFit.passthrough para conservar todo el hueco asignado;

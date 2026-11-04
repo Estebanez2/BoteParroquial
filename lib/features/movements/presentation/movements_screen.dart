@@ -8,6 +8,7 @@ import '../../../design_system/design_system.dart';
 import '../../../models/movement.dart';
 import '../../groups/presentation/group_access_body.dart';
 import '../../groups/presentation/group_bottom_navigation.dart';
+import '../../groups/presentation/group_section_top_bar.dart';
 import '../providers/movement_providers.dart';
 import 'pending_movement_card.dart';
 import 'movement_history_controls.dart';
@@ -32,7 +33,8 @@ class MovementsScreen extends ConsumerWidget {
         groupId: groupId,
         selectedIndex: 1,
       ),
-      appBar: AppTopBar(
+      appBar: GroupSectionTopBar(
+        groupId: groupId,
         title: 'Movimientos',
         leading: AppIconButton(
           icon: Icons.arrow_back_rounded,

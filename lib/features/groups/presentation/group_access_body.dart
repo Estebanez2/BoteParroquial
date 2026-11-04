@@ -8,6 +8,7 @@ import '../../../models/group_member.dart';
 import '../providers/group_providers.dart';
 import 'group_sync_notice.dart';
 import 'group_identity_header.dart';
+import '../../offline/presentation/daily_copies_screen.dart';
 
 class GroupAccessBody extends ConsumerWidget {
   const GroupAccessBody({
@@ -15,10 +16,12 @@ class GroupAccessBody extends ConsumerWidget {
     required this.groupId,
     required this.builder,
     this.edgeToEdge = false,
+    this.showIdentity = false,
   });
   final String groupId;
   final Widget Function(Group group, GroupMember membership) builder;
   final bool edgeToEdge;
+  final bool showIdentity;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final memberships = ref.watch(membershipsProvider);
@@ -30,12 +33,15 @@ class GroupAccessBody extends ConsumerWidget {
       );
     }
     if (memberships.hasError) {
-      return EmptyState(
-        icon: Icons.cloud_off_outlined,
-        title: 'No pudimos comprobar tu acceso',
-        description: failureMessage(memberships.error!),
-        actionLabel: 'Reintentar acceso',
-        onAction: () => ref.invalidate(membershipsProvider),
+      return DailyCopyRecovery(
+        error: memberships.error!,
+        child: EmptyState(
+          icon: Icons.cloud_off_outlined,
+          title: 'No pudimos comprobar tu acceso',
+          description: failureMessage(memberships.error!),
+          actionLabel: 'Reintentar acceso',
+          onAction: () => ref.invalidate(membershipsProvider),
+        ),
       );
     }
     if (member == null) {
@@ -56,12 +62,15 @@ class GroupAccessBody extends ConsumerWidget {
             layout: AppSkeletonLayout.group,
             label: 'Preparando tu espacio…',
           ),
-          error: (error, _) => EmptyState(
-            icon: Icons.cloud_off_outlined,
-            title: 'No pudimos abrir el espacio',
-            description: failureMessage(error),
-            actionLabel: 'Reintentar',
-            onAction: () => ref.invalidate(groupProvider(groupId)),
+          error: (error, _) => DailyCopyRecovery(
+            error: error,
+            child: EmptyState(
+              icon: Icons.cloud_off_outlined,
+              title: 'No pudimos abrir el espacio',
+              description: failureMessage(error),
+              actionLabel: 'Reintentar',
+              onAction: () => ref.invalidate(groupProvider(groupId)),
+            ),
           ),
           data: (group) => group == null
               ? const EmptyState(
@@ -80,12 +89,14 @@ class GroupAccessBody extends ConsumerWidget {
                           : EdgeInsets.zero,
                       child: GroupSyncNotice(groupId: groupId),
                     ),
-                    GroupIdentityHeader(
-                      group: group,
-                      membership: member,
-                      panoramic: edgeToEdge,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
+                    if (showIdentity) ...[
+                      GroupIdentityHeader(
+                        group: group,
+                        membership: member,
+                        panoramic: edgeToEdge,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                    ],
                     Padding(
                       padding: edgeToEdge
                           ? const EdgeInsets.fromLTRB(

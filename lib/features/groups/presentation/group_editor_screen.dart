@@ -8,7 +8,7 @@ import '../../../models/group.dart';
 import '../../../models/group_input.dart';
 import '../providers/group_management_providers.dart';
 import 'group_access_body.dart';
-import 'group_widgets.dart';
+import '../../../models/photo_target.dart';
 
 class GroupEditorScreen extends ConsumerStatefulWidget {
   const GroupEditorScreen({super.key, this.groupId});
@@ -45,6 +45,7 @@ class _GroupEditorScreenState extends ConsumerState<GroupEditorScreen> {
         ? _GroupForm(key: ValueKey(_id), id: _id, guard: _guard)
         : GroupAccessBody(
             groupId: _id,
+            showIdentity: false,
             builder: (group, _) => ref.watch(canEditGroupProvider(_id))
                 ? _GroupForm(
                     key: ValueKey(_id),
@@ -125,9 +126,20 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
     final provider = groupManagementControllerProvider(widget.id);
     final action = ref.watch(provider),
         controller = ref.read(provider.notifier);
+    ref.listen(groupDraftPhotoProvider(widget.id), (previous, next) {
+      if (!next.busy && next.draft != null && next.draft != previous?.draft) {
+        AppSoundScope.emit(context, UiSound.photo);
+      }
+      if (next.error != null && next.error != previous?.error) {
+        AppSoundScope.emit(context, UiSound.warning);
+      }
+    });
+    final photo = ref.watch(groupDraftPhotoProvider(widget.id));
+    final locked = action.isLoading || photo.busy;
+    final fieldsLocked = locked || controller.groupCreated;
     return AppFormGuard(
       key: widget.guard,
-      busy: action.isLoading,
+      busy: locked,
       changes: Listenable.merge([_name, _description]),
       isDirty: () =>
           _name.text != (_original?.name ?? '') ||
@@ -135,24 +147,95 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
           (_original == null &&
               (_currency != 'EUR' ||
                   _timeZone != 'Europe/Madrid' ||
-                  !_createPerson)),
+                  !_createPerson)) ||
+          photo.draft != null,
       child: Form(
         key: _form,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            GroupOpening(
-              eyebrow: _original == null
-                  ? 'UN NUEVO COMIENZO'
-                  : 'LA IDENTIDAD DE TU ESPACIO',
-              title: _original == null
-                  ? 'Dale un lugar\na lo que compartís.'
-                  : 'Un grupo con\nnombre propio.',
-              description: _original == null
-                  ? 'Crea un fondo independiente. Tú serás su propietario y decidirás quién forma parte.'
-                  : 'Ajusta el nombre y la descripción conservando su historia.',
-            ),
-            const SizedBox(height: AppSpacing.xl),
+            if (_original == null) ...[
+              if (photo.draft != null)
+                AppCover(
+                  name: _name.text,
+                  panoramic: true,
+                  image: photo.draft == null ? null : MemoryImage(photo.draft!),
+                  loading: photo.busy,
+                ),
+              Text(
+                'Foto del grupo · opcional',
+                style: AppTypography.of(context).labelSmall,
+              ),
+              AppAdaptiveRow(
+                children: [
+                  AppButton(
+                    label: 'Galería',
+                    leadingIcon: Icons.photo_library_outlined,
+                    onPressed: locked
+                        ? null
+                        : () => ref
+                              .read(groupDraftPhotoProvider(widget.id).notifier)
+                              .select(
+                                PhotoSource.gallery,
+                                darkTheme:
+                                    Theme.of(context).brightness ==
+                                    Brightness.dark,
+                              ),
+                  ),
+                  AppButton(
+                    label: 'Cámara',
+                    leadingIcon: Icons.camera_alt_outlined,
+                    variant: AppButtonVariant.outline,
+                    onPressed: locked
+                        ? null
+                        : () => ref
+                              .read(groupDraftPhotoProvider(widget.id).notifier)
+                              .select(
+                                PhotoSource.camera,
+                                darkTheme:
+                                    Theme.of(context).brightness ==
+                                    Brightness.dark,
+                              ),
+                  ),
+                ],
+              ),
+              if (photo.draft != null)
+                AppAdaptiveRow(
+                  children: [
+                    AppButton(
+                      label: 'Editar foto',
+                      leadingIcon: Icons.crop_rotate_outlined,
+                      variant: AppButtonVariant.ghost,
+                      onPressed: locked
+                          ? null
+                          : () => ref
+                                .read(
+                                  groupDraftPhotoProvider(widget.id).notifier,
+                                )
+                                .edit(
+                                  darkTheme:
+                                      Theme.of(context).brightness ==
+                                      Brightness.dark,
+                                ),
+                    ),
+                    AppButton(
+                      label: 'Quitar foto',
+                      leadingIcon: Icons.close_rounded,
+                      variant: AppButtonVariant.ghost,
+                      onPressed: locked
+                          ? null
+                          : ref
+                                .read(
+                                  groupDraftPhotoProvider(widget.id).notifier,
+                                )
+                                .clear,
+                    ),
+                  ],
+                ),
+              if (photo.error != null)
+                Text(photo.error!, style: AppTypography.of(context).bodySmall),
+              const SizedBox(height: AppSpacing.lg),
+            ],
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -161,7 +244,7 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
                     label: 'Nombre del grupo',
                     controller: _name,
                     validator: controller.validateName,
-                    enabled: !action.isLoading,
+                    enabled: !fieldsLocked,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   AppTextField(
@@ -169,7 +252,7 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
                     controller: _description,
                     maxLines: 3,
                     validator: controller.validateDescription,
-                    enabled: !action.isLoading,
+                    enabled: !fieldsLocked,
                   ),
                 ],
               ),
@@ -184,7 +267,7 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
                       label: 'Moneda · no podrá cambiarse',
                       value: _currency,
                       options: ref.watch(groupCurrenciesProvider),
-                      enabled: !action.isLoading,
+                      enabled: !fieldsLocked,
                       onChanged: (value) {
                         if (value != null) setState(() => _currency = value);
                       },
@@ -194,7 +277,7 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
                       label: 'Calendario del grupo',
                       value: _timeZone,
                       options: ref.watch(groupTimeZonesProvider),
-                      enabled: !action.isLoading,
+                      enabled: !fieldsLocked,
                       onChanged: (value) {
                         if (value != null) setState(() => _timeZone = value);
                       },
@@ -208,7 +291,7 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
                         true: 'Crear una persona vinculada a mí',
                         false: 'Empezar sin mi persona interna',
                       },
-                      enabled: !action.isLoading,
+                      enabled: !fieldsLocked,
                       onChanged: (value) {
                         if (value != null) {
                           setState(() => _createPerson = value);
@@ -237,12 +320,18 @@ class _GroupFormState extends ConsumerState<_GroupForm> {
               ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: _original == null ? 'Crear mi grupo' : 'Guardar grupo',
+              label: _original == null
+                  ? controller.groupCreated
+                        ? photo.draft == null
+                              ? 'Abrir mi grupo'
+                              : 'Reintentar guardar foto'
+                        : 'Crear mi grupo'
+                  : 'Guardar grupo',
               validate: () => _form.currentState?.validate() ?? false,
               leadingIcon: Icons.check_rounded,
               fullWidth: true,
-              loading: action.isLoading,
-              onPressed: _save,
+              loading: locked,
+              onPressed: locked ? null : _save,
             ),
             if (_original != null &&
                 ref.watch(canDeleteGroupProvider(widget.id))) ...[

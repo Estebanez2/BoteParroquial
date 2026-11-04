@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_menu_row.dart';
 import '../buttons/app_button.dart';
+import '../feedback/app_sound_scope.dart';
 
 class AppFloatingActions<T> extends StatefulWidget {
   const AppFloatingActions({
@@ -25,7 +26,10 @@ class _AppFloatingActionsState<T> extends State<AppFloatingActions<T>> {
     return PopupMenuButton<T>(
       key: _menu,
       tooltip: widget.label,
-      onSelected: widget.onSelected,
+      onSelected: (value) {
+        AppSoundScope.emit(context, UiSound.menu);
+        widget.onSelected(value);
+      },
       itemBuilder: (_) => [
         for (final item in widget.items.entries)
           PopupMenuItem<T>(
@@ -39,6 +43,7 @@ class _AppFloatingActionsState<T> extends State<AppFloatingActions<T>> {
       child: AppButton(
         label: widget.label,
         leadingIcon: Icons.add_rounded,
+        sound: UiSound.menu,
         onPressed: () => _menu.currentState?.showButtonMenu(),
       ),
     );

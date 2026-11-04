@@ -1,4 +1,5 @@
 import '../core/routing/app_route.dart';
+import '../design_system/platform/app_system_back_sound.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -37,11 +38,14 @@ import '../core/routing/invitation_links.dart';
 import '../features/groups/presentation/participants_screen.dart';
 import '../features/settings/presentation/appearance_screen.dart';
 
+final systemBackSoundProvider = Provider((ref) => AppSystemBackSound());
+
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
   ref.listen(authStateProvider, (previous, next) => refresh.value++);
   ref.listen(firebaseStartupProvider, (previous, next) => refresh.value++);
   final router = GoRouter(
+    observers: [ref.read(systemBackSoundProvider).observer()],
     refreshListenable: refresh,
     redirect: (context, state) {
       final path = state.uri.path;
@@ -86,6 +90,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (c, s) => const GroupEditorScreen(),
           ),
           ShellRoute(
+            observers: [ref.read(systemBackSoundProvider).observer()],
             pageBuilder: (context, state, child) => AppMotionPage<void>(
               key: state.pageKey,
               motion: AppPageMotion.group,

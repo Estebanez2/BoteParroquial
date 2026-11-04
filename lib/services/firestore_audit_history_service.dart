@@ -14,6 +14,7 @@ final class FirestoreAuditHistoryService implements AuditHistoryService {
       .orderBy('createdAt', descending: true)
       .orderBy(FieldPath.documentId, descending: true);
   static AppFailure _failure(FirebaseException error) => switch (error.code) {
+    'resource-exhausted' => firestoreQuotaFailure,
     'permission-denied' || 'unauthenticated' => const AppFailure(
       FailureCode.permissionDenied,
       'Ya no tienes permiso para consultar este historial.',
@@ -51,10 +52,11 @@ final class FirestoreAuditHistoryService implements AuditHistoryService {
   @override
   Stream<AuditPage> watchHead(String groupId) async* {
     try {
-      yield* _query(groupId)
-          .limit(pageSize + 1)
-          .snapshots(includeMetadataChanges: true)
-          .map((data) => _page(groupId, data));
+      await for (final snapshot in _query(
+        groupId,
+      ).limit(pageSize + 1).snapshots(includeMetadataChanges: true)) {
+        yield _page(groupId, snapshot);
+      }
     } on FirebaseException catch (error) {
       throw _failure(error);
     }

@@ -1,9 +1,11 @@
 import 'dart:math' as math;
+import 'app_sound_scope.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_motion.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
+import '../../platform/app_interaction_gate.dart';
 
 enum AppTapEffect { shine, wave, none }
 
@@ -19,6 +21,8 @@ class AppControlFeedback extends StatefulWidget {
     this.effect = AppTapEffect.wave,
     this.radius = AppRadius.control,
     this.color,
+    this.sound = UiSound.tap,
+    this.soundEnabled = true,
   });
   final Widget Function(BuildContext, VoidCallback) builder;
   final VoidCallback? onActivate;
@@ -27,6 +31,8 @@ class AppControlFeedback extends StatefulWidget {
   final AppTapEffect effect;
   final BorderRadius radius;
   final Color? color;
+  final UiSound sound;
+  final bool soundEnabled;
   @override
   State<AppControlFeedback> createState() => _AppControlFeedbackState();
 }
@@ -44,22 +50,34 @@ class _AppControlFeedbackState extends State<AppControlFeedback>
   bool get _reduced => MediaQuery.disableAnimationsOf(context);
 
   Future<void> _activate() async {
-    if (_running || widget.busy) return;
+    if (_running ||
+        widget.busy ||
+        AppInteractionScope.maybeOf(context)?.busy == true) {
+      return;
+    }
     if (!widget.enabled || widget.onActivate == null) {
       await _play(_FeedbackKind.unavailable);
       return;
     }
     if (widget.validate?.call() == false) {
+      AppSoundScope.emit(context, UiSound.warning);
       if (mounted) await _play(_FeedbackKind.invalid);
       return;
     }
     if (!mounted || !widget.enabled || widget.busy) return;
+    if (widget.soundEnabled) AppSoundScope.emit(context, widget.sound);
     if (_reduced || widget.effect == AppTapEffect.none) {
       widget.onActivate?.call();
       return;
     }
     _running = true;
     _kind = _FeedbackKind.tap;
+    final gate = AppInteractionScope.maybeOf(context);
+    AppInteractionLease? lease = gate?.tryAcquire();
+    if (gate != null && lease == null) {
+      _running = false;
+      return;
+    }
     try {
       await _controller.forward(from: 0).orCancel;
       if (mounted && widget.enabled && !widget.busy) {
@@ -70,11 +88,18 @@ class _AppControlFeedbackState extends State<AppControlFeedback>
           await _play(_FeedbackKind.invalid);
           return;
         }
-        widget.onActivate?.call();
+        if (lease != null) {
+          final handoff = lease;
+          lease = null;
+          gate!.handoff(handoff, () => widget.onActivate?.call());
+        } else {
+          widget.onActivate?.call();
+        }
       }
     } on TickerCanceled {
       // An access/busy change or disposal cancels the pending action.
     } finally {
+      lease?.release();
       _running = false;
     }
   }
@@ -83,11 +108,13 @@ class _AppControlFeedbackState extends State<AppControlFeedback>
     if (_running || _reduced || widget.busy) return;
     _running = true;
     _kind = kind;
+    final lease = AppInteractionScope.maybeOf(context)?.hold();
     try {
       await _controller.forward(from: 0).orCancel;
     } on TickerCanceled {
       // No callback is attached to rejected attempts.
     } finally {
+      lease?.release();
       _running = false;
     }
   }

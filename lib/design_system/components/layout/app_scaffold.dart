@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_gradients.dart';
 import '../navigation/app_navigation_host.dart';
+import '../../platform/app_interaction_gate.dart';
 
 class AppScaffold extends StatelessWidget {
   const AppScaffold({
@@ -10,6 +11,7 @@ class AppScaffold extends StatelessWidget {
     this.appBar,
     this.bottomNavigation,
     this.floatingAction,
+    this.background,
     this.scroll = true,
     this.padding = const EdgeInsets.all(AppSpacing.page),
     this.maxWidth = AppSpacing.contentMax,
@@ -18,6 +20,7 @@ class AppScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final Widget? bottomNavigation;
   final Widget? floatingAction;
+  final Widget? background;
   final bool scroll;
   final EdgeInsetsGeometry padding;
   final double maxWidth;
@@ -38,16 +41,36 @@ class AppScaffold extends StatelessWidget {
         ),
       ),
     );
-    return Scaffold(
-      appBar: appBar,
-      bottomNavigationBar: AppNavigationHost.contains(context)
-          ? null
-          : bottomNavigation,
-      floatingActionButton: floatingAction,
-      body: DecoratedBox(
-        decoration: BoxDecoration(gradient: AppGradients.canvas(context)),
-        child: SafeArea(
-          child: scroll ? SingleChildScrollView(child: content) : content,
+    return AppInteractionRouteGuard(
+      child: Scaffold(
+        appBar: appBar,
+        bottomNavigationBar: AppNavigationHost.contains(context)
+            ? null
+            : bottomNavigation,
+        floatingActionButton: floatingAction,
+        body: DecoratedBox(
+          decoration: BoxDecoration(gradient: AppGradients.canvas(context)),
+          child: background == null
+              ? SafeArea(
+                  child: scroll
+                      ? SingleChildScrollView(child: content)
+                      : content,
+                )
+              : Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: ExcludeSemantics(child: background!),
+                      ),
+                    ),
+                    SafeArea(
+                      child: scroll
+                          ? SingleChildScrollView(child: content)
+                          : content,
+                    ),
+                  ],
+                ),
         ),
       ),
     );

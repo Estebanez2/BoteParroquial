@@ -14,6 +14,7 @@ import 'package:bote_parroquial/features/groups/providers/group_providers.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'support/idle_daily_copies.dart';
 
 const alice = AuthUser(
   uid: 'alice',
@@ -95,6 +96,7 @@ ProviderContainer containerFor(
   FakeProfileRepository profiles,
 ) => ProviderContainer(
   overrides: [
+    dailyCopyControllerProvider.overrideWith(IdleDailyCopies.new),
     firebaseStartupProvider.overrideWithValue(FirebaseStartup.ready(FakeApp())),
     authRepositoryProvider.overrideWithValue(auth),
     userProfileRepositoryProvider.overrideWithValue(profiles),
@@ -125,6 +127,10 @@ void main() {
       container.read(routerProvider).routeInformationProvider.value.uri.path,
       '/login',
     );
+    await tester.ensureVisible(find.text('Continuar con Google'));
+    expect(find.byType(AppLogo), findsWidgets);
+    expect(find.byType(AppLogoBackdrop), findsNWidgets(2));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Continuar con Google'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Tu cuenta'));

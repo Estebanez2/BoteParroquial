@@ -1,5 +1,102 @@
 Roadmap
 
+D167, 04/11/2026: orientación vertical de arranque/manifiestos, release 1.0.6+7.
+Prueba física e iOS pendientes; [evidencia y límites](PORTRAIT_ONLY_2026-11-04.md).
+
+D166 (04/11/2026): aplicados Retro 6/7/8 y retirado laboratorio de clics. Gate
+D165 conservado. Una regresión dirigida/hashes y análisis limpio. Release 1.0.5+6
+y pendientes físicos en [registro](SELECTED_RETRO_CLICKS_2026-11-04.md).
+
+D164–D165, 04/11/2026: catálogo temporal de 104 clics (debug/profile) y gate de
+interacción durante animaciones. Cuatro casos dirigidos, análisis limpio y profile
+1.0.4+5 compilado con misma firma que release. Elección/timbres físicos pendientes;
+no aplicar sonidos automáticamente. [Evidencia](CLICK_LAB_AND_INTERACTION_LOCK_2026-11-04.md).
+
+D161–D163 (04/11/2026): gesto Atrás con sonido, familias de clic reorganizadas,
+ajustes compactos y foto opcional en creación con resultado parcial/reintento.
+Siete comprobaciones dirigidas; pendientes físicos en
+[registro](BACK_SOUND_COMPACT_SETTINGS_GROUP_PHOTO_2026-11-04.md). Sin cambios remotos.
+Release 1.0.3+4 compilado y firma verificada; análisis final limpio.
+
+D159–D160, 04/11/2026: familias separadas para clic normal/menú, accesos directos
+de gestión e historial; reparado decoder de fechas económicas en auditoría.
+Ocho casos y análisis limpio; versión 1.0.2+3 y comprobación física en
+[registro](MENUS_ACTIONS_AUDIT_2026-11-04.md). Sin escrituras remotas.
+
+D157–D158, 04/11/2026: sonido solo por controles, variantes, mayor nivel y back
+distinto; 75 % por defecto conservando preferencias. Cabeceras de sección compactas
+e invitación visible en Participantes. Seis comprobaciones y análisis limpio;
+release 1.0.1+2 y validación física en [registro](SOUND_AND_GROUP_SECTIONS_2026-11-04.md).
+
+04/11/2026 D155–D156: compartir invitación con foto adjunta privada o logo, frase,
+nombre y enlace; firma Android independiente registrada para distribución y
+assetlinks publicados. APK release compilado, firma propia verificada; tres casos
+dirigidos y análisis limpio. Validación física
+de release/Google/WhatsApp pendiente. [Estado](INVITATIONS_AND_ANDROID_RELEASE_2026-11-04.md).
+
+Corrección D154, 04/11/2026: descripción izquierda y saldo grande derecha bajo
+foto, ambos arriba. Solo presentación compartida, sin datos/sonidos ni pruebas
+de negocio nuevas. Análisis/profile en EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md,
+continuación D154. Apariencia física pendiente, usuario ejecuta.
+
+Continuación D152–D153, 04/11/2026: toques globales y cada edición sustituyen
+ráfagas; eliminar filtros temporales/efecto ocupado, mantener silencio/apagado.
+Volumen local 0–100 con migración. Perfil en fila y tarjetas con saldo hero bajo
+portada sin rol/EUR. Seis casos dirigidos superados y análisis limpio; audio y
+aspecto físicos pendientes, sin cambios remotos. [Evidencia y APK](EVERY_TOUCH_VOLUME_AND_CARDS_2026-11-04.md).
+
+Continuación D151, 04/11/2026: logo movido al proyecto con hash idéntico; marca
+compartida, fondo semitransparente del login e iconos Android/adaptativo/iOS.
+Un caso auth dirigido superado y análisis limpio. Launcher/login físicos e iOS
+pendientes, sin cambios remotos. [Evidencia y APK](APP_LOGO_2026-11-04.md).
+
+Continuación D149–D150, 04/11/2026: texto del 429 simplificado por petición del
+usuario, manteniendo clasificación y copias. Auditoría sonora completa conexiones
+de movimiento confirmado, errores y controles compartidos. Tres casos dirigidos
+superados, análisis limpio; validación nativa pendiente, sin cambios remotos.
+[Evidencia y APK](SERVER_NOTICE_AND_SOUND_COMPLETION_2026-11-04.md).
+
+Continuación D148, 03/11/2026: esquinas superiores de portada alineadas al radio
+interior de la tarjeta. Solo ajuste compartido de UI, análisis y profile; usuario
+valida físicamente. Explicación de lecturas gratuitas y ejemplos teóricos sin
+atribuir consumo real ni consultar de nuevo la base limitada. Evidencia y APK:
+QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md, D148.
+
+Continuación D147, 03/11/2026: clasificar cuota agotada del SDK de grupos/perfil
+y sincronización para ofrecer copias; Inicio añade el acceso en errores de cada
+grupo. Portadas vacías pasan de iniciales a Sin foto, conservando imágenes de
+caché. Dos regresiones dirigidas. Evidencia y APK en
+QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md, continuación D147.
+
+Continuación D146, 03/11/2026: nombre sobre portada abajo a la izquierda, más
+pequeño y transparente desde AppCover. Consulta remota vuelve a confirmar 429
+por cuota, incluso en grupos; recuperación del servicio sigue pendiente, sin
+cambio de plan. Análisis limpio; revisión visual física pendiente. Evidencia y
+APK en QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md, continuación D146.
+
+Entrega D143–D145 (03/11/2026): 429 de cuota confirmado en lectura remota; distinguir
+de red/permisos y reintentar caja dependiente de gráfica. Sin cambio de plan ni
+facturación. Nombre en caja sobre portada en tarjetas, descripción/saldo debajo,
+sin Entrar; edición de grupo sin identidad duplicada y Gestionar sin doble marco.
+Sonidos locales con preferencia, silencio nativo y ráfagas de escritura. Seis casos
+dirigidos superados y análisis limpio. Sonido físico, apariencia y recuperación
+remota tras cuota pendientes; el usuario ejecuta.
+[Detalle y APK](QUOTA_GROUP_CARDS_SOUNDS_2026-11-03.md).
+
+Continuación D142, 03/11/2026: usuario confirma copia guardada/abierta y editor de
+foto actual. Franja del visor reducida con fecha/solo lectura/salida. Acceso al
+catálogo junto al reintento por red en Inicio/acceso al grupo; sin cambio automático
+de fuente ni salida del aislamiento. [Evidencia](OFFLINE_COMPACT_ACCESS_2026-11-03.md).
+
+Entrega vigente D138–D141, 03/11/2026: laboratorio oculto; tarjetas con portada,
+nombre sobre foto, login renovado y resumen destacado. Gráfica de seis cierres
+con agregados en vivo y datos locales en visor. Copias: corregir página de avisos
+200 → 50 sin cambiar Rules; carga visible. Foto actual: temporal válido y máscara
+circular para avatar. Ocho casos dirigidos superados, análisis limpio y profile
+compilado. Usuario confirma después guardado/apertura y edición de foto actual;
+otros móviles/roles/iOS siguen pendientes.
+Sin cambios remotos. [Estado y pendientes](HOME_COPIES_PHOTOS_2026-11-03.md).
+
 El proyecto debe avanzar por fases pequeñas.
 
 Mantener siempre una versión compilable.

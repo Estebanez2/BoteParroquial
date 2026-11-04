@@ -1,5 +1,9 @@
 import '../core/errors/app_failure.dart';
 import '../models/movement.dart';
+import '../models/monthly_balance.dart';
+import '../models/year_month.dart';
+import '../services/movement_trend_source.dart';
+import 'balance_trend_repository.dart';
 import '../models/initial_quota_assignment.dart';
 import '../services/initial_quota_movement_service.dart';
 import '../models/person.dart';
@@ -12,6 +16,26 @@ class MovementRepository {
   final MovementService _service;
   static const maximumCents = 99999999999999;
   String newId(String groupId) => _service.newId(groupId);
+  Future<List<MonthlyBalance>> loadBalanceTrend(
+    String groupId,
+    String uid,
+    YearMonth currentMonth,
+  ) async {
+    final service = _service;
+    if (service is MovementTrendSource) {
+      return (service as MovementTrendSource).loadBalanceTrend(
+        groupId,
+        uid,
+        currentMonth,
+      );
+    }
+    return BalanceTrendRepository.calculate(
+      groupId,
+      await service.loadMovements(groupId),
+      currentMonth,
+    );
+  }
+
   static String? initialQuotaError(
     MovementInput input,
     InitialQuotaAssignment? quota, {
